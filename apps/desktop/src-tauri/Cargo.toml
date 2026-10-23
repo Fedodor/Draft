@@ -1,0 +1,79 @@
+[package]
+name = "smart-draft-assistant"
+version = "0.1.0"
+description = "Production-quality desktop AI assistant for Dota 2 draft analysis"
+authors = ["Smart Draft Assistant Team"]
+edition = "2021"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+# Tauri
+tauri = { version = "2", features = ["tray-icon"] }
+tauri-plugin-opener = "2"
+tauri-plugin-store = "2"
+tauri-plugin-log = "2"
+tauri-plugin-shell = "2"
+tauri-plugin-fs = "2"
+tauri-plugin-dialog = "2"
+tauri-plugin-updater = "2"
+
+# Async runtime
+tokio = { version = "1", features = ["full"] }
+async-trait = "0.1"
+
+# Serialization
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_derive = "1"
+
+# HTTP server for GSI
+warp = "0.3"
+hyper = { version = "1", features = ["full"] }
+
+# Concurrency
+parking_lot = "0.12"
+dashmap = "5"
+
+# Config
+config = "0.14"
+toml = "0.8"
+
+# Logging
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["env-filter"] }
+log = "0.4"
+dirs = "5"
+
+# Database
+rusqlite = { version = "0.31", features = ["bundled", "modern_sqlite", "serde_json"] }
+
+# ML Inference
+# NOTE: ort 2.0.0-rc.13 targets ONNX Runtime 1.27.x. The bundled
+# `resources/onnxruntime.dll` is 1.28.0 — newer than expected, which ort
+# tolerates with an INFO notice (a *older* runtime would be a hard error).
+# If you bump ort to rc.14/rc.15 (they target ONNX Runtime 1.31.x) you MUST
+# also replace the bundled DLL with 1.31.x AND migrate the API
+# (`Session::builder(&Environment)`, `Tensor::from_array`).
+ort = { version = "2.0.0-rc.13", features = ["load-dynamic"] }
+ndarray = "0.17"
+
+# Utilities
+anyhow = "1"
+thiserror = "1"
+uuid = { version = "1", features = ["v4", "serde"] }
+chrono = { version = "0.4", features = ["serde"] }
+lazy_static = "1"
+once_cell = "1"
+
+# Math
+nalgebra = "0.33"
+sprs = "0.6"
+
+[profile.release]
+opt-level = 3
+lto = true
+codegen-units = 1
+panic = "abort"
+strip = true
