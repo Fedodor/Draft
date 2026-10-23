@@ -19,7 +19,7 @@ from pathlib import Path
 import pandas as pd
 
 ML_ROOT = Path(__file__).resolve().parent.parent
-DEFAULT_DATA = ML_ROOT / "datasets" / "processed" / "draft_features_emb.parquet"
+DEFAULT_DATA = ML_ROOT / "datasets" / "processed" / "draft_features.parquet"
 DEFAULT_FEATURES = ML_ROOT / "models" / "draft_model_xgboost_full_features.json"
 DEFAULT_OUTPUT = ML_ROOT / "models" / "draft_model_xgboost_full_schema.json"
 

@@ -116,3 +116,47 @@ def test_skip_train_reuses_model_and_writes_manifest(tmp_path):
     assert after["metrics"]["test"]["roc_auc"] == pytest.approx(
         before["metrics"]["test"]["roc_auc"]
     )
+
+
+def test_feature_selection_excludes_runtime_unsupported_columns():
+    frame = pd.DataFrame(
+        {
+            "match_id": [1],
+            "start_time": [1],
+            "radiant_win": [1],
+            "patch": pd.Categorical(["7.41"]),
+            "emb_0": [0.1],
+            "rad_lane_top": [1.0],
+            "dire_lane_mid": [1.0],
+            "hero_a": [0.5],
+        }
+    )
+
+    feature_cols, cat_cols = train_full.select_feature_columns(frame)
+
+    assert feature_cols == ["patch", "hero_a"]
+    assert cat_cols == ["patch"]
+
+
+def test_skip_train_rejects_feature_count_mismatch(tmp_path):
+    model_dir = _run(tmp_path)
+
+    extra = tmp_path / "features_extra.parquet"
+    frame = pd.read_parquet(tmp_path / "features.parquet")
+    frame["hero_c"] = 0.0
+    frame.to_parquet(extra, index=False)
+
+    args = train_full.build_parser().parse_args(
+        [
+            "--data",
+            str(extra),
+            "--model-dir",
+            str(model_dir),
+            "--model-stem",
+            "fixture_model",
+            "--skip-train",
+        ]
+    )
+
+    with pytest.raises(SystemExit, match="expects 3 features"):
+        train_full.run(args)

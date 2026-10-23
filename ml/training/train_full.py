@@ -3,9 +3,14 @@
 Train the full feature set and export ONNX with a reproducibility manifest.
 
 Uses every column in the processed parquet as a model input except identity and
-label columns (`match_id`, `radiant_win`, `start_time`), keeping pick-order and
-match-time columns so the exported model matches the runtime feature contract
-(see `ml.rs build_feature_map`).
+label columns (`match_id`, `radiant_win`, `start_time`) and feature families the
+Rust runtime cannot reconstruct (`rad_lane_*`, `dire_lane_*`, `emb_*`), keeping
+pick-order and match-time columns so the exported model matches the runtime
+feature contract (see `ml.rs build_feature_map`).
+
+The defaults target the bundled runtime contract: `draft_features.parquet`
+(887 non-embedding features) exported as `draft_model_xgboost_full`. The
+embedding dataset is a separate experiment and is never the default.
 
 Validation is used only for early stopping; the test partition is evaluated
 exactly once, after model selection, and is never seen during training.
@@ -37,13 +42,18 @@ from sklearn.metrics import brier_score_loss, log_loss, roc_auc_score
 from training.manifest import build_manifest, manifest_paths, write_manifest
 from training.splits import file_sha256, schema_fingerprint, time_split
 
-DEFAULT_DATA = ML_ROOT / "datasets" / "processed" / "draft_features_emb.parquet"
+DEFAULT_DATA = ML_ROOT / "datasets" / "processed" / "draft_features.parquet"
 DEFAULT_MODEL_DIR = ML_ROOT / "models"
-DEFAULT_MODEL_STEM = "draft_model_xgboost_emb"
+DEFAULT_MODEL_STEM = "draft_model_xgboost_full"
 DEFAULT_PATCH = "7.41"
 
 # Identity, label, and time columns are never model inputs.
 NON_FEATURE_COLUMNS = {"match_id", "radiant_win", "start_time", "start_time_utc"}
+
+# Feature families that `ml.rs build_feature_map` never emits. A model trained
+# with them would silently fall back to schema defaults at inference time, so
+# they are excluded from the exported contract.
+RUNTIME_UNSUPPORTED_PREFIXES = ("rad_lane_", "dire_lane_", "emb_")
 
 WIDE_CONFIG = {
     "objective": "binary:logistic",
@@ -65,10 +75,16 @@ WIDE_CONFIG = {
 
 
 def select_feature_columns(df: pd.DataFrame) -> Tuple[List[str], List[str]]:
-    """Return `(feature_columns, categorical_columns)` for the dataset."""
-    features = [c for c in df.columns if c not in NON_FEATURE_COLUMNS]
+    """Return `(feature_columns, categorical_columns)` for the dataset.
+
+    Columns the Rust runtime cannot reconstruct from a live draft are removed so
+    the exported model always matches the runtime feature contract.
+    """
     features = [
-        c for c in features if not (c.startswith("rad_lane_") or c.startswith("dire_lane_"))
+        c
+        for c in df.columns
+        if c not in NON_FEATURE_COLUMNS
+        and not c.startswith(RUNTIME_UNSUPPORTED_PREFIXES)
     ]
     categoricals = [c for c in features if isinstance(df[c].dtype, pd.CategoricalDtype)]
     return features, categoricals
@@ -124,9 +140,14 @@ def run(args: argparse.Namespace) -> int:
         raise SystemExit(f"{data_path} has no radiant_win label column")
 
     feature_cols, cat_cols = select_feature_columns(df)
+    excluded = [
+        c
+        for c in df.columns
+        if c in NON_FEATURE_COLUMNS or c.startswith(RUNTIME_UNSUPPORTED_PREFIXES)
+    ]
     if cat_cols:
         print(f"Categorical columns encoded: {cat_cols}")
-    print(f"Features: {len(feature_cols)}")
+    print(f"Features: {len(feature_cols)} (excluded {len(excluded)})")
 
     split = time_split(
         df,
@@ -162,6 +183,13 @@ def run(args: argparse.Namespace) -> int:
     if skip_fit:
         print(f"Skipping training; loading existing model {paths['joblib']}")
         model = _load_existing_model(paths["joblib"])
+        expected = getattr(model, "n_features_in_", None)
+        if expected is not None and int(expected) != len(feature_cols):
+            raise SystemExit(
+                f"{paths['joblib']} expects {int(expected)} features but the dataset "
+                f"selects {len(feature_cols)}; use the matching --data/--model-stem pair "
+                "(the bundled contract is draft_features.parquet + draft_model_xgboost_full)."
+            )
         best_iteration: Optional[int] = None
     else:
         print("Training on CUDA GPU" if use_gpu else "Training on CPU")
