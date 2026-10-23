@@ -1,0 +1,101 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* The always-on-top overlay window renders a transparent background */
+body.overlay-mode {
+  background: transparent !important;
+  overflow: hidden;
+}
+
+@layer base {
+  * {
+    @apply border-dota-border;
+  }
+  
+  body {
+    @apply bg-dota-bg text-dota-text;
+    font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  }
+  
+  ::-webkit-scrollbar {
+    @apply w-2 h-2;
+  }
+  
+  ::-webkit-scrollbar-track {
+    @apply bg-dota-bg;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    @apply bg-dota-border rounded-full;
+  }
+  
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-dota-accent/50;
+  }
+}
+
+@layer components {
+  .dota-panel {
+    @apply bg-dota-panel border border-dota-border rounded-lg;
+  }
+  
+  .dota-btn {
+    @apply px-4 py-2 rounded-lg font-medium transition-all duration-200
+           focus:outline-none focus:ring-2 focus:ring-dota-accent focus:ring-offset-2 focus:ring-offset-dota-bg;
+  }
+  
+  .dota-btn-primary {
+    @apply dota-btn bg-dota-accent text-white hover:bg-dota-accent/90 active:bg-dota-accent;
+  }
+  
+  .dota-btn-secondary {
+    @apply dota-btn bg-dota-border text-dota-text hover:bg-dota-border/80;
+  }
+  
+  .dota-btn-ghost {
+    @apply dota-btn bg-transparent hover:bg-dota-border;
+  }
+  
+  .hero-card {
+    @apply relative cursor-pointer transition-all duration-200
+           border border-transparent hover:border-dota-accent/50 rounded-lg overflow-hidden;
+  }
+  
+  .hero-card-selected {
+    @apply border-dota-accent ring-2 ring-dota-accent/50;
+  }
+  
+  .recommendation-card {
+    @apply dota-panel p-3 rounded-lg transition-all duration-200
+           hover:shadow-lg hover:shadow-dota-accent/10;
+  }
+  
+  .score-bar {
+    @apply h-2 bg-dota-border rounded-full overflow-hidden;
+  }
+  
+  .score-fill {
+    @apply h-full rounded-full transition-all duration-500 ease-out;
+  }
+  
+  .tag {
+    @apply px-2 py-0.5 text-xs font-medium rounded-full;
+  }
+  
+  .tag-top { @apply bg-dota-accent/20 text-dota-accent; }
+  .tag-safe { @apply bg-green-500/20 text-green-400; }
+  .tag-aggressive { @apply bg-orange-500/20 text-orange-400; }
+  .tag-comfort { @apply bg-blue-500/20 text-blue-400; }
+  .tag-anti-meta { @apply bg-purple-500/20 text-purple-400; }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  
+  .animate-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+}
