@@ -30,3 +30,5 @@ Reported model quality was optimistic and not reproducible: the test split was r
 Resolved: the bundled `_full` model (887 inputs) now matches `train_full.py`'s default selection; the old 887-vs-1139 gap came from defaulting to the embedding dataset with an `_emb` stem while the runtime contract is the non-embedding 887 set.
 
 Resolved: `draft_features.parquet` was regenerated (2026-10-23) with `start_time` (890 columns, no zero rows), so splits use real timestamps instead of the `match_id` fallback.
+
+Retrained: the bundled `draft_model_xgboost_full` was regenerated from the start-time-aware parquet (887 inputs; held-out test ROC-AUC 0.5388 / LogLoss 0.6893 / Brier 0.2481), refreshing the schema defaults and the golden fixture (match `8741426861`, label 1, positive probability `0.526863`).

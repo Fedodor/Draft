@@ -57,7 +57,7 @@ The script that produces the bundled feature set (default stem `draft_model_xgbo
 
 - Exposes `select_feature_columns`, `encode_features`, `evaluate`, and `run` so it is testable.
 - Excludes identity/label/time columns and the feature families the Rust runtime cannot reconstruct (`rad_lane_*`, `dire_lane_*`, `emb_*`), so the exported model always matches `ml.rs build_feature_map`.
-- Defaults target the bundled contract: `draft_features.parquet` (889 columns → 887 features) as `draft_model_xgboost_full`. The embedding dataset is a separate experiment and is never the default.
+- Defaults target the bundled contract: `draft_features.parquet` (890 columns → 887 features) as `draft_model_xgboost_full`. The embedding dataset is a separate experiment and is never the default.
 - Splits by `start_time`, early-stops on validation, then evaluates the held-out test set exactly once.
 - Writes `<stem>.joblib` (XGBoost native), `<stem>.onnx`, `<stem>_features.json`, `<stem>_schema.json`, `<stem>_config.json`, and `<stem>_manifest.json`.
 - New CLI: `--train-frac/--val-frac/--test-frac`, `--n-estimators`, `--seed`, `--config`, `--current-patch`, `--skip-train`, `--evaluate-only`.
@@ -112,4 +112,6 @@ The smoke run wrote model, ONNX, features, schema, config, and manifest in ~17 s
 
 Resolved (feature contract): `train_full.py` now defaults to the bundled contract (`draft_features.parquet` → 887 features, stem `draft_model_xgboost_full`) and excludes the families the runtime cannot build, so `--evaluate-only` reproduces the bundled model instead of failing with a feature-shape mismatch. The old 887-vs-1139 gap came from defaulting to the embedding dataset with a matching `_emb` stem while the runtime contract is the non-embedding 887 set.
 
-Resolved (start time): `draft_features.parquet` was regenerated (2026-10-23) and now carries `start_time` (int64, no zero rows; range 2017-05 to 2026-08), so `time_split` uses real timestamps and no longer logs the `match_id` fallback. `ml/tests/test_processor_features.py` pins the `start_time` field mapping for both the OpenDota (`start_time`) and STRATZ (`startDateTime`) shapes. The bundled schema's winrate/synergy defaults still reflect the pre-regeneration data and will refresh on the next retrain.
+Resolved (start time): `draft_features.parquet` was regenerated (2026-10-23) and now carries `start_time` (int64, no zero rows; range 2017-05 to 2026-08), so `time_split` uses real timestamps and no longer logs the `match_id` fallback. `ml/tests/test_processor_features.py` pins the `start_time` field mapping for both the OpenDota (`start_time`) and STRATZ (`startDateTime`) shapes.
+
+Retrained (2026-10-23): the bundled `draft_model_xgboost_full` artifacts were regenerated from the start-time-aware parquet (887 inputs; held-out test ROC-AUC 0.5388, LogLoss 0.6893, Brier 0.2481; validation ROC-AUC 0.5493, best iteration 600). The schema defaults (winrate/synergy) now reflect the regenerated data, `draft_model_xgboost_full_features.json` is in parquet order, and `ml/tests/fixtures/generate_golden.py` now sources `draft_features.parquet` (match `8741426861`, label 1, positive probability `0.526863`).

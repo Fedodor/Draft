@@ -62,7 +62,7 @@ The generator reads the processed parquet and the features JSON, verifies every 
 & ml\venv\Scripts\python.exe ml\tests\fixtures\generate_golden.py
 ```
 
-The fixture selects the first complete `patch=7.41`, `patch_version=7.41` row, encodes it exactly as training did, runs the bundled ONNX model, and records the label and both class probabilities. The current fixture is match `8741426861`, label `1`, positive probability `0.529628`.
+The fixture selects the first complete `patch=7.41`, `patch_version=7.41` row from `draft_features.parquet`, encodes it exactly as training did, runs the bundled ONNX model, and records the label and both class probabilities. The current fixture is match `8741426861`, label `1`, positive probability `0.526863`.
 
 ## Rust changes
 

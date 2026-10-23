@@ -350,5 +350,6 @@ A step is complete only when:
 | 2026-10-23 | 1 | Rotated the STRATZ key and stored the replacement only in `ml/.env`; searched Git history and confirmed no secrets or datasets | `describe_environment` reports STRATZ `set`; `git ls-files` shows only `ml/.env.example`; OpenDota rotation pending |
 | 2026-10-23 | 6 | Aligned `train_full.py` defaults with the runtime contract (`draft_features.parquet` → 887 features), excluded runtime-unsupported families (`rad_lane_*`, `dire_lane_*`, `emb_*`), added a feature-count guard, and fixed `export_model_schema.py` default data | `--evaluate-only` reports 887 features and bundled metrics (ROC-AUC 0.5402); 2 new fixture tests; 30 Python tests pass |
 | 2026-10-23 | 6 | Regenerated `draft_features.parquet` (111,945 raw → 102,118 rows, 890 columns) so it carries `start_time`; added processor field-mapping tests | Split now uses `start_time` (no fallback warning); `--evaluate-only` ROC-AUC 0.5424; 33 Python tests pass |
+| 2026-10-23 | 6 | Retrained and swapped in the bundled `draft_model_xgboost_full` (887 inputs) from the start-time-aware parquet; repointed `generate_golden.py` at `draft_features.parquet` and refreshed the golden fixture | Held-out test ROC-AUC 0.5388 / Brier 0.2481; schema, ONNX, and Rust contract tests pass; full quality gate PASS |
 
 

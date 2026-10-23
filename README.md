@@ -147,11 +147,11 @@ The project includes a fully automated end-to-end ML training pipeline. **Curren
 
 | Metric | Value |
 |--------|-------|
-| **ROC-AUC** | **0.6710** (historical) / 0.543 (current 889-feature retrain) |
-| **Accuracy** | **62.5%** / 53.4% |
-| **Brier Score** | **0.2273** / 0.2475 |
+| **ROC-AUC** | **0.6710** (historical) / 0.539 (current 890-column retrain, held-out test) |
+| **Accuracy** | **62.5%** / 52.9% |
+| **Brier Score** | **0.2273** / 0.2481 |
 | **Training Samples** | **102,118** |
-| **Features** | **889** |
+| **Features** | **887** (of 890 columns) |
 
 ### Final Summary
 
@@ -289,7 +289,7 @@ The Tauri backend (`ml.rs`) loads the ONNX model via ONNX Runtime (`ort`), recon
 
 > The bundled runtime is pinned to ONNX Runtime **1.28.0** while `ort` is **2.0.0-rc.13** (targets 1.27.x). This pairing is intentional: `ort` tolerates a *newer* runtime and only logs an informational notice. Do not bump `ort` alone — rc.14+ targets ONNX Runtime 1.31.x and requires replacing the DLL too (see `Cargo.toml`).
 
-> The bundled model is `draft_model_xgboost_full.onnx` — trained on `ml/datasets/processed/draft_features.parquet` (889 columns, minus `match_id` and `radiant_win` → **887 inputs**). The feature builder (`build_feature_map` in `ml.rs`) fills everything computable from the live draft and defaults match-time fields (`duration`, `avg_mmr`, `game_mode`, `lobby_type`) to their training medians. Feature families the runtime cannot reconstruct (`rad_lane_*`, `dire_lane_*`, `emb_*`) are excluded by `train_full.py` so the exported model always matches this contract.
+> The bundled model is `draft_model_xgboost_full.onnx` — trained on `ml/datasets/processed/draft_features.parquet` (890 columns, minus `match_id`, `radiant_win`, and `start_time` → **887 inputs**). The feature builder (`build_feature_map` in `ml.rs`) fills everything computable from the live draft and defaults match-time fields (`duration`, `avg_mmr`, `game_mode`, `lobby_type`) to their training medians. Feature families the runtime cannot reconstruct (`rad_lane_*`, `dire_lane_*`, `emb_*`) are excluded by `train_full.py` so the exported model always matches this contract.
 
 ## Project Structure
 
@@ -386,7 +386,7 @@ Settings stored in Tauri store (`config.json`):
 10. **Personalization** — Learn from user's own matches (hero pool, playstyle)
 11. **Ensemble Models** — Combine XGBoost + LightGBM + Neural Net for robustness
 
-> The exported full model (`ml/models/draft_model_xgboost_full.*`) trains on `draft_features.parquet` (889 columns) minus `match_id`, `radiant_win`, and the runtime-unsupported families → **887 model inputs**. It is the model bundled with the app. `python ml/training/train_full.py --evaluate-only` reproduces this contract.
+> The exported full model (`ml/models/draft_model_xgboost_full.*`) trains on `draft_features.parquet` (890 columns) minus `match_id`, `radiant_win`, `start_time`, and the runtime-unsupported families → **887 model inputs**. It is the model bundled with the app. `python ml/training/train_full.py --evaluate-only` reproduces this contract.
 
 ## Contributing
 

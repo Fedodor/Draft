@@ -11,7 +11,7 @@ import onnxruntime as ort
 import pandas as pd
 
 ML_ROOT = Path(__file__).resolve().parents[2]
-DATA = ML_ROOT / "datasets" / "processed" / "draft_features_emb.parquet"
+DATA = ML_ROOT / "datasets" / "processed" / "draft_features.parquet"
 MODEL = ML_ROOT / "models" / "draft_model_xgboost_full.onnx"
 FEATURES = ML_ROOT / "models" / "draft_model_xgboost_full_features.json"
 OUTPUT = Path(__file__).resolve().parent / "golden_draft_features.json"
