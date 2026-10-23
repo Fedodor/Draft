@@ -1,0 +1,44 @@
+# Secrets
+.env
+.env.*
+!.env.example
+*.key
+*.pem
+*.p12
+*.pfx
+
+# Python
+ml/venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ipynb_checkpoints/
+
+# Generated ML data and artifacts that are not release assets
+ml/data/
+ml/datasets/
+ml/cache/
+ml/logs/
+ml/training/output/
+ml/experiments/
+
+# Generated model artifacts; only the bundled release model is tracked.
+ml/models/*
+!ml/models/draft_model_xgboost_full.onnx
+!ml/models/draft_model_xgboost_full_config.json
+!ml/models/draft_model_xgboost_full_features.json
+!ml/models/draft_model_xgboost_full_schema.json
+
+# Node and Tauri
+node_modules/
+apps/desktop/node_modules/
+apps/desktop/dist/
+apps/desktop/src-tauri/target/
+target/
+
+# Local OS and editor files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
