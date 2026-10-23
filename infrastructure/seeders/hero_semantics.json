@@ -1,0 +1,3639 @@
+[
+  {
+    "hero_id": 1,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7392913955912419,
+    "mobility": 0.7801190603431868,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8722321936265716,
+    "physical_damage": 0.6169011906100909,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5084086897356476,
+      "mid": 0.808055951054234,
+      "late": 0.7201029137103366
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9622537443238561,
+      "Escape": 0.8363321377599295,
+      "Nuker": 0.6643342207718335
+    }
+  },
+  {
+    "hero_id": 2,
+    "initiation": 0.901308973646401,
+    "stun": 0.8422088384824846,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7957257225391109,
+    "mobility": 0.3,
+    "durability": 0.8689238190971891,
+    "teamfight": 0.842219092763131,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7559045633095803,
+    "pure_damage": 0.0,
+    "disable_count": 2.2532735747533263,
+    "lane_strength": {
+      "early": 0.48704544104963793,
+      "mid": 0.8112958755163923,
+      "late": 0.755078028936441
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.9919191556013744,
+      "Durable": 0.8150245478912371,
+      "Disabler": 0.6101335947681841,
+      "Carry": 0.5067510497787739
+    }
+  },
+  {
+    "hero_id": 3,
+    "initiation": 0.3,
+    "stun": 0.5924471207393552,
+    "save": 0.6753019479454039,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.7301810390922152,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5958630122225094,
+    "magic_damage": 0.6895049326538597,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.1789272512211126,
+    "lane_strength": {
+      "early": 0.7551288450859156,
+      "mid": 0.6118371377754198,
+      "late": 0.4862596132728549
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8786886812554154,
+      "Disabler": 0.8338624751818657,
+      "Nuker": 0.5347962201502157,
+      "Durable": 0.6362600648478884
+    }
+  },
+  {
+    "hero_id": 4,
+    "initiation": 0.9096275713805237,
+    "stun": 0.846046031381025,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7161554432782137,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.8525127201585624,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9952836215474101,
+    "physical_damage": 0.8645178614019033,
+    "pure_damage": 0.0,
+    "disable_count": 3.691566587282143,
+    "lane_strength": {
+      "early": 0.536628834594334,
+      "mid": 0.6612233509361853,
+      "late": 0.7022993335743898
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8758057947623571,
+      "Disabler": 0.8406494044422402,
+      "Nuker": 0.6623865349275928,
+      "Initiator": 0.5418804835257496
+    }
+  },
+  {
+    "hero_id": 5,
+    "initiation": 0.3,
+    "stun": 0.6063114502962266,
+    "save": 0.6783717022642362,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5116069639621335,
+    "magic_damage": 0.9621924860226887,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.2612762703845632,
+    "lane_strength": {
+      "early": 0.6821854344951852,
+      "mid": 0.6401547763683623,
+      "late": 0.3614205313201158
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8361870886926479,
+      "Disabler": 0.725909985893364,
+      "Nuker": 0.5221863929285604
+    }
+  },
+  {
+    "hero_id": 6,
+    "initiation": 0.3,
+    "stun": 0.8632436151910776,
+    "save": 0.2,
+    "push": 0.8865851641337318,
+    "scaling": 0.8749416121397826,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.51982670799821,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7977254298039365,
+    "pure_damage": 0.0,
+    "disable_count": 3.3024507804319496,
+    "lane_strength": {
+      "early": 0.5826677420561517,
+      "mid": 0.8862122281390299,
+      "late": 0.6611508264491106
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9995206383054707,
+      "Disabler": 0.859692434016472,
+      "Pusher": 0.7078428262415541
+    }
+  },
+  {
+    "hero_id": 7,
+    "initiation": 0.7721054679118587,
+    "stun": 0.8518018207288356,
+    "save": 0.6348800392052532,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.7429531611935017,
+    "splitpush": 0.1,
+    "vision": 0.5163752643933404,
+    "magic_damage": 0.8503614154878825,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.8490061046783843,
+    "lane_strength": {
+      "early": 0.7110039248648118,
+      "mid": 0.6861145642055733,
+      "late": 0.473131290624445
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.9016357535969632,
+      "Initiator": 0.7790866892221787,
+      "Disabler": 0.7407659451667061,
+      "Nuker": 0.5945746341462129
+    }
+  },
+  {
+    "hero_id": 8,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.8768602085890529,
+    "scaling": 0.8885539723739745,
+    "mobility": 0.8284178618474015,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.5852228915715697,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.842339964929195,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5752825470991817,
+      "mid": 0.8676936734317306,
+      "late": 0.6357956215905937
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9110783019620359,
+      "Pusher": 0.8467419429434193,
+      "Escape": 0.5544738414718182
+    }
+  },
+  {
+    "hero_id": 9,
+    "initiation": 0.3,
+    "stun": 0.6340401094099694,
+    "save": 0.5075675923878177,
+    "push": 0.2,
+    "scaling": 0.8778195068136879,
+    "mobility": 0.9408809776142617,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.30947237690420465,
+    "magic_damage": 0.6204132780527758,
+    "physical_damage": 0.6502773453482786,
+    "pure_damage": 0.0,
+    "disable_count": 2.4259743087114645,
+    "lane_strength": {
+      "early": 0.4360420397184985,
+      "mid": 0.6203525952623936,
+      "late": 0.9355223928510781
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9047115457731819,
+      "Support": 0.7344151081677597,
+      "Escape": 0.6297040678931884,
+      "Nuker": 0.6919996608942746,
+      "Disabler": 0.7330019634603532
+    }
+  },
+  {
+    "hero_id": 10,
+    "initiation": 0.3,
+    "stun": 0.8909722743048203,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8787788050383231,
+    "mobility": 0.9060209332993351,
+    "durability": 0.779079407071266,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.6439113689790998,
+    "physical_damage": 0.6011279838630594,
+    "pure_damage": 0.0,
+    "disable_count": 3.4671488187588513,
+    "lane_strength": {
+      "early": 0.3853790151352896,
+      "mid": 0.6610057774749611,
+      "late": 0.843963247581368
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9274657124315695,
+      "Escape": 0.7175239740021172,
+      "Durable": 0.569145355289404,
+      "Nuker": 0.6472687847666763,
+      "Disabler": 0.5269762935475336
+    }
+  },
+  {
+    "hero_id": 11,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7739522194834203,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.887580965220733,
+    "physical_damage": 0.6889565823781102,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5725592128804695,
+      "mid": 0.8401275728783233,
+      "late": 0.7183796597031782
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8952325704019669,
+      "Nuker": 0.7101707118610715
+    }
+  },
+  {
+    "hero_id": 12,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.8805923293254302,
+    "scaling": 0.9024183019308458,
+    "mobility": 0.9991180459498977,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.7374491917609467,
+    "vision": 0.3,
+    "magic_damage": 0.8891158423801492,
+    "physical_damage": 0.8711621216364027,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6377455360897563,
+      "mid": 0.8349624086799856,
+      "late": 0.6109332528947542
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8411845522193167,
+      "Escape": 0.7113523515925521,
+      "Pusher": 0.5539360381914005,
+      "Nuker": 0.6213982954488128
+    }
+  },
+  {
+    "hero_id": 13,
+    "initiation": 0.7970612611142273,
+    "stun": 0.8633133994244567,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.8956666022053298,
+    "durability": 0.4,
+    "teamfight": 0.7738340433797957,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.852942698939211,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.163885140402189,
+    "lane_strength": {
+      "early": 0.6802585017775458,
+      "mid": 0.6746926317572094,
+      "late": 0.43589699065121684
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Initiator": 0.814795204538291,
+      "Disabler": 0.8532956712661757,
+      "Escape": 0.6949515735939851,
+      "Nuker": 0.6475247655285172
+    }
+  },
+  {
+    "hero_id": 14,
+    "initiation": 0.9512205600511379,
+    "stun": 0.8652319958737269,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.792215158460762,
+    "teamfight": 0.9039808571357191,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.7892864755304932,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.883031646200936,
+    "lane_strength": {
+      "early": 0.422771467372203,
+      "mid": 0.8345458022246817,
+      "late": 0.5608607284076794
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Disabler": 0.9884058569503975,
+      "Initiator": 0.7952389908466669,
+      "Durable": 0.5859671088801544,
+      "Nuker": 0.6736512356082216
+    }
+  },
+  {
+    "hero_id": 15,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.7752722689999604,
+    "scaling": 0.7878165490402916,
+    "mobility": 0.3,
+    "durability": 0.9887637148558924,
+    "teamfight": 0.3,
+    "splitpush": 0.5942226890913317,
+    "vision": 0.3,
+    "magic_damage": 0.8937204738583977,
+    "physical_damage": 0.7177787390853179,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5652844330599924,
+      "mid": 0.8093374989504635,
+      "late": 0.6858244661641422
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9620165092693719,
+      "Durable": 0.7371823104271582,
+      "Nuker": 0.726982644282739,
+      "Pusher": 0.699777705687926
+    }
+  },
+  {
+    "hero_id": 16,
+    "initiation": 0.9595391577852606,
+    "stun": 0.8690691887722672,
+    "save": 0.4619740287130578,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.751193793514368,
+    "durability": 0.4,
+    "teamfight": 0.9142744845311503,
+    "splitpush": 0.1,
+    "vision": 0.4853122711113245,
+    "magic_damage": 0.8155947974955639,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.32132465779843,
+    "lane_strength": {
+      "early": 0.7107882039206048,
+      "mid": 0.7356271615883463,
+      "late": 0.47912563010078185
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.8943985436551266,
+      "Disabler": 0.8807233406141044,
+      "Support": 0.5026570858911877,
+      "Nuker": 0.5368360899327491,
+      "Escape": 0.5380523298112919
+    }
+  },
+  {
+    "hero_id": 17,
+    "initiation": 0.8136984565824729,
+    "stun": 0.8709877852215375,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9489486284316277,
+    "mobility": 0.9383813387427392,
+    "durability": 0.4,
+    "teamfight": 0.7944212981706584,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9006207288711429,
+    "physical_damage": 0.6955042985945494,
+    "pure_damage": 0.0,
+    "disable_count": 2.0404711635971773,
+    "lane_strength": {
+      "early": 0.43575194167706743,
+      "mid": 0.6092378139073205,
+      "late": 0.8710689496812731
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8072109718840621,
+      "Escape": 0.7016245165847356,
+      "Nuker": 0.5202218027646754,
+      "Initiator": 0.6218127227024235,
+      "Disabler": 0.7244880965326391
+    }
+  },
+  {
+    "hero_id": 18,
+    "initiation": 0.9678577555193835,
+    "stun": 0.8729063816708076,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9091634888011791,
+    "mobility": 0.3,
+    "durability": 0.8255688838314119,
+    "teamfight": 0.9245681119265817,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9856466602467218,
+    "physical_damage": 0.9248109477222016,
+    "pure_damage": 0.0,
+    "disable_count": 3.759617670327247,
+    "lane_strength": {
+      "early": 0.46071567943353003,
+      "mid": 0.5828484662262948,
+      "late": 0.8130122692617645
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9200234002061297,
+      "Disabler": 0.7225256926484991,
+      "Initiator": 0.5377865196381633,
+      "Durable": 0.7067893554720979,
+      "Nuker": 0.6609238631375711
+    }
+  },
+  {
+    "hero_id": 19,
+    "initiation": 0.8220170543165957,
+    "stun": 0.8748249781200779,
+    "save": 0.2,
+    "push": 0.710630357433404,
+    "scaling": 0.8693783491707305,
+    "mobility": 0.3,
+    "durability": 0.7846886778179037,
+    "teamfight": 0.8047149255660897,
+    "splitpush": 0.778519125784989,
+    "vision": 0.3,
+    "magic_damage": 0.6706725914360362,
+    "physical_damage": 0.8041175966868724,
+    "pure_damage": 0.0,
+    "disable_count": 3.4787641761259938,
+    "lane_strength": {
+      "early": 0.5049555888422558,
+      "mid": 0.7328358284350651,
+      "late": 0.6434268687122626
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8442809892093209,
+      "Nuker": 0.7334127905002854,
+      "Pusher": 0.597359629742503,
+      "Initiator": 0.618379274438312,
+      "Durable": 0.723886587877705,
+      "Disabler": 0.5090338082560496
+    }
+  },
+  {
+    "hero_id": 20,
+    "initiation": 0.9761763532535063,
+    "stun": 0.876743574569348,
+    "save": 0.6073491352644512,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.899943974148456,
+    "durability": 0.4,
+    "teamfight": 0.9348617393220131,
+    "splitpush": 0.1,
+    "vision": 0.37150649627275134,
+    "magic_damage": 0.7556985228116151,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.197910681924741,
+    "lane_strength": {
+      "early": 0.6106431548533231,
+      "mid": 0.6300697708642435,
+      "late": 0.4468989085158793
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9456482567571328,
+      "Initiator": 0.7643280447760261,
+      "Disabler": 0.5729159533851389,
+      "Nuker": 0.6267426208950312,
+      "Escape": 0.5337953963474349
+    }
+  },
+  {
+    "hero_id": 21,
+    "initiation": 0.3,
+    "stun": 0.7172260867511975,
+    "save": 0.5436929118557334,
+    "push": 0.2,
+    "scaling": 0.8893310855093091,
+    "mobility": 0.7871315192371288,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5680550526678818,
+    "magic_damage": 0.8407244541871941,
+    "physical_damage": 0.7604850078516104,
+    "pure_damage": 0.0,
+    "disable_count": 2.920068423692169,
+    "lane_strength": {
+      "early": 0.3356068926097857,
+      "mid": 0.5036804231832178,
+      "late": 0.8388422280963707
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8584606849860683,
+      "Support": 0.7852292208397897,
+      "Disabler": 0.5904806702586266,
+      "Escape": 0.7117192536647056,
+      "Nuker": 0.7202311630687821
+    }
+  },
+  {
+    "hero_id": 22,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9370791258230242,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9044646139743108,
+    "physical_damage": 0.9432175134044222,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.3636203693522235,
+      "mid": 0.5400183442235078,
+      "late": 0.8597357392822093
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Nuker": 0.9628751927813866,
+      "Carry": 0.8828793763103333
+    }
+  },
+  {
+    "hero_id": 23,
+    "initiation": 0.8386542497848413,
+    "stun": 0.8824993639171586,
+    "save": 0.4107763167520875,
+    "push": 0.2,
+    "scaling": 0.7102377906489361,
+    "mobility": 0.3,
+    "durability": 0.9263525918714481,
+    "teamfight": 0.8253021803569525,
+    "splitpush": 0.1,
+    "vision": 0.4615066095541728,
+    "magic_damage": 0.771068736245422,
+    "physical_damage": 0.6713441927085371,
+    "pure_damage": 0.0,
+    "disable_count": 2.3553501993209824,
+    "lane_strength": {
+      "early": 0.5727288673504856,
+      "mid": 0.7340855415370714,
+      "late": 0.7770315729673167
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9004880832044818,
+      "Support": 0.8053380152701112,
+      "Disabler": 0.593102696278646,
+      "Initiator": 0.6462498908612178,
+      "Durable": 0.5697888710162551,
+      "Nuker": 0.5619155208402851
+    }
+  },
+  {
+    "hero_id": 25,
+    "initiation": 0.3,
+    "stun": 0.7449547458649403,
+    "save": 0.689068018407127,
+    "push": 0.2,
+    "scaling": 0.8931682784078494,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.45424927782930863,
+    "magic_damage": 0.7808281795032453,
+    "physical_damage": 0.9138875620737148,
+    "pure_damage": 0.0,
+    "disable_count": 3.0847664620190702,
+    "lane_strength": {
+      "early": 0.45725446658081115,
+      "mid": 0.6354618436356363,
+      "late": 0.8481230325522474
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Support": 0.8566155065114682,
+      "Carry": 0.8097103980880744,
+      "Nuker": 0.7110424063685548,
+      "Disabler": 0.6607395377525778
+    }
+  },
+  {
+    "hero_id": 26,
+    "initiation": 0.7011321463161763,
+    "stun": 0.8882551532649692,
+    "save": 0.6254117949984092,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.7157426213918917,
+    "splitpush": 0.1,
+    "vision": 0.35079783408474075,
+    "magic_damage": 0.8658541108788242,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.512789717648546,
+    "lane_strength": {
+      "early": 0.6820461633065931,
+      "mid": 0.760425581392099,
+      "late": 0.3717336848712217
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9985588261850917,
+      "Disabler": 0.7225228263170098,
+      "Nuker": 0.7371688764482591,
+      "Initiator": 0.6783042546260656
+    }
+  },
+  {
+    "hero_id": 27,
+    "initiation": 0.8552914452530869,
+    "stun": 0.8901737497142395,
+    "save": 0.5617555715896914,
+    "push": 0.7085473250404686,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.8458894351478151,
+    "splitpush": 0.7780839787228424,
+    "vision": 0.5473463904798712,
+    "magic_damage": 0.9508800422544033,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.2319362234472933,
+    "lane_strength": {
+      "early": 0.6453443371901961,
+      "mid": 0.7405021457655832,
+      "late": 0.4353352546390776
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.8106362771292387,
+      "Pusher": 0.8566951771996427,
+      "Disabler": 0.7215790500499211,
+      "Nuker": 0.588845762814789,
+      "Initiator": 0.6741205072841236
+    }
+  },
+  {
+    "hero_id": 28,
+    "initiation": 0.7094507440502992,
+    "stun": 0.8920923461635095,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7613120926131085,
+    "mobility": 0.7269294800827882,
+    "durability": 0.8974443352769336,
+    "teamfight": 0.7260362487873231,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7678774378578539,
+    "pure_damage": 0.0,
+    "disable_count": 2.95108272924604,
+    "lane_strength": {
+      "early": 0.410353056811892,
+      "mid": 0.6689549895091704,
+      "late": 0.7324454653460744
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.848147682868013,
+      "Durable": 0.7315374531930021,
+      "Initiator": 0.7134336883730412,
+      "Disabler": 0.5565556827031801,
+      "Escape": 0.5252815294197208
+    }
+  },
+  {
+    "hero_id": 29,
+    "initiation": 0.8636100429872098,
+    "stun": 0.8940109426127798,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7215269529826599,
+    "mobility": 0.3,
+    "durability": 0.7846318803656063,
+    "teamfight": 0.8561830625432464,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.7209319048192966,
+    "physical_damage": 0.6471840868225247,
+    "pure_damage": 0.0,
+    "disable_count": 2.670229235044787,
+    "lane_strength": {
+      "early": 0.43531679456835465,
+      "mid": 0.842565641921277,
+      "late": 0.6743887849265657
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.9609601111900807,
+      "Durable": 0.7524386292567656,
+      "Disabler": 0.730998405246529,
+      "Nuker": 0.6415323154728545,
+      "Carry": 0.7117172961410682
+    }
+  },
+  {
+    "hero_id": 30,
+    "initiation": 0.3,
+    "stun": 0.5296155696407033,
+    "save": 0.71674363124964,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3584063611265301,
+    "magic_damage": 0.9707869015498025,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.2906390094620357,
+    "lane_strength": {
+      "early": 0.757994706257244,
+      "mid": 0.7029789180974377,
+      "late": 0.481212950395985
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8602805323248173,
+      "Nuker": 0.8661762942402513,
+      "Disabler": 0.7079151307502366
+    }
+  },
+  {
+    "hero_id": 31,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.6292381876284435,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.4997720279264133,
+    "magic_damage": 0.9182785084090561,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6608522246642281,
+      "mid": 0.6535653390705424,
+      "late": 0.3890270770941987
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.9454918837852273,
+      "Nuker": 0.8060046471217669
+    }
+  },
+  {
+    "hero_id": 32,
+    "initiation": 0.3,
+    "stun": 0.5434798991975747,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8998833659802952,
+    "mobility": 0.8826058410492753,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.9198420318401614,
+    "pure_damage": 0.0,
+    "disable_count": 2.3729880286254863,
+    "lane_strength": {
+      "early": 0.32005944793115343,
+      "mid": 0.6880048494730167,
+      "late": 0.7807963438475487
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9102080078377426,
+      "Escape": 0.8133975988782,
+      "Disabler": 0.5627734297014649
+    }
+  },
+  {
+    "hero_id": 33,
+    "initiation": 0.8802472384554554,
+    "stun": 0.9016853284098605,
+    "save": 0.2,
+    "push": 0.8123863945772808,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.876770317334109,
+    "splitpush": 0.7266377282918607,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.5468152591710984,
+    "lane_strength": {
+      "early": 0.5305178150676739,
+      "mid": 0.7944850508330785,
+      "late": 0.5351717455942052
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Disabler": 0.8870082511971743,
+      "Initiator": 0.8921620634347955,
+      "Pusher": 0.5152622802486934
+    }
+  },
+  {
+    "hero_id": 34,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.8582452206212305,
+    "scaling": 0.728672114377223,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.5871215059361986,
+    "vision": 0.3,
+    "magic_damage": 0.9228831398873045,
+    "physical_damage": 0.679683983363064,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5821241896981951,
+      "mid": 0.7730307807554634,
+      "late": 0.6803797373922448
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9601354833506679,
+      "Nuker": 0.7606189035161486,
+      "Pusher": 0.6676317287691085
+    }
+  },
+  {
+    "hero_id": 35,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8571381968246484,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9244180170467207,
+    "physical_damage": 0.8618895226213565,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.39851082707685925,
+      "mid": 0.5262528922531069,
+      "late": 0.7631565605351499
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9155437464432529,
+      "Nuker": 0.7051714341180265
+    }
+  },
+  {
+    "hero_id": 36,
+    "initiation": 0.3,
+    "stun": 0.5712085583113173,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9037205588788355,
+    "mobility": 0.3,
+    "durability": 0.9162833971978553,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9888495612837604,
+    "physical_damage": 0.7232445858992844,
+    "pure_damage": 0.0,
+    "disable_count": 2.537686066952388,
+    "lane_strength": {
+      "early": 0.4580567121310424,
+      "mid": 0.6299631309369407,
+      "late": 0.7600629587704609
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8078402081540973,
+      "Nuker": 0.7179920221762695,
+      "Durable": 0.6883088863400318,
+      "Disabler": 0.7484335771288879
+    }
+  },
+  {
+    "hero_id": 37,
+    "initiation": 0.896884433923701,
+    "stun": 0.9093597142069413,
+    "save": 0.7251933378750428,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.8973575721249718,
+    "splitpush": 0.1,
+    "vision": 0.41283195345328744,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.423401282366086,
+    "lane_strength": {
+      "early": 0.6005696777256996,
+      "mid": 0.6547548276627226,
+      "late": 0.3350266965269235
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9814508605662039,
+      "Initiator": 0.8599353418498931,
+      "Disabler": 0.5793244216262011
+    }
+  },
+  {
+    "hero_id": 38,
+    "initiation": 0.7510437327209132,
+    "stun": 0.9112783106562115,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.7093805097087196,
+    "teamfight": 0.7775043857644798,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8615371144663249,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.1425477881648334,
+    "lane_strength": {
+      "early": 0.4430826434134891,
+      "mid": 0.8295465244816367,
+      "late": 0.5599904342833861
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.9550615128851783,
+      "Disabler": 0.8018786614303843,
+      "Durable": 0.7203399570287857,
+      "Nuker": 0.5506865171718814
+    }
+  },
+  {
+    "hero_id": 39,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8710025263815198,
+    "mobility": 0.9792541442342355,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9305575256843853,
+    "physical_damage": 0.8907116793285643,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.3989404455288036,
+      "mid": 0.6372860440692334,
+      "late": 0.8355956091012785
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9043382212074186,
+      "Nuker": 0.7849541720398489,
+      "Escape": 0.6608402065051907
+    }
+  },
+  {
+    "hero_id": 40,
+    "initiation": 0.759362330455036,
+    "stun": 0.9151155035547518,
+    "save": 0.5342246676488894,
+    "push": 0.7364123974165006,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.7877980131599112,
+    "splitpush": 0.6648768646944673,
+    "vision": 0.40247762235928214,
+    "magic_damage": 0.856217149578136,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.5808408006936503,
+    "lane_strength": {
+      "early": 0.7022828175231268,
+      "mid": 0.7857653006844992,
+      "late": 0.3018968220808994
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.8823515658650322,
+      "Nuker": 0.8393682325907835,
+      "Initiator": 0.5762752754736111,
+      "Pusher": 0.5125107290281499,
+      "Disabler": 0.7022000106294639
+    }
+  },
+  {
+    "hero_id": 41,
+    "initiation": 0.9135216293919466,
+    "stun": 0.9170341000040221,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7441052776501073,
+    "mobility": 0.9559323107152862,
+    "durability": 0.9308824221281718,
+    "teamfight": 0.9179448269158345,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.9488638752134814,
+    "pure_damage": 0.0,
+    "disable_count": 3.2999873064923975,
+    "lane_strength": {
+      "early": 0.5348816475527741,
+      "mid": 0.7258934698421012,
+      "late": 0.7777086202649905
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9147092504029671,
+      "Initiator": 0.8032527419287957,
+      "Disabler": 0.6917750076119672,
+      "Escape": 0.6612519082432855,
+      "Durable": 0.6989464957494971
+    }
+  },
+  {
+    "hero_id": 42,
+    "initiation": 0.7676809281891588,
+    "stun": 0.9189526964532923,
+    "save": 0.42626901214302937,
+    "push": 0.2,
+    "scaling": 0.7043201380196586,
+    "mobility": 0.3,
+    "durability": 0.9397680779638551,
+    "teamfight": 0.7980916405553424,
+    "splitpush": 0.1,
+    "vision": 0.41806996721684464,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8281705241781522,
+    "pure_damage": 0.0,
+    "disable_count": 3.0191338122911446,
+    "lane_strength": {
+      "early": 0.44950412216107555,
+      "mid": 0.7196519398454819,
+      "late": 0.6775216786319025
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9241539179925592,
+      "Support": 0.867471779588364,
+      "Durable": 0.7462285410129598,
+      "Disabler": 0.635382262354429,
+      "Initiator": 0.5911353187827092
+    }
+  },
+  {
+    "hero_id": 43,
+    "initiation": 0.3,
+    "stun": 0.8697337118767825,
+    "save": 0.2,
+    "push": 0.7767694093877306,
+    "scaling": 0.9104356464512812,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.5834712076389562,
+    "vision": 0.3,
+    "magic_damage": 0.9432559976090007,
+    "physical_damage": 0.729199055665731,
+    "pure_damage": 0.0,
+    "disable_count": 3.8259076344901266,
+    "lane_strength": {
+      "early": 0.5035050082036783,
+      "mid": 0.8848091230656994,
+      "late": 0.6231147744800498
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8115952594259732,
+      "Pusher": 0.8403341069539703,
+      "Nuker": 0.6813188675704034,
+      "Disabler": 0.7269044413589427
+    }
+  },
+  {
+    "hero_id": 44,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7633329382694014,
+    "mobility": 0.9536739336110995,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7517393751310834,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.44574268238886383,
+      "mid": 0.7897998871001415,
+      "late": 0.8424478984402716
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8981604374470936,
+      "Escape": 0.8282967050225924
+    }
+  },
+  {
+    "hero_id": 45,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.9385320817066971,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.7548250914806618,
+    "vision": 0.3,
+    "magic_damage": 0.9068784331469231,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6176573329687385,
+      "mid": 0.7579717753957825,
+      "late": 0.4734802692772263
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Nuker": 0.9406734031348831,
+      "Pusher": 0.7530884017483742
+    }
+  },
+  {
+    "hero_id": 46,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.770265103047837,
+    "mobility": 0.9559762493502237,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7661504534846872,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5895719836417455,
+      "mid": 0.7261436636914237,
+      "late": 0.704512640114181
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9831863688226726,
+      "Escape": 0.8778800985672884
+    }
+  },
+  {
+    "hero_id": 47,
+    "initiation": 0.9384774225943151,
+    "stun": 0.9285456786996432,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7553944399838309,
+    "mobility": 0.3,
+    "durability": 0.7385490016259947,
+    "teamfight": 0.9488257091021285,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.924703769327469,
+    "pure_damage": 0.0,
+    "disable_count": 3.614866342216202,
+    "lane_strength": {
+      "early": 0.5026717952930703,
+      "mid": 0.7346640739984177,
+      "late": 0.7675573838490795
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.979368537934203,
+      "Durable": 0.8915838200559765,
+      "Initiator": 0.5358247477728058,
+      "Disabler": 0.5471633087364786
+    }
+  },
+  {
+    "hero_id": 48,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.8667516060018686,
+    "scaling": 0.7771972678262727,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.5187311604240589,
+    "vision": 0.3,
+    "magic_damage": 0.9443714201191307,
+    "physical_damage": 0.780561531838291,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6165773818812228,
+      "mid": 0.7682123001051192,
+      "late": 0.6274634920188521
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9096278117548804,
+      "Nuker": 0.7911680361680538,
+      "Pusher": 0.6516398218933679
+    }
+  },
+  {
+    "hero_id": 49,
+    "initiation": 0.9467960203284379,
+    "stun": 0.9323828715981836,
+    "save": 0.2,
+    "push": 0.8903189860472078,
+    "scaling": 0.925824160839349,
+    "mobility": 0.3,
+    "durability": 0.7971680327305422,
+    "teamfight": 0.7091193363811444,
+    "splitpush": 0.7018873242670145,
+    "vision": 0.3,
+    "magic_damage": 0.8214505315858175,
+    "physical_damage": 0.6833170672568106,
+    "pure_damage": 0.0,
+    "disable_count": 3.0531593538136965,
+    "lane_strength": {
+      "early": 0.5632551770951856,
+      "mid": 0.7172086765138472,
+      "late": 0.6704621503457716
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8658341939867633,
+      "Pusher": 0.7728519760411474,
+      "Durable": 0.690432628821783,
+      "Disabler": 0.7024088975518983,
+      "Initiator": 0.5681537118824914,
+      "Nuker": 0.5306466524631933
+    }
+  },
+  {
+    "hero_id": 50,
+    "initiation": 0.3,
+    "stun": 0.6682588652094169,
+    "save": 0.7474411744379631,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.41584587894186653,
+    "magic_damage": 0.8976624339342407,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.1141292010965427,
+    "lane_strength": {
+      "early": 0.7786421236482646,
+      "mid": 0.7532382314806982,
+      "late": 0.37704688556354815
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.9595552872678057,
+      "Nuker": 0.7383893408060024,
+      "Disabler": 0.5064981208445961
+    }
+  },
+  {
+    "hero_id": 51,
+    "initiation": 0.9551146180625607,
+    "stun": 0.936220064496724,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.8645117417278289,
+    "teamfight": 0.7194129637765758,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.834006210525523,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.4914523654111904,
+    "lane_strength": {
+      "early": 0.5957511971684877,
+      "mid": 0.65183858228933,
+      "late": 0.6845190250242683
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Initiator": 0.8119999931249768,
+      "Disabler": 0.8471418163493005,
+      "Durable": 0.553541916331063,
+      "Nuker": 0.6403306280916233
+    }
+  },
+  {
+    "hero_id": 52,
+    "initiation": 0.3,
+    "stun": 0.6821231947662882,
+    "save": 0.5703499871168053,
+    "push": 0.8582878488853051,
+    "scaling": 0.919069330472997,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.514224144031398,
+    "vision": 0.36106029798326095,
+    "magic_damage": 0.6765283255262897,
+    "physical_damage": 0.6368548024617391,
+    "pure_damage": 0.0,
+    "disable_count": 3.1964782202599933,
+    "lane_strength": {
+      "early": 0.6856106455370833,
+      "mid": 0.7890851359297918,
+      "late": 0.7556459613869181
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9331656785370622,
+      "Support": 0.807989514483134,
+      "Nuker": 0.5959948682440421,
+      "Pusher": 0.7497399287529941,
+      "Disabler": 0.5358118597817663
+    }
+  },
+  {
+    "hero_id": 53,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.9412181722425008,
+    "scaling": 0.9195276798305696,
+    "mobility": 0.9576088543783914,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.5800203227810656,
+    "vision": 0.3,
+    "magic_damage": 0.9520458059162115,
+    "physical_damage": 0.6415892276408101,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5807771284509343,
+      "mid": 0.7514219758340259,
+      "late": 0.6344465004440614
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9592212978560577,
+      "Pusher": 0.7310284555102831,
+      "Escape": 0.5855729870198169,
+      "Nuker": 0.6925835682510322
+    }
+  },
+  {
+    "hero_id": 54,
+    "initiation": 0.3,
+    "stun": 0.6959875243231596,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9209879269222672,
+    "mobility": 0.7322781552245272,
+    "durability": 0.8541574106338236,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.888556079654282,
+    "pure_damage": 0.0,
+    "disable_count": 3.2788272394234443,
+    "lane_strength": {
+      "early": 0.42329009413872387,
+      "mid": 0.6762136726529401,
+      "late": 0.8094102382005239
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.932831950175032,
+      "Durable": 0.8729717751839067,
+      "Escape": 0.7265885224224015,
+      "Disabler": 0.7187100383307365
+    }
+  },
+  {
+    "hero_id": 55,
+    "initiation": 0.9717518135308063,
+    "stun": 0.9438944502938047,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9845359878076874,
+    "durability": 0.4,
+    "teamfight": 0.7400002185674385,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.3680383895375012,
+    "lane_strength": {
+      "early": 0.5338039779261704,
+      "mid": 0.8072538247831416,
+      "late": 0.501005369378722
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.8843739759569866,
+      "Escape": 0.8064426024940063,
+      "Disabler": 0.6436438684554975
+    }
+  },
+  {
+    "hero_id": 56,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.9229065233715374,
+    "scaling": 0.8049259269400154,
+    "mobility": 0.936793820251149,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.6630777343004373,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8382058452527066,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6648363488562574,
+      "mid": 0.7083160254211704,
+      "late": 0.6257970661045038
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9093377137134493,
+      "Escape": 0.7800532548129806,
+      "Pusher": 0.5710730179311116
+    }
+  },
+  {
+    "hero_id": 57,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.7734272150199056,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.8209497101702493,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3603526151554438,
+    "magic_damage": 0.9581853145538761,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.7760344351297405,
+      "mid": 0.5958687196932122,
+      "late": 0.35082899110896
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.950588762923418,
+      "Durable": 0.834301451469912,
+      "Nuker": 0.5670798839149437
+    }
+  },
+  {
+    "hero_id": 58,
+    "initiation": 0.3,
+    "stun": 0.7237161834369024,
+    "save": 0.7597201917132923,
+    "push": 0.8177579042817269,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.8400129351951242,
+    "teamfight": 0.3,
+    "splitpush": 0.5403516357952504,
+    "vision": 0.3788216860400614,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.4435252777503456,
+    "lane_strength": {
+      "early": 0.6753804596491998,
+      "mid": 0.7592651892263746,
+      "late": 0.3272745594509293
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9407450535990042,
+      "Pusher": 0.7325205309467951,
+      "Durable": 0.5732159185331389,
+      "Disabler": 0.7403751943448443
+    }
+  },
+  {
+    "hero_id": 59,
+    "initiation": 0.988389008999052,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9257844180454426,
+    "mobility": 0.3,
+    "durability": 0.7935673175815341,
+    "teamfight": 0.7605874733583011,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.6428092722281856,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.45793346146025393,
+      "mid": 0.6358549224845389,
+      "late": 0.7501721563749817
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9842289269828373,
+      "Durable": 0.7008852117699036,
+      "Initiator": 0.6033604664743694
+    }
+  },
+  {
+    "hero_id": 60,
+    "initiation": 0.8425483077962642,
+    "stun": 0.9534874325401557,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7381876250208297,
+    "mobility": 0.3,
+    "durability": 0.8874457797908437,
+    "teamfight": 0.8907342871142245,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9567357763446569,
+    "physical_damage": 0.7556902065201151,
+    "pure_damage": 0.0,
+    "disable_count": 3.963770919462559,
+    "lane_strength": {
+      "early": 0.40919266464616766,
+      "mid": 0.8244958641820103,
+      "late": 0.6746316927599868
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8581453874977982,
+      "Initiator": 0.8003750869540381,
+      "Durable": 0.5255046279754045,
+      "Disabler": 0.525807930052191,
+      "Nuker": 0.7412260618252802
+    }
+  },
+  {
+    "hero_id": 61,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.9103646781576633,
+    "scaling": 0.9472563389443123,
+    "mobility": 0.729997304701245,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.7980829826081559,
+    "vision": 0.3,
+    "magic_damage": 0.9643248231915407,
+    "physical_damage": 0.6992335410552255,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5208808537669857,
+      "mid": 0.7497555499196776,
+      "late": 0.6341564024026303
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9481065165009845,
+      "Pusher": 0.8665750124336105,
+      "Escape": 0.7136972697748324,
+      "Nuker": 0.6515953287722521
+    }
+  },
+  {
+    "hero_id": 62,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.941233497411587,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.801155874040516,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5371973876316088,
+      "mid": 0.7402063931060053,
+      "late": 0.8168938767010783
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Escape": 0.9510305740642504,
+      "Nuker": 0.7633938194547751
+    }
+  },
+  {
+    "hero_id": 63,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7041885036063327,
+    "mobility": 0.9755459331327798,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7136446194088294,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5121210436858801,
+      "mid": 0.7850657649967194,
+      "late": 0.732062944901205
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9059067851425646,
+      "Escape": 0.7993389434643736
+    }
+  },
+  {
+    "hero_id": 64,
+    "initiation": 0.3,
+    "stun": 0.7653091721075165,
+    "save": 0.7689294546697892,
+    "push": 0.7163691446726997,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.7226296262455312,
+    "vision": 0.4260535413986321,
+    "magic_damage": 0.8064753065847211,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.690572335240698,
+    "lane_strength": {
+      "early": 0.6241306401901555,
+      "mid": 0.7090476156720182,
+      "late": 0.36893847345790753
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9924049712682166,
+      "Nuker": 0.8093951005998045,
+      "Pusher": 0.7299747390113653,
+      "Disabler": 0.5957634954693557
+    }
+  },
+  {
+    "hero_id": 65,
+    "initiation": 0.713344802061722,
+    "stun": 0.9630804147865066,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.8071143123820025,
+    "durability": 0.4,
+    "teamfight": 0.7914683555445952,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.5595034484562946,
+    "lane_strength": {
+      "early": 0.6441276866682468,
+      "mid": 0.8386658956476793,
+      "late": 0.5489223370090697
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.9340113534284809,
+      "Disabler": 0.7425491257768818,
+      "Escape": 0.6679353635608849
+    }
+  },
+  {
+    "hero_id": 66,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.6233388013315102,
+    "push": 0.9324995056178884,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.5417974931382562,
+    "vision": 0.5659382031606223,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6895814298836428,
+      "mid": 0.5751600575052016,
+      "late": 0.33344568211280073
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8737140337348516,
+      "Pusher": 0.8589750911849435
+    }
+  },
+  {
+    "hero_id": 67,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.718052833163204,
+    "mobility": 0.9801505646110282,
+    "durability": 0.9996694691477668,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7424667761160372,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.40775331817928395,
+      "mid": 0.6561924283421563,
+      "late": 0.7259586478005902
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9985057305537657,
+      "Durable": 0.8839388289414062,
+      "Escape": 0.7372130381349535
+    }
+  },
+  {
+    "hero_id": 68,
+    "initiation": 0.3,
+    "stun": 0.7930378312212591,
+    "save": 0.7750689633074538,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5575414450175787,
+    "magic_damage": 0.9518504131361145,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.855270373567599,
+    "lane_strength": {
+      "early": 0.7372247992722434,
+      "mid": 0.7184716134883797,
+      "late": 0.4232974272795475
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8089025666047366,
+      "Disabler": 0.8633810828269372,
+      "Nuker": 0.7002228121041426
+    }
+  },
+  {
+    "hero_id": 69,
+    "initiation": 0.7299819975299676,
+    "stun": 0.9707548005835873,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.880121368579623,
+    "mobility": 0.3,
+    "durability": 0.772133686007994,
+    "teamfight": 0.8120556103354578,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9219691583523383,
+    "physical_damage": 0.7194500476910966,
+    "pure_damage": 0.0,
+    "disable_count": 3.4360894725826054,
+    "lane_strength": {
+      "early": 0.3338663043611992,
+      "mid": 0.6369917351459115,
+      "late": 0.8521215692638054
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8734572419307461,
+      "Disabler": 0.7884856714347777,
+      "Initiator": 0.6835870798367947,
+      "Durable": 0.5405976246300143,
+      "Nuker": 0.669147961502498
+    }
+  },
+  {
+    "hero_id": 70,
+    "initiation": 0.3,
+    "stun": 0.8069021607781305,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9363366985164288,
+    "mobility": 0.3,
+    "durability": 0.8684034747390093,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8021662962167366,
+    "pure_damage": 0.0,
+    "disable_count": 3.9376193927310497,
+    "lane_strength": {
+      "early": 0.499289541039285,
+      "mid": 0.5034975447708264,
+      "late": 0.9228808208242435
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8588300421176619,
+      "Durable": 0.8106023874648858,
+      "Disabler": 0.555081111055371
+    }
+  },
+  {
+    "hero_id": 71,
+    "initiation": 0.7383005952640904,
+    "stun": 0.9745919934821278,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8005510893187258,
+    "mobility": 0.7690157656879237,
+    "durability": 0.8465087763250381,
+    "teamfight": 0.8223492377308892,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8280633457834196,
+    "pure_damage": 0.0,
+    "disable_count": 2.8743824841800993,
+    "lane_strength": {
+      "early": 0.38379377987412444,
+      "mid": 0.5842130397838601,
+      "late": 0.9360082085179203
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8990820984817492,
+      "Initiator": 0.8302880235623047,
+      "Disabler": 0.7187165135837703,
+      "Durable": 0.7105508901693629,
+      "Escape": 0.5420194947123619
+    }
+  },
+  {
+    "hero_id": 72,
+    "initiation": 0.3,
+    "stun": 0.8207664903350018,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9382552949656989,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.6972255195012435,
+    "physical_damage": 0.7038675732462981,
+    "pure_damage": 0.0,
+    "disable_count": 2.0199684109631777,
+    "lane_strength": {
+      "early": 0.3613542827131945,
+      "mid": 0.5885234761464053,
+      "late": 0.7724642142758072
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9087575176305871,
+      "Nuker": 0.7578236921028344,
+      "Disabler": 0.6599394101230145
+    }
+  },
+  {
+    "hero_id": 73,
+    "initiation": 0.7466191929982133,
+    "stun": 0.9784291863806682,
+    "save": 0.6620728836683896,
+    "push": 0.2,
+    "scaling": 0.7209808100578285,
+    "mobility": 0.3,
+    "durability": 0.7471515166327131,
+    "teamfight": 0.8326428651263205,
+    "splitpush": 0.1,
+    "vision": 0.5208838666420821,
+    "magic_damage": 0.8674425107740995,
+    "physical_damage": 0.9366766438757426,
+    "pure_damage": 0.0,
+    "disable_count": 2.3126754957775937,
+    "lane_strength": {
+      "early": 0.46989484767890294,
+      "mid": 0.7747069550327523,
+      "late": 0.8220903756898317
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8030767577714645,
+      "Support": 0.8044033244738371,
+      "Durable": 0.664891028038641,
+      "Disabler": 0.6196325959729183,
+      "Initiator": 0.6435674111794528,
+      "Nuker": 0.5979369278521914
+    }
+  },
+  {
+    "hero_id": 74,
+    "initiation": 0.3,
+    "stun": 0.8346308198918733,
+    "save": 0.2,
+    "push": 0.8542737806002952,
+    "scaling": 0.9401738914149691,
+    "mobility": 0.8080714117307548,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.7603241112829764,
+    "vision": 0.3,
+    "magic_damage": 0.9699130728700724,
+    "physical_damage": 0.6055688502758596,
+    "pure_damage": 0.0,
+    "disable_count": 2.1023174301266288,
+    "lane_strength": {
+      "early": 0.6586849931435124,
+      "mid": 0.705044996740783,
+      "late": 0.6118381672593942
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8375193832616878,
+      "Nuker": 0.8929915517535953,
+      "Disabler": 0.5214106640878183,
+      "Escape": 0.7154807883619707,
+      "Pusher": 0.6013267946435729
+    }
+  },
+  {
+    "hero_id": 75,
+    "initiation": 0.7549377907323361,
+    "stun": 0.9822663792792086,
+    "save": 0.432124746233283,
+    "push": 0.2,
+    "scaling": 0.8914105309133467,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.8429364925217518,
+    "splitpush": 0.1,
+    "vision": 0.595258956959126,
+    "magic_damage": 0.9672974617999501,
+    "physical_damage": 0.6952899418050842,
+    "pure_damage": 0.0,
+    "disable_count": 3.7509685083064106,
+    "lane_strength": {
+      "early": 0.4786556491528897,
+      "mid": 0.6537814869330179,
+      "late": 0.9003318115837554
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8138927277242266,
+      "Support": 0.7311803047690448,
+      "Disabler": 0.5504574210152298,
+      "Initiator": 0.5377625612485049,
+      "Nuker": 0.5085679041261635
+    }
+  },
+  {
+    "hero_id": 76,
+    "initiation": 0.3,
+    "stun": 0.8484951494487445,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9420924878642394,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.842600626052637,
+    "physical_damage": 0.8572701274684025,
+    "pure_damage": 0.0,
+    "disable_count": 2.1846664492900794,
+    "lane_strength": {
+      "early": 0.48548376624727796,
+      "mid": 0.558575338804431,
+      "late": 0.8716310013651992
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8086124685633055,
+      "Nuker": 0.852266301471864,
+      "Disabler": 0.6196560081418865
+    }
+  },
+  {
+    "hero_id": 77,
+    "initiation": 0.7632563884664589,
+    "stun": 0.9861035721777489,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8118402516524494,
+    "mobility": 0.3,
+    "durability": 0.7696340471364715,
+    "teamfight": 0.8532301199171832,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8021766089844409,
+    "physical_damage": 0.8039032398974072,
+    "pure_damage": 0.0,
+    "disable_count": 3.1892615199039045,
+    "lane_strength": {
+      "early": 0.3335762063197681,
+      "mid": 0.6258769537908383,
+      "late": 0.7876681260940005
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9759566681347586,
+      "Initiator": 0.7556950798517535,
+      "Durable": 0.5741048147082817,
+      "Disabler": 0.7204106865545785,
+      "Nuker": 0.660634094574784
+    }
+  },
+  {
+    "hero_id": 79,
+    "initiation": 0.7715749862005817,
+    "stun": 0.9899407650762893,
+    "save": 0.4516319558264837,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.8635237473126145,
+    "splitpush": 0.1,
+    "vision": 0.5678713182769116,
+    "magic_damage": 0.9722284717355987,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.6275545315013984,
+    "lane_strength": {
+      "early": 0.6960060916356771,
+      "mid": 0.6835036818326934,
+      "late": 0.37309825842878697
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.9215547653481153,
+      "Disabler": 0.7015815245926293,
+      "Initiator": 0.6218717899741008,
+      "Nuker": 0.6092342484552573
+    }
+  },
+  {
+    "hero_id": 80,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.9459296807627797,
+    "scaling": 0.8881119042812435,
+    "mobility": 0.3,
+    "durability": 0.9909817994530228,
+    "teamfight": 0.3,
+    "splitpush": 0.5520051555950218,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.6611387853329715,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6096132496882292,
+      "mid": 0.7286272014624565,
+      "late": 0.6207977883614589
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.908467419589156,
+      "Pusher": 0.7467089107477614,
+      "Durable": 0.5793726061607584
+    }
+  },
+  {
+    "hero_id": 81,
+    "initiation": 0.7798935839347045,
+    "stun": 0.9937779579748297,
+    "save": 0.2,
+    "push": 0.7889252089378075,
+    "scaling": 0.9026996932470703,
+    "mobility": 0.3,
+    "durability": 0.900146736018428,
+    "teamfight": 0.8738173747080459,
+    "splitpush": 0.7183842277705597,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.6711298359190718,
+    "pure_damage": 0.0,
+    "disable_count": 2.0658475430988927,
+    "lane_strength": {
+      "early": 0.5203195630667357,
+      "mid": 0.705441404509098,
+      "late": 0.6272063811436325
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9392997841068077,
+      "Disabler": 0.8154909457617863,
+      "Durable": 0.5603172174004453,
+      "Pusher": 0.6563771611109269,
+      "Initiator": 0.67537382881873
+    }
+  },
+  {
+    "hero_id": 82,
+    "initiation": 0.9340528828716151,
+    "stun": 0.9956965544240999,
+    "save": 0.2,
+    "push": 0.7879764773826936,
+    "scaling": 0.8629145536166217,
+    "mobility": 0.9908953232182633,
+    "durability": 0.4,
+    "teamfight": 0.7539641883475539,
+    "splitpush": 0.737592342653122,
+    "vision": 0.3,
+    "magic_damage": 0.827306265676071,
+    "physical_damage": 0.900436485046724,
+    "pure_damage": 0.0,
+    "disable_count": 3.7849940498289625,
+    "lane_strength": {
+      "early": 0.6473847241827215,
+      "mid": 0.8400188094657002,
+      "late": 0.7602009601705713
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9295427192605765,
+      "Escape": 0.8162350801360957,
+      "Nuker": 0.5928129277158589,
+      "Disabler": 0.6198414828953527,
+      "Initiator": 0.5468475483576057,
+      "Pusher": 0.52942078107941
+    }
+  },
+  {
+    "hero_id": 83,
+    "initiation": 0.7882121816688273,
+    "stun": 0.99761515087337,
+    "save": 0.5970070623778772,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9342491477887375,
+    "durability": 0.9927593180876035,
+    "teamfight": 0.8841110021034773,
+    "splitpush": 0.1,
+    "vision": 0.45406554343833844,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.5041405556277097,
+    "lane_strength": {
+      "early": 0.783358632858544,
+      "mid": 0.7675408677978166,
+      "late": 0.3893280437632129
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8528312376946356,
+      "Initiator": 0.8811021362343348,
+      "Durable": 0.6794931159492085,
+      "Disabler": 0.7302704829397939,
+      "Escape": 0.5292486943207908
+    }
+  },
+  {
+    "hero_id": 84,
+    "initiation": 0.9423714806057379,
+    "stun": 0.9995337473226402,
+    "save": 0.5333508389691594,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.8799468631762764,
+    "teamfight": 0.7642578157429852,
+    "splitpush": 0.1,
+    "vision": 0.35061409969377055,
+    "magic_damage": 0.9973581284272289,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.223287061426457,
+    "lane_strength": {
+      "early": 0.6083223705218743,
+      "mid": 0.7411515201167909,
+      "late": 0.33127136334370416
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9656436660167034,
+      "Nuker": 0.7020033122049659,
+      "Disabler": 0.6970578328226962,
+      "Durable": 0.565247115593053,
+      "Initiator": 0.715684461042138
+    }
+  },
+  {
+    "hero_id": 85,
+    "initiation": 0.3,
+    "stun": 0.6608846323382503,
+    "save": 0.40116187483126386,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.947162656088901,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.44136503508378055,
+    "magic_damage": 0.6696946155604415,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.5552370359912686,
+    "lane_strength": {
+      "early": 0.6411920298082717,
+      "mid": 0.6447562721766328,
+      "late": 0.333286108278337
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9147621724357653,
+      "Durable": 0.8732146830173277,
+      "Disabler": 0.5980701178070484,
+      "Nuker": 0.5286306103359119
+    }
+  },
+  {
+    "hero_id": 86,
+    "initiation": 0.3,
+    "stun": 0.9178167972331013,
+    "save": 0.40269675199068,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3992370109535926,
+    "magic_damage": 0.6060383921517237,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.596411545107333,
+    "lane_strength": {
+      "early": 0.6958074748962221,
+      "mid": 0.6837049954960612,
+      "late": 0.4695479689955469
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8582498460347997,
+      "Disabler": 0.7883728247547396,
+      "Nuker": 0.6439475032472739
+    }
+  },
+  {
+    "hero_id": 87,
+    "initiation": 0.804849377137073,
+    "stun": 0.5052895364376202,
+    "save": 0.7423821689292706,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.9046982568943399,
+    "splitpush": 0.1,
+    "vision": 0.34025976859976526,
+    "magic_damage": 0.8524359223677012,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.380726578822698,
+    "lane_strength": {
+      "early": 0.6943396657213288,
+      "mid": 0.6832135837912623,
+      "late": 0.36198347707371387
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8571013221783105,
+      "Disabler": 0.8040809507966419,
+      "Nuker": 0.5808835504953207,
+      "Initiator": 0.7497519834431596
+    }
+  },
+  {
+    "hero_id": 88,
+    "initiation": 0.9590086760739835,
+    "stun": 0.5072081328868904,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9368083249948957,
+    "durability": 0.4,
+    "teamfight": 0.7848450705338479,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8787259455205527,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.099873084621445,
+    "lane_strength": {
+      "early": 0.66873092687164,
+      "mid": 0.6239142030588882,
+      "late": 0.5081773215477249
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Disabler": 0.8355941293926883,
+      "Nuker": 0.899044641851934,
+      "Initiator": 0.5211167237819716,
+      "Escape": 0.6070100205750251
+    }
+  },
+  {
+    "hero_id": 89,
+    "initiation": 0.8131679748711959,
+    "stun": 0.5091267293361605,
+    "save": 0.42248778493259465,
+    "push": 0.8664263241302343,
+    "scaling": 0.8344185763198968,
+    "mobility": 0.911481942148638,
+    "durability": 0.4,
+    "teamfight": 0.9149918842897712,
+    "splitpush": 0.5138071725674939,
+    "vision": 0.5158845888990371,
+    "magic_damage": 0.3,
+    "physical_damage": 0.7555830281253825,
+    "pure_damage": 0.0,
+    "disable_count": 3.8190195913515144,
+    "lane_strength": {
+      "early": 0.6297058073476449,
+      "mid": 0.8065091925237836,
+      "late": 0.6279051336589758
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9921042234600076,
+      "Support": 0.8182906353465703,
+      "Pusher": 0.7311150616645418,
+      "Disabler": 0.5271765439664836,
+      "Initiator": 0.5594637780727184,
+      "Escape": 0.5979866261351792
+    }
+  },
+  {
+    "hero_id": 90,
+    "initiation": 0.3,
+    "stun": 0.9455454563468441,
+    "save": 0.40883626062834466,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5307249145725392,
+    "magic_damage": 0.7514134987031172,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.761109583434234,
+    "lane_strength": {
+      "early": 0.6199369583371733,
+      "mid": 0.6537568581540868,
+      "late": 0.36871475599180664
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9581047970606502,
+      "Nuker": 0.8828154341237692,
+      "Disabler": 0.6036641012661458
+    }
+  },
+  {
+    "hero_id": 91,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.5619820968070915,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.8885968904423514,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5703426140222432,
+    "magic_damage": 0.6103711377877608,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6938786376471997,
+      "mid": 0.6509693292672603,
+      "late": 0.39626982384187626
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.9935064528107207,
+      "Escape": 0.8830685348171129,
+      "Nuker": 0.6955326080534293
+    }
+  },
+  {
+    "hero_id": 92,
+    "initiation": 0.3,
+    "stun": 0.9594097859037154,
+    "save": 0.41190601494717693,
+    "push": 0.8025021251302688,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.877447224304754,
+    "teamfight": 0.3,
+    "splitpush": 0.7081741842944986,
+    "vision": 0.4464688663121633,
+    "magic_damage": 0.6241010518856817,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.8434586025976847,
+    "lane_strength": {
+      "early": 0.6080322724804432,
+      "mid": 0.7300367387617178,
+      "late": 0.4668179202670315
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.8681430921275836,
+      "Nuker": 0.8692127207150742,
+      "Durable": 0.5875755676941832,
+      "Disabler": 0.7450601775176172,
+      "Pusher": 0.707170594114424
+    }
+  },
+  {
+    "hero_id": 93,
+    "initiation": 0.3,
+    "stun": 0.7163419505657358,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7084005575666206,
+    "mobility": 0.7195511064117546,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9604448286632284,
+    "physical_damage": 0.721730982545638,
+    "pure_damage": 0.0,
+    "disable_count": 3.8846331126450715,
+    "lane_strength": {
+      "early": 0.5812957552174552,
+      "mid": 0.6930898462622845,
+      "late": 0.6829960102369059
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9036473910806921,
+      "Escape": 0.8087612398475228,
+      "Disabler": 0.726194400562064,
+      "Nuker": 0.7376423709735471
+    }
+  },
+  {
+    "hero_id": 94,
+    "initiation": 0.3,
+    "stun": 0.9732741154605868,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7093598557912557,
+    "mobility": 0.3,
+    "durability": 0.922591453940883,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.6725816210604187,
+    "pure_damage": 0.0,
+    "disable_count": 2.9258076217611357,
+    "lane_strength": {
+      "early": 0.5440664418712567,
+      "mid": 0.6738087208121124,
+      "late": 0.8178815430811985
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8579597479933686,
+      "Disabler": 0.7772580433996664,
+      "Durable": 0.5633806992850177
+    }
+  },
+  {
+    "hero_id": 95,
+    "initiation": 0.3,
+    "stun": 0.7302062801226071,
+    "save": 0.2,
+    "push": 0.8457077386536205,
+    "scaling": 0.7103191540158909,
+    "mobility": 0.3,
+    "durability": 0.7994825297498528,
+    "teamfight": 0.3,
+    "splitpush": 0.6126482190623173,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.6234322595751994,
+    "pure_damage": 0.0,
+    "disable_count": 3.966982131808522,
+    "lane_strength": {
+      "early": 0.5926732398069805,
+      "mid": 0.7829234857498312,
+      "late": 0.6508686957186408
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9926478791016378,
+      "Pusher": 0.706580376907522,
+      "Disabler": 0.5398953110165406,
+      "Durable": 0.6402697183146466
+    }
+  },
+  {
+    "hero_id": 96,
+    "initiation": 0.9922830670104749,
+    "stun": 0.5225569044810519,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.7091967753177493,
+    "durability": 0.8632519782815371,
+    "teamfight": 0.8260195801155732,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.7694761584370752,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.8530451328740662,
+    "lane_strength": {
+      "early": 0.41746493653276234,
+      "mid": 0.7578872235062938,
+      "late": 0.5244793480376151
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Durable": 0.934591198682129,
+      "Initiator": 0.8193928052295897,
+      "Disabler": 0.566021781096245,
+      "Nuker": 0.6578344351881344,
+      "Escape": 0.584966708363484
+    }
+  },
+  {
+    "hero_id": 97,
+    "initiation": 0.8464423658076871,
+    "stun": 0.5244755009303221,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9057453317128799,
+    "durability": 0.4,
+    "teamfight": 0.7061663937550813,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.7058199350283574,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.5721916386728134,
+    "lane_strength": {
+      "early": 0.6513476178754808,
+      "mid": 0.7778207916895956,
+      "late": 0.5328509612627564
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.9980900004497217,
+      "Disabler": 0.7765345182626203,
+      "Nuker": 0.5402565418231564,
+      "Escape": 0.5921482511759495
+    }
+  },
+  {
+    "hero_id": 98,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.8635758490132055,
+    "durability": 0.7158364584277553,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.6008022194731991,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5791338144471561,
+      "mid": 0.6210818558098198,
+      "late": 0.5181959253122079
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Nuker": 0.9938605835632703,
+      "Durable": 0.7670483300774583,
+      "Escape": 0.697268373774024
+    }
+  },
+  {
+    "hero_id": 99,
+    "initiation": 0.8547609635418099,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7141563469144312,
+    "mobility": 0.3,
+    "durability": 0.9988424443634425,
+    "teamfight": 0.7164600211505125,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9785074883971864,
+    "physical_damage": 0.7768348137973038,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.43637354915792753,
+      "mid": 0.8418400268963724,
+      "late": 0.8327784367756818
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9453113050876704,
+      "Durable": 0.8604211575167352,
+      "Initiator": 0.5722876125119103,
+      "Nuker": 0.6444011913353582
+    }
+  },
+  {
+    "hero_id": 100,
+    "initiation": 0.7089202623390221,
+    "stun": 0.5302312902781326,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.846606834906436,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.9148512649884686,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.729631156069055,
+    "lane_strength": {
+      "early": 0.6302606670792497,
+      "mid": 0.6986081435571463,
+      "late": 0.5166317236221544
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.8077421744390122,
+      "Disabler": 0.8189219574066446,
+      "Nuker": 0.6279555963715332
+    }
+  },
+  {
+    "hero_id": 101,
+    "initiation": 0.3,
+    "stun": 0.7717992687932212,
+    "save": 0.42571990938192233,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.36731664928017027,
+    "magic_damage": 0.8511950415797509,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.214029188367552,
+    "lane_strength": {
+      "early": 0.6612930379162044,
+      "mid": 0.7213994805335066,
+      "late": 0.34142342034793616
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.8327059121954749,
+      "Nuker": 0.792532609725619,
+      "Disabler": 0.5553847458471473
+    }
+  },
+  {
+    "hero_id": 102,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.42725478654133847,
+    "push": 0.2,
+    "scaling": 0.7143657167276207,
+    "mobility": 0.3,
+    "durability": 0.8406541136282748,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3251886251499823,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8196606472226142,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.5923254088462915,
+      "mid": 0.8139124462212959,
+      "late": 0.8162151171668504
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Support": 0.8576696499519375,
+      "Carry": 0.7661432620445934,
+      "Durable": 0.7328138954391767
+    }
+  },
+  {
+    "hero_id": 103,
+    "initiation": 0.8713981590100556,
+    "stun": 0.5359870796259433,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.8850366695248693,
+    "teamfight": 0.7370472759413753,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.7238825947623153,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.8870706743966186,
+    "lane_strength": {
+      "early": 0.4064254118159532,
+      "mid": 0.7410068138926321,
+      "late": 0.5826333877084
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.8397539143635677,
+      "Disabler": 0.8281944359318327,
+      "Nuker": 0.6363497538894181,
+      "Durable": 0.7489070716541759
+    }
+  },
+  {
+    "hero_id": 104,
+    "initiation": 0.7255574578072678,
+    "stun": 0.5379056760752134,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7376414820959984,
+    "mobility": 0.3,
+    "durability": 0.723697765927621,
+    "teamfight": 0.8671940896972986,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.6978767550074852,
+    "physical_damage": 0.6951827634103516,
+    "pure_damage": 0.0,
+    "disable_count": 3.6062171801953657,
+    "lane_strength": {
+      "early": 0.5075971254648627,
+      "mid": 0.6633645666825421,
+      "late": 0.7201377555123241
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.82189223134047,
+      "Disabler": 0.720026833293972,
+      "Initiator": 0.5483521700596214,
+      "Durable": 0.5147797701716329,
+      "Nuker": 0.694399793722853
+    }
+  },
+  {
+    "hero_id": 105,
+    "initiation": 0.3,
+    "stun": 0.7995279279069639,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.6318594180195869,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.378727226694453,
+    "lane_strength": {
+      "early": 0.5825363685994113,
+      "mid": 0.7482850740655722,
+      "late": 0.7354225214502879
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Nuker": 0.8914513431915321,
+      "Disabler": 0.8405902074373282
+    }
+  },
+  {
+    "hero_id": 106,
+    "initiation": 0.7338760555413906,
+    "stun": 0.5417428689737538,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.9080712029515166,
+    "mobility": 0.7980728562446651,
+    "durability": 0.4,
+    "teamfight": 0.87748771709273,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8679286177586432,
+    "physical_damage": 0.8037960615026746,
+    "pure_damage": 0.0,
+    "disable_count": 3.0445101917928596,
+    "lane_strength": {
+      "early": 0.457524600977788,
+      "mid": 0.6605858714136229,
+      "late": 0.9040243947664389
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8475170878914731,
+      "Escape": 0.761829185421499,
+      "Nuker": 0.583481603806597,
+      "Disabler": 0.6847330357109815,
+      "Initiator": 0.5672713269327168
+    }
+  },
+  {
+    "hero_id": 107,
+    "initiation": 0.8880353544783012,
+    "stun": 0.543661465423024,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.771230894686296,
+    "durability": 0.9647159118506665,
+    "teamfight": 0.757634530732238,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8692577013137088,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.763656697591607,
+    "lane_strength": {
+      "early": 0.5901736009820241,
+      "mid": 0.8324883387342507,
+      "late": 0.6341965237325973
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Nuker": 0.8959677143469302,
+      "Escape": 0.8603295162135407,
+      "Disabler": 0.6034129518565782,
+      "Initiator": 0.6010463206800848,
+      "Durable": 0.5197096683642406
+    }
+  },
+  {
+    "hero_id": 108,
+    "initiation": 0.3,
+    "stun": 0.5703244221258557,
+    "save": 0.4364640494978354,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9677794510814266,
+    "durability": 0.7284853602426524,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3724204805085531,
+    "magic_damage": 0.805601477904991,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.5022507559052904,
+    "lane_strength": {
+      "early": 0.714965297707806,
+      "mid": 0.607452076397581,
+      "late": 0.4078071760515716
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8379110339274216,
+      "Nuker": 0.7731419444424761,
+      "Disabler": 0.6295394219362827,
+      "Durable": 0.6186110375535726,
+      "Escape": 0.604686301133915
+    }
+  },
+  {
+    "hero_id": 109,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.7252437136486376,
+    "scaling": 0.8636282935103533,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.606458940872205,
+    "vision": 0.3,
+    "magic_damage": 0.6379989266572514,
+    "physical_damage": 0.695099421378737,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.6095520048912391,
+      "mid": 0.7615032058495577,
+      "late": 0.6397569944335879
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8324158141540438,
+      "Pusher": 0.7814178283705459,
+      "Nuker": 0.7248179420013064
+    }
+  },
+  {
+    "hero_id": 110,
+    "initiation": 0.7505132510096362,
+    "stun": 0.5494172547708346,
+    "save": 0.4782890310875555,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.946823036878753,
+    "durability": 0.4,
+    "teamfight": 0.8980749718835926,
+    "splitpush": 0.1,
+    "vision": 0.36087656359229076,
+    "magic_damage": 0.8080323430746944,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.921096215919171,
+    "lane_strength": {
+      "early": 0.6573795519105063,
+      "mid": 0.6550284806895202,
+      "late": 0.42179767318153644
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8987668009934793,
+      "Nuker": 0.8454338896765532,
+      "Initiator": 0.6537404713005481,
+      "Escape": 0.5246395665568484,
+      "Disabler": 0.5630143934688598
+    }
+  },
+  {
+    "hero_id": 111,
+    "initiation": 0.3,
+    "stun": 0.841120916577578,
+    "save": 0.44106868097608387,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9574251199874213,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5460364082576876,
+    "magic_damage": 0.6146328076788377,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.6257742841848053,
+    "lane_strength": {
+      "early": 0.7465291372251367,
+      "mid": 0.6893403879782839,
+      "late": 0.382343289666969
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.8286391330084946,
+      "Nuker": 0.7637409927620278,
+      "Disabler": 0.5144740365280184,
+      "Escape": 0.7079188321753959
+    }
+  },
+  {
+    "hero_id": 112,
+    "initiation": 0.3,
+    "stun": 0.5980530812395983,
+    "save": 0.4426035581355,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5039083841274997,
+    "magic_damage": 0.9509765844563844,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.6669487942321917,
+    "lane_strength": {
+      "early": 0.7026491174952356,
+      "mid": 0.7890421029129262,
+      "late": 0.31413208470406573
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.9073070274234316,
+      "Disabler": 0.7022497853274688,
+      "Nuker": 0.5071053904281488
+    }
+  },
+  {
+    "hero_id": 113,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8774926230672246,
+    "mobility": 0.8617803599973117,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.6441384352949161,
+    "physical_damage": 0.7239215780859447,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.4436601805238333,
+      "mid": 0.5336814883321903,
+      "late": 0.7815550685075834
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9389237815229798,
+      "Escape": 0.8322707651798943,
+      "Nuker": 0.7198255471744693
+    }
+  },
+  {
+    "hero_id": 114,
+    "initiation": 0.7671504464778818,
+    "stun": 0.5570916405679154,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.839790086024343,
+    "mobility": 0.8111020512930592,
+    "durability": 0.4,
+    "teamfight": 0.9186622266744553,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8882492537089852,
+    "pure_damage": 0.0,
+    "disable_count": 2.7976822391141587,
+    "lane_strength": {
+      "early": 0.3637154782487617,
+      "mid": 0.6572345029363569,
+      "late": 0.8994710900585497
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.889570951596634,
+      "Escape": 0.8500165140954854,
+      "Disabler": 0.5362982422980938,
+      "Initiator": 0.7239993387944993
+    }
+  },
+  {
+    "hero_id": 119,
+    "initiation": 0.3,
+    "stun": 0.8965782348050635,
+    "save": 0.4533476982514131,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.7298135703102748,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.5090122153558825,
+    "magic_damage": 0.9053830207816246,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.955170360838608,
+    "lane_strength": {
+      "early": 0.6866328625411879,
+      "mid": 0.6876739620639356,
+      "late": 0.3820531916255379
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.8175243516534215,
+      "Nuker": 0.8992875496853551,
+      "Disabler": 0.6425983192830339,
+      "Escape": 0.6669305926966158
+    }
+  },
+  {
+    "hero_id": 120,
+    "initiation": 0.7921062396802503,
+    "stun": 0.5686032192635365,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.8510792483580667,
+    "mobility": 0.7186984881845762,
+    "durability": 0.8605253940730009,
+    "teamfight": 0.9495431088607493,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8582916564579548,
+    "physical_damage": 0.8640891478229729,
+    "pure_damage": 0.0,
+    "disable_count": 3.112561274837964,
+    "lane_strength": {
+      "early": 0.49113500406552807,
+      "mid": 0.6412308692658464,
+      "late": 0.7768910836553625
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9544456502210561,
+      "Nuker": 0.7635101119352086,
+      "Disabler": 0.624405893904346,
+      "Durable": 0.6773720598674249,
+      "Escape": 0.5096123387383354,
+      "Initiator": 0.5829192388723228
+    }
+  },
+  {
+    "hero_id": 121,
+    "initiation": 0.3,
+    "stun": 0.9104425643619348,
+    "save": 0.45641745257024535,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.8229106829608375,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.4247561670955066,
+    "magic_damage": 0.7780705739641891,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.037519380002059,
+    "lane_strength": {
+      "early": 0.771658793916767,
+      "mid": 0.7372573556086316,
+      "late": 0.43198066713846317
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.9647456563845024,
+      "Nuker": 0.7831741888463377,
+      "Disabler": 0.6746293899717878,
+      "Escape": 0.7191835328560245
+    }
+  },
+  {
+    "hero_id": 123,
+    "initiation": 0.3,
+    "stun": 0.9243068939188062,
+    "save": 0.4594872068890777,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9160077956114001,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.34050011883513076,
+    "magic_damage": 0.6507581271467535,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.1198683991655094,
+    "lane_strength": {
+      "early": 0.6566847251992136,
+      "mid": 0.7868407491533276,
+      "late": 0.4819081426513885
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Support": 0.911966961022451,
+      "Nuker": 0.8670608281004526,
+      "Escape": 0.7066604606605417,
+      "Disabler": 0.5214364728990181
+    }
+  },
+  {
+    "hero_id": 126,
+    "initiation": 0.3,
+    "stun": 0.6951033881376979,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7400573989795788,
+    "mobility": 0.9056534645173948,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8597894571068647,
+    "physical_damage": 0.8498020543483095,
+    "pure_damage": 0.0,
+    "disable_count": 2.2433919274450242,
+    "lane_strength": {
+      "early": 0.584223622262582,
+      "mid": 0.8112158394238054,
+      "late": 0.7067993558276442
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.8327989179793741,
+      "Escape": 0.8928907869350589,
+      "Nuker": 0.6297070666354648,
+      "Disabler": 0.5998158831381313
+    }
+  },
+  {
+    "hero_id": 128,
+    "initiation": 0.3,
+    "stun": 0.7089677176945692,
+    "save": 0.4671615926861584,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.9987505771679573,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.42985999832388944,
+    "magic_damage": 0.7324770102894292,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.325740946608475,
+    "lane_strength": {
+      "early": 0.6692495535450287,
+      "mid": 0.6107992328753691,
+      "late": 0.4067268313405695
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.980020222710455,
+      "Nuker": 0.7767774260960414,
+      "Disabler": 0.6617381373242187,
+      "Escape": 0.6520688232975401
+    }
+  },
+  {
+    "hero_id": 129,
+    "initiation": 0.9795399295536522,
+    "stun": 0.5858705873069682,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7430129918004447,
+    "mobility": 0.3,
+    "durability": 0.8676437788492273,
+    "teamfight": 0.8708644320819826,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8278489889939543,
+    "pure_damage": 0.0,
+    "disable_count": 2.58487982795801,
+    "lane_strength": {
+      "early": 0.5355909296942832,
+      "mid": 0.781690569097032,
+      "late": 0.8036308750294292
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.8187207456765327,
+      "Initiator": 0.7422029380883104,
+      "Disabler": 0.6781952933772445,
+      "Durable": 0.7374700917804009
+    }
+  },
+  {
+    "hero_id": 131,
+    "initiation": 0.3,
+    "stun": 0.9797642121462916,
+    "save": 0.4717662241644069,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.988396246073952,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3034759259333256,
+    "magic_damage": 0.9415083402495404,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 3.4492644758193123,
+    "lane_strength": {
+      "early": 0.7967884506083971,
+      "mid": 0.7851743232389793,
+      "late": 0.4816180446099574
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Support": 0.900852179667378,
+      "Nuker": 0.8026073849306476,
+      "Escape": 0.5847847432991419,
+      "Disabler": 0.7304482335366533
+    }
+  },
+  {
+    "hero_id": 135,
+    "initiation": 0.3,
+    "stun": 0.2,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7037464355136018,
+    "mobility": 0.3,
+    "durability": 0.7584292996015536,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.8824434399755874,
+    "pure_damage": 0.0,
+    "disable_count": 1.0,
+    "lane_strength": {
+      "early": 0.4899758863681815,
+      "mid": 0.6934417233073347,
+      "late": 0.7663936474902526
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Carry": 0.9668403132664227,
+      "Durable": 0.7843411102352389
+    }
+  },
+  {
+    "hero_id": 136,
+    "initiation": 0.8586550215532328,
+    "stun": 0.5993007624518596,
+    "save": 0.4187065577221599,
+    "push": 0.2,
+    "scaling": 0.7145170145037197,
+    "mobility": 0.8596550999487076,
+    "durability": 0.4,
+    "teamfight": 0.7818921279077846,
+    "splitpush": 0.1,
+    "vision": 0.31369921044153126,
+    "magic_damage": 0.3,
+    "physical_damage": 0.6829955320726128,
+    "pure_damage": 0.0,
+    "disable_count": 2.618905369480562,
+    "lane_strength": {
+      "early": 0.5689054413553818,
+      "mid": 0.6623239829262365,
+      "late": 0.6818899359702552
+    },
+    "tempo_profile": "late",
+    "roles_probability": {
+      "Support": 0.8888644670550081,
+      "Carry": 0.7883384878227201,
+      "Initiator": 0.7340320176370592,
+      "Disabler": 0.6603443260119969,
+      "Escape": 0.6210948044299589
+    }
+  },
+  {
+    "hero_id": 137,
+    "initiation": 0.712814320350445,
+    "stun": 0.6012193589011298,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.9696782499876238,
+    "teamfight": 0.912038941663708,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.338051875279309,
+    "lane_strength": {
+      "early": 0.5784583892572943,
+      "mid": 0.7018662445488695,
+      "late": 0.6339245037799349
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Initiator": 0.931400471055601,
+      "Durable": 0.8425160936743562,
+      "Disabler": 0.692834128249825
+    }
+  },
+  {
+    "hero_id": 138,
+    "initiation": 0.3,
+    "stun": 0.778289365478926,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7515689776751999,
+    "mobility": 0.3,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.8959147765747806,
+    "physical_damage": 0.6100097166886598,
+    "pure_damage": 0.0,
+    "disable_count": 2.7374860424257283,
+    "lane_strength": {
+      "early": 0.5094907600942491,
+      "mid": 0.7443792102366589,
+      "late": 0.7087162005057168
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9563642088120636,
+      "Nuker": 0.8161267459933305,
+      "Disabler": 0.6202632777254392
+    }
+  },
+  {
+    "hero_id": 145,
+    "initiation": 0.3,
+    "stun": 0.5768145188115605,
+    "save": 0.2,
+    "push": 0.2,
+    "scaling": 0.7582840652476456,
+    "mobility": 0.8877409096750155,
+    "durability": 0.4,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.3,
+    "magic_damage": 0.3,
+    "physical_damage": 0.6159641864551064,
+    "pure_damage": 0.0,
+    "disable_count": 2.0257076090321444,
+    "lane_strength": {
+      "early": 0.4267173561391967,
+      "mid": 0.841969969958053,
+      "late": 0.7822580778655867
+    },
+    "tempo_profile": "mid",
+    "roles_probability": {
+      "Carry": 0.9311103730141699,
+      "Escape": 0.831401312319283,
+      "Disabler": 0.6122673242875688
+    }
+  },
+  {
+    "hero_id": 155,
+    "initiation": 0.3,
+    "stun": 0.6461361665959173,
+    "save": 0.5086032759903946,
+    "push": 0.2,
+    "scaling": 0.3,
+    "mobility": 0.3,
+    "durability": 0.7103192342493306,
+    "teamfight": 0.3,
+    "splitpush": 0.1,
+    "vision": 0.4924033473676086,
+    "magic_damage": 0.3,
+    "physical_damage": 0.4,
+    "pure_damage": 0.0,
+    "disable_count": 2.437452704849398,
+    "lane_strength": {
+      "early": 0.7370410648812731,
+      "mid": 0.6170996265565509,
+      "late": 0.48017504549593437
+    },
+    "tempo_profile": "early",
+    "roles_probability": {
+      "Durable": 0.9807477504856641,
+      "Disabler": 0.7675078356021586,
+      "Support": 0.6365588193929562
+    }
+  }
+]
