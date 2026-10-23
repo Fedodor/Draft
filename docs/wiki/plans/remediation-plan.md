@@ -13,7 +13,7 @@ Fix the prototype in eight ordered steps, keeping the application buildable betw
 
 | Step | Theme | Exit gate | Status |
 | --- | --- | --- | --- |
-| 1 | Secrets and environment | No plaintext credentials; env contract enforced | Implemented, rotation pending |
+| 1 | Secrets and environment | No plaintext credentials; env contract enforced | Implemented, OpenDota rotation pending |
 | 2 | ML inference correctness | Rust matches Python ONNX output | Implemented |
 | 3 | Scoring correctness | Scorers use real data and pass tests | Implemented |
 | 4 | Tauri IPC and manual drafting | Manual pick/ban works end to end | Implemented |

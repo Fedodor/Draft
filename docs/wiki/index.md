@@ -22,7 +22,7 @@ Persistent, linked summaries of the project's audits, plans, and operational kno
 | --- | --- | --- | --- | --- | --- |
 | [Project audit](audits/project-audit-2026-10-22.md) | Audit | Severity-ranked findings across ML, Rust, frontend, data, and security | Complete | 2026-10-22 | [`AUDIT.md`](../AUDIT.md) |
 | [Remediation plan](plans/remediation-plan.md) | Plan | Eight ordered steps with dependencies, acceptance criteria, and waves | Implemented (Steps 1-8) | 2026-10-23 | [`REMEDIATION_PLAN.md`](../REMEDIATION_PLAN.md) |
-| [Secrets management](security/secrets-management.md) | Security | Key inventory, env loader contract, rotation and scanning runbook | Implemented, rotation pending | 2026-10-22 | [`STEP_01_SECRETS_AND_ENV.md`](../STEP_01_SECRETS_AND_ENV.md) |
+| [Secrets management](security/secrets-management.md) | Security | Key inventory, env loader contract, rotation and scanning runbook | Implemented, OpenDota rotation pending | 2026-10-23 | [`STEP_01_SECRETS_AND_ENV.md`](../STEP_01_SECRETS_AND_ENV.md) |
 | [ML inference contract](ml/inference-contract.md) | ML | Feature schema, positive-class probability, patch encoding, golden-vector tests | Implemented | 2026-10-22 | [`STEP_02_ML_INFERENCE.md`](../STEP_02_ML_INFERENCE.md) |
 | [Scoring data flow](engine/scoring.md) | Engine | Scorer wiring, role canonicalization, real seed export, debug breakdown | Implemented | 2026-10-22 | [`STEP_03_SCORING.md`](../STEP_03_SCORING.md) |
 | [Tauri IPC conventions](engine/ipc.md) | Engine | snake_case command args, typed errors, manual drafting, undo, frontend smoke test | Implemented | 2026-10-23 | [`STEP_04_IPC.md`](../STEP_04_IPC.md) |

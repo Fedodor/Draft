@@ -1,7 +1,7 @@
 # Secrets Management
 
 - Type: Security knowledge page
-- Status: Implemented, rotation pending
+- Status: Implemented, OpenDota rotation pending
 - Canonical source: [`../../STEP_01_SECRETS_AND_ENV.md`](../../STEP_01_SECRETS_AND_ENV.md)
 - Related: [Audit finding C1](../audits/project-audit-2026-10-22.md), [Remediation Step 1](../plans/remediation-plan.md)
 
@@ -10,7 +10,7 @@
 - `ml/.env` holds `OPENDOTA_API_KEY` and `STRATZ_API_KEY` in plaintext but is now ignored.
 - The 19 hardcoded key matches in 12 files under `ml/training/` were removed in Step 1.
 - A root `.gitignore` and `ml/.env.example` now exist.
-- The directory is not a Git repository, so no history purge is needed today.
+- Git is initialized with seven commits; history contains no secrets or generated datasets, so no purge is needed.
 
 ## Environment contract
 
@@ -62,6 +62,13 @@ If the repository already exists when this is read, scan history before assuming
 
 If history exists: rotate first, scan, purge with `git filter-repo`, coordinate a force-push, then re-scan.
 
+## Rotation log
+
+| Date | Key | Result |
+| --- | --- | --- |
+| 2026-10-23 | `STRATZ_API_KEY` | Old token revoked, replacement stored only in `ml/.env`; loads as `set` |
+| pending | `OPENDOTA_API_KEY` | Old key still valid and still in `ml/.env`; rotate and record here |
+
 ## Scanning
 
 ```powershell
@@ -91,4 +98,4 @@ Add the staged scan as a pre-commit hook and to CI in Step 8.
 
 ## Status
 
-Step 1 code is implemented: `.gitignore`, `ml/.env.example`, `ml/training/settings.py`, collector migration, and 12 passing tests. The source secret scan is clean. Key rotation and the first Git commit remain pending; no credentials were changed as part of the audit or implementation.
+Step 1 code is implemented: `.gitignore`, `ml/.env.example`, `ml/training/settings.py`, collector migration, and 12 passing tests. The source secret scan is clean and Git history has no secrets. The STRATZ key was rotated on 2026-10-23; the OpenDota key rotation is pending. No other credentials were changed as part of the audit or implementation.

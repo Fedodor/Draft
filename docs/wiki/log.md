@@ -2,6 +2,13 @@
 
 Append-only chronology. Newest entries at the top. Format: `## [YYYY-MM-DD] ingest | Source Title`.
 
+## [2026-10-23] update | Partial key rotation (Step 1)
+
+- Rotated the STRATZ key; the replacement is stored only in `ml/.env` and loads as `set`.
+- Searched Git history: no secrets or generated datasets are tracked (`git ls-files` shows only `ml/.env.example`).
+- OpenDota key rotation remains pending; recorded in the [Secrets management](security/secrets-management.md) rotation log without any key value.
+- Updated [`../STEP_01_SECRETS_AND_ENV.md`](../STEP_01_SECRETS_AND_ENV.md), [`../AUDIT.md`](../AUDIT.md), [`../REMEDIATION_PLAN.md`](../REMEDIATION_PLAN.md), and the wiki index/plan status.
+
 ## [2026-10-23] update | Step 8 CI and quality gates
 
 - Added [CI and quality gates](ci/quality-gates.md).

@@ -1,7 +1,7 @@
 # Step 1 Design: Secrets and Environment
 
 - Date: 2026-10-22
-- Status: Implemented, key rotation pending
+- Status: Implemented, OpenDota key rotation pending
 - Parent plan: [`REMEDIATION_PLAN.md`](REMEDIATION_PLAN.md)
 - Audit finding: [`AUDIT.md`](AUDIT.md), C1 and M4
 
@@ -15,8 +15,9 @@
 - [x] `data_collector.py` (single-line, key-free) was reconstructed in Step 6 with no credential literals.
 - [x] `python-dotenv` and `pytest` added to `ml/requirements.txt`.
 - [x] Settings tests and a source secret scan added; 12 tests pass.
-- [ ] Rotate the OpenDota and STRATZ keys.
-- [ ] Initialize Git only after the rotated working tree is clean.
+- [x] Rotate the STRATZ key (2026-10-23) and store the replacement only in `ml/.env`.
+- [ ] Rotate the OpenDota key (in progress; the old value is still in `ml/.env`).
+- [x] Initialize Git only after the working tree was clean (7 commits, no secrets or datasets).
 
 ## Context
 
@@ -295,8 +296,8 @@ The source scan should be a focused test or a CI scan, not a fragile regex embed
 - [x] Process environment takes precedence over `ml/.env`.
 - [x] Tests do not depend on a developer's real `.env`.
 - [x] The source secret scan test passes. `gitleaks` remains the recommended full-tree scan before the first commit.
-- [ ] Rotation is complete and recorded without the key value.
-- [ ] The first Git commit contains no secrets or generated datasets.
+- [ ] Rotation is complete and recorded without the key value. (STRATZ rotated 2026-10-23; OpenDota pending.)
+- [x] The first Git commit contains no secrets or generated datasets.
 
 ## Verification commands
 
@@ -310,7 +311,7 @@ gitleaks detect --source . --no-git --redact
 
 The pytest suite includes a source scan for key assignments and JWTs, so it runs without `gitleaks`. Run `gitleaks` too when available, especially before the first commit.
 
-Expected before Git initialization: `Test-Path .git` returns `False`. After the guard is in place and the working tree is clean, `git init` is allowed.
+Expected before Git initialization: `Test-Path .git` returned `False`. Git is now initialized with seven commits and no secrets; the guard was in place first.
 
 ## Rollout and rollback
 
@@ -322,8 +323,8 @@ Rollback must not reintroduce plaintext credentials. If the rotation is incomple
 
 1. **Environment file location:** Applied. `ml/.env` is the only supported file; root `.env` is not loaded.
 2. **OpenDota requirement:** Applied. It is optional and warns once when absent.
-3. **Rotation timing:** Pending. Rotate before the first Git commit and before sharing the project.
-4. **History purge:** Not applicable today because there is no `.git`. Re-check before any remote is added.
+3. **Rotation timing:** Partial. The STRATZ key was rotated on 2026-10-23; the OpenDota key rotation is pending. Rotate before sharing the project or adding a remote.
+4. **History purge:** Not applicable today because the repository has no leaked history (the first commits contain no secrets). Re-check before any remote is added.
 5. **OS keyring:** Deferred. A local `.env` is acceptable for a single-developer desktop project; revisit if the project becomes multi-user or CI-driven.
 6. **Secret scan tool:** A Python source-scan test is implemented. Add `gitleaks` before the first commit for full-tree and history coverage.
 

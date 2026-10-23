@@ -22,7 +22,7 @@ Turn the prototype into a safe, reproducible, and trustworthy draft assistant wi
 
 | Step | Theme | Status | Depends on | Exit gate |
 | --- | --- | --- | --- | --- |
-| 1 | Secrets and environment | Implemented, rotation pending | None | No plaintext credentials; env contract enforced |
+| 1 | Secrets and environment | Implemented, OpenDota rotation pending | None | No plaintext credentials; env contract enforced |
 | 2 | ML inference correctness | Implemented | 1 | Rust matches Python ONNX output |
 | 3 | Scoring correctness | Implemented | 5 | Scorers use real data and pass unit tests |
 | 4 | Tauri IPC and manual drafting | Implemented | None | Manual pick/ban works end to end |
@@ -49,7 +49,7 @@ Steps inside a wave may run in parallel. Step 2 must not be closed by editing th
 **Tasks**
 
 - [x] Create a root `.gitignore` before any `git init`.
-- [ ] Rotate the OpenDota and STRATZ keys, then verify the old keys are revoked.
+- [ ] Rotate the OpenDota key and verify the old key is revoked (the STRATZ key was rotated 2026-10-23).
 - [x] Remove every hardcoded key from `ml/training/`.
 - [x] Add `ml/.env.example` with placeholders and comments.
 - [x] Add a central loader, recommended `ml/training/settings.py`.
@@ -347,5 +347,6 @@ A step is complete only when:
 | 2026-10-23 | 7 | Persistent validated config in `app_settings`, real GSI draft schema + `activeteam` state machine, optional auth, graceful bind errors, side-aware overlay, no reinit on team change, correct settings bindings | 36 Rust + 11 frontend tests pass; `cargo fmt --check` clean; clippy adds no new warnings; `npm run build` succeeds |
 | 2026-10-23 | 6 | `splits.py` (start_time-first 3-way), `manifest.py`, reworked `train_full.py`, `trainer.py` val-only early stopping, `onnx`/`onnxmltools` deps, `start_time` in processor | 24 Python tests pass; smoke run trains, exports ONNX + schema + manifest in ~17 s |
 | 2026-10-23 | 8 | `scripts/verify.ps1` + `scripts/secret_scan.py` unified gate, `.github/workflows/ci.yml`, generated-artifact ignore policy, cleared ten pre-existing clippy lints | `verify.ps1` all steps PASS: secret scan clean, 36 Rust + 1 seeder + 11 frontend + 28 Python tests, `fmt`/`clippy -D warnings` clean |
+| 2026-10-23 | 1 | Rotated the STRATZ key and stored the replacement only in `ml/.env`; searched Git history and confirmed no secrets or datasets | `describe_environment` reports STRATZ `set`; `git ls-files` shows only `ml/.env.example`; OpenDota rotation pending |
 
 

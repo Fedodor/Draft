@@ -16,7 +16,7 @@ The application is a functional prototype with a clear architecture, but it is n
 
 The directory is not currently a Git repository, so there is no commit history here to leak. That is the best time to add secret hygiene before initializing version control.
 
-> Remediation status: Steps 1-8 are implemented as of 2026-10-23, with key rotation and the "require the gate for merges" repository setting still pending. Step 1 (secrets and environment), Step 2 (ML inference correctness), Step 3 (scoring correctness), Step 4 (Tauri IPC and manual drafting), Step 5 (database paths, seeding, and active patch), Step 6 (training pipeline), Step 7 (settings, GSI, and UI state), and Step 8 (CI and quality gates) each have a design doc; see [`STEP_01_SECRETS_AND_ENV.md`](STEP_01_SECRETS_AND_ENV.md), [`STEP_02_ML_INFERENCE.md`](STEP_02_ML_INFERENCE.md), [`STEP_03_SCORING.md`](STEP_03_SCORING.md), [`STEP_04_IPC.md`](STEP_04_IPC.md), [`STEP_05_DATA.md`](STEP_05_DATA.md), [`STEP_06_TRAINING.md`](STEP_06_TRAINING.md), [`STEP_07_GSI_SETTINGS.md`](STEP_07_GSI_SETTINGS.md), and [`STEP_08_CI.md`](STEP_08_CI.md). Findings below remain the baseline audit.
+> Remediation status: Steps 1-8 are implemented as of 2026-10-23, with the OpenDota key rotation and the "require the gate for merges" repository setting still pending. Step 1 (secrets and environment), Step 2 (ML inference correctness), Step 3 (scoring correctness), Step 4 (Tauri IPC and manual drafting), Step 5 (database paths, seeding, and active patch), Step 6 (training pipeline), Step 7 (settings, GSI, and UI state), and Step 8 (CI and quality gates) each have a design doc; see [`STEP_01_SECRETS_AND_ENV.md`](STEP_01_SECRETS_AND_ENV.md), [`STEP_02_ML_INFERENCE.md`](STEP_02_ML_INFERENCE.md), [`STEP_03_SCORING.md`](STEP_03_SCORING.md), [`STEP_04_IPC.md`](STEP_04_IPC.md), [`STEP_05_DATA.md`](STEP_05_DATA.md), [`STEP_06_TRAINING.md`](STEP_06_TRAINING.md), [`STEP_07_GSI_SETTINGS.md`](STEP_07_GSI_SETTINGS.md), and [`STEP_08_CI.md`](STEP_08_CI.md). Findings below remain the baseline audit.
 
 ## Severity summary
 
@@ -37,6 +37,8 @@ The directory is not currently a Git repository, so there is no commit history h
 - At audit time there was no root `.gitignore` and the project was not a Git repository. Initializing Git without a secret guard would have committed the keys. A root `.gitignore` was added during Step 1.
 
 Impact: key misuse, rate-limit exhaustion, account suspension, and accidental publication.
+
+Resolved (Step 1): the 19 literals and the loader guard are fixed; `ml/.env` is ignored and Git history contains no secrets. Partial rotation as of 2026-10-23: STRATZ key rotated; OpenDota key rotation pending. See [`STEP_01_SECRETS_AND_ENV.md`](STEP_01_SECRETS_AND_ENV.md).
 
 ### C2. ML inference uses the wrong class probability
 
