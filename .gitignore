@@ -17,7 +17,9 @@ __pycache__/
 
 # Generated ML data and artifacts that are not release assets
 ml/data/
-ml/datasets/
+ml/datasets/*
+# The hero roster defines the feature names, so it must be tracked to reproduce them.
+!ml/datasets/heroes.json
 ml/cache/
 ml/logs/
 ml/training/output/

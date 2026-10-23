@@ -160,7 +160,7 @@ The project includes a fully automated end-to-end ML training pipeline. **Curren
 | Best AUC | 0.6710 (historical, 103K/896, 5-fold CV) |
 | Accuracy | 62.5% |
 | Matches collected | 111,945 (+756 new, lane capture enabled) |
-| Training samples | 102,118 (refreshed, 889 cols; was 103,162/896) |
+| Training samples | 102,118 (refreshed, 890 cols incl. `start_time`; 887 model inputs) |
 | Features | 889 (lane infra + 126-dim SVD embeddings experiment) |
 | Hero matchup pairs | 6,303 (current, threshold 10; 15,500 was lower threshold on larger allpick) |
 | AllPick matches | 9,790 (+1,156 new) for winrates/matchups |

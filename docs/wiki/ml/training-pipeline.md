@@ -21,10 +21,12 @@ Reported model quality was optimistic and not reproducible: the test split was r
 
 ## Test coverage
 
-`ml/tests/test_training_splits.py` (7), `ml/tests/test_training_fixture.py` (4), and `ml/tests/test_data_collector.py` (4) cover chronological disjointness, determinism, fingerprints, a full synthetic split → train → ONNX/schema/manifest run including `--skip-train` reuse and feature-count rejection, runtime-unsupported feature exclusion, and offline collector pagination/dedup/resume plus the no-discovery `NameError` regression.
+`ml/tests/test_training_splits.py` (7), `ml/tests/test_training_fixture.py` (4), `ml/tests/test_data_collector.py` (4), and `ml/tests/test_processor_features.py` (3) cover chronological disjointness, determinism, fingerprints, a full synthetic split → train → ONNX/schema/manifest run including `--skip-train` reuse and feature-count rejection, runtime-unsupported feature exclusion, `start_time` field mapping for both provider shapes, and offline collector pagination/dedup/resume plus the no-discovery `NameError` regression.
 
 ## Residual risks
 
-- No `start_time` in the current processed parquet, so runs fall back to `match_id` until features are regenerated.
+- The embedding dataset (`draft_features_emb.parquet`) is an abandoned experiment and still lacks `start_time`.
 
 Resolved: the bundled `_full` model (887 inputs) now matches `train_full.py`'s default selection; the old 887-vs-1139 gap came from defaulting to the embedding dataset with an `_emb` stem while the runtime contract is the non-embedding 887 set.
+
+Resolved: `draft_features.parquet` was regenerated (2026-10-23) with `start_time` (890 columns, no zero rows), so splits use real timestamps instead of the `match_id` fallback.

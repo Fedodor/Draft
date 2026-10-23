@@ -19,6 +19,7 @@
 - [x] Restore the `OpenDotaCollector` interface expected by `train_pipeline.py`.
 - [x] Fix `train_pipeline.py` import path, boolean flags, and `--config` handling so both `python -m training.train_pipeline` and `python training/train_pipeline.py` run.
 - [x] Default `train_full.py` to the runtime contract and exclude runtime-unsupported families (887 features, not 1139).
+- [x] Regenerate the processed parquet so it carries `start_time` (889 → 890 columns).
 
 ## Problem
 
@@ -92,10 +93,12 @@ The script that produces the bundled feature set (default stem `draft_model_xgbo
 
 `ml/tests/test_data_collector.py` (4 tests): collector interface presence, game-mode helpers, offline pagination/dedup/download via a fake collector, and the no-discovery path that previously raised `NameError`.
 
+`ml/tests/test_processor_features.py` (3 tests): `start_time` is populated from the OpenDota `start_time` field, the STRATZ `startDateTime` field, and defaults to 0 when neither is present.
+
 ## Verification
 
 ```powershell
-python ml\venv\Scripts\python.exe -m pytest ml\tests -q   # 30 passed
+python ml\venv\Scripts\python.exe -m pytest ml\tests -q   # 33 passed
 python ml\venv\Scripts\python.exe ml\training\train_full.py --model-stem draft_model_xgboost_smoke --n-estimators 5
 python ml\venv\Scripts\python.exe -m training.data_collector --help
 python ml\venv\Scripts\python.exe -m training.train_pipeline --help
@@ -105,6 +108,8 @@ The smoke run wrote model, ONNX, features, schema, config, and manifest in ~17 s
 
 ## Residual risks
 
-- On the current `draft_features_emb.parquet` (and until features are regenerated) there is no `start_time`, so training falls back to `match_id`; regenerate features to switch to true timestamps.
+- The embedding dataset (`draft_features_emb.parquet`) is an abandoned experiment and was not regenerated, so it still lacks `start_time`; the default contract uses the non-embedding parquet.
 
 Resolved (feature contract): `train_full.py` now defaults to the bundled contract (`draft_features.parquet` → 887 features, stem `draft_model_xgboost_full`) and excludes the families the runtime cannot build, so `--evaluate-only` reproduces the bundled model instead of failing with a feature-shape mismatch. The old 887-vs-1139 gap came from defaulting to the embedding dataset with a matching `_emb` stem while the runtime contract is the non-embedding 887 set.
+
+Resolved (start time): `draft_features.parquet` was regenerated (2026-10-23) and now carries `start_time` (int64, no zero rows; range 2017-05 to 2026-08), so `time_split` uses real timestamps and no longer logs the `match_id` fallback. `ml/tests/test_processor_features.py` pins the `start_time` field mapping for both the OpenDota (`start_time`) and STRATZ (`startDateTime`) shapes. The bundled schema's winrate/synergy defaults still reflect the pre-regeneration data and will refresh on the next retrain.
