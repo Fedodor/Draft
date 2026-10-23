@@ -2,6 +2,21 @@
 
 Append-only chronology. Newest entries at the top. Format: `## [YYYY-MM-DD] ingest | Source Title`.
 
+## [2026-10-23] update | ESLint (Step 8)
+
+- Added ESLint 9 flat config `apps/desktop/eslint.config.js` (`@eslint/js`, `typescript-eslint` recommended, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`); `react-refresh/only-export-components` is off because hooks are co-located with components.
+- Installed the dev dependencies and changed `npm run lint` to `eslint . --max-warnings 0` (flat config drops `--ext`).
+- Added a "Frontend lint" step to `scripts/verify.ps1`, so the gate and CI cover lint before build/tests.
+- Canonical source: [`../STEP_08_CI.md`](../STEP_08_CI.md); see [CI and quality gates](ci/quality-gates.md).
+- Verification: 20 files lint clean; full quality gate PASS.
+
+## [2026-10-23] update | Features with start_time and model retrain (Step 6)
+
+- Regenerated `ml/datasets/processed/draft_features.parquet` (102,118 rows, 890 columns) so it carries `start_time`; chronological splits no longer fall back to `match_id`.
+- Tracked `ml/datasets/heroes.json` (defines feature names) so the 887-feature contract is reproducible on a clean checkout; added `ml/tests/test_processor_features.py`.
+- Retrained and swapped in the bundled `draft_model_xgboost_full` (887 inputs; held-out test ROC-AUC 0.5388); repointed `generate_golden.py` at `draft_features.parquet` and refreshed the golden fixture.
+- Canonical source: [`../STEP_06_TRAINING.md`](../STEP_06_TRAINING.md); see [Training pipeline](ml/training-pipeline.md).
+
 ## [2026-10-23] update | Partial key rotation (Step 1)
 
 - Rotated the STRATZ key; the replacement is stored only in `ml/.env` and loads as `set`.

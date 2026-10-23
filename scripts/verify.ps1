@@ -4,8 +4,9 @@
 
 .DESCRIPTION
     Runs the same checks locally and in CI: secret scan, Rust format/lint/tests,
-    TypeScript typecheck + build + tests, and Python compile + tests. Any
-    failure is reported at the end and makes the script exit non-zero.
+    frontend lint + TypeScript typecheck + build + tests, and Python compile +
+    tests. Any failure is reported at the end and makes the script exit
+    non-zero.
 
 .PARAMETER Python
     Path to the Python interpreter. Defaults to ml\venv\Scripts\python.exe
@@ -15,7 +16,7 @@
     Skip the Rust format, clippy, and test steps.
 
 .PARAMETER SkipFrontend
-    Skip the frontend install, build, and test steps.
+    Skip the frontend install, lint, build, and test steps.
 
 .PARAMETER SkipPython
     Skip the Python compile and test steps.
@@ -136,6 +137,7 @@ if (-not $SkipFrontend) {
         Write-Host ""
         Write-Host "==> Frontend install skipped (node_modules present; use -ForceInstall to refresh)" -ForegroundColor DarkGray
     }
+    Invoke-Step -Name "Frontend lint" -WorkingDirectory $frontendDir -Action { npm run lint }
     Invoke-Step -Name "Frontend typecheck + build" -WorkingDirectory $frontendDir -Action { npm run build }
     Invoke-Step -Name "Frontend tests" -WorkingDirectory $frontendDir -Action { npm test }
 }

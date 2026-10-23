@@ -20,8 +20,9 @@ per-step summary.
 | Secret scan | `python scripts/secret_scan.py` |
 | Rust format / lint | `cargo fmt --all -- --check`, `cargo clippy --all-targets -- -D warnings` |
 | Rust tests | desktop `--lib` (36) and seeders (1) |
+| Frontend lint | `npm run lint` (ESLint flat config, `--max-warnings 0`) |
 | Frontend | `npm run build` (tsc + vite) and `npm test` (11) |
-| Python | `compileall` and `pytest ml/tests` (28, includes the ONNX contract test) |
+| Python | `compileall` and `pytest ml/tests` (33, includes the ONNX contract test) |
 
 Switches: `-SkipRust`, `-SkipFrontend`, `-SkipPython`, `-SkipSecrets`,
 `-ForceInstall`, `-Python <path>`. Python resolves from
@@ -45,7 +46,9 @@ Rust golden test needs the DLL).
   `type_complexity` now aliased as `SemanticGetter`).
 - Generated model artifacts under `ml/models/` are ignored except the bundled
   `draft_model_xgboost_full.*` release set.
-- ESLint is declared but not installed and has no config, so the frontend step is
-  typecheck + build + tests.
+- ESLint 9 flat config (`apps/desktop/eslint.config.js`) uses `@eslint/js` +
+  `typescript-eslint` recommended plus the React hooks and refresh plugins; the
+  `react-refresh/only-export-components` rule is off because hooks are
+  co-located with components.
 - Branch protection to require `Secret scan` and `Quality gate (Windows)` before
   merging is a repository setting; see the canonical doc for the runbook.

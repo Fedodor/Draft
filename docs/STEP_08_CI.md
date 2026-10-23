@@ -10,6 +10,7 @@
 - [x] Add deterministic scripts for format, lint, typecheck, and tests.
 - [x] Run `cargo fmt --check`, `cargo clippy -D warnings`, and `cargo test`.
 - [x] Run TypeScript typecheck via the build and the frontend tests.
+- [x] Run ESLint (flat config) on the frontend.
 - [x] Run Python byte-compile and pytest (which includes the ML feature-contract test).
 - [x] Run secret scanning on every change.
 - [x] Add a GitHub Actions workflow now that the repository is initialized.
@@ -51,6 +52,7 @@ falls back to `python`. Frontend dependencies are only installed when
 | Rust lint | `cargo clippy --manifest-path ... --all-targets -- -D warnings` |
 | Rust tests | `cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --lib` |
 | Rust tests (seeders) | `cargo test --manifest-path infrastructure/seeders/Cargo.toml` |
+| Frontend lint | `npm run lint` (in `apps/desktop`; ESLint flat config, `--max-warnings 0`) |
 | Frontend build | `npm run build` (in `apps/desktop`; `tsc && vite build`) |
 | Frontend tests | `npm test` (in `apps/desktop`) |
 | Python compile | `python -m compileall -q ml/training ml/feature-engineering scripts` |
@@ -68,6 +70,13 @@ auto-deref sites (`commands.rs`), a derivable `impl` and a missing `Default`
 (`engine.rs`), an `unnecessary_sort_by` (`engine.rs`), and a `type_complexity`
 in `ml.rs` (addressed with a `SemanticGetter` alias). Clippy and both Rust test
 suites are now clean.
+
+The frontend uses ESLint 9 flat config (`apps/desktop/eslint.config.js`):
+`@eslint/js` + `typescript-eslint` recommended, `eslint-plugin-react-hooks`, and
+`eslint-plugin-react-refresh`, with `react-refresh/only-export-components`
+disabled because hooks are intentionally co-located with components. `npm run
+lint` runs `eslint . --max-warnings 0` and is clean across the app sources and
+config files (20 files).
 
 ## Continuous integration
 
@@ -111,9 +120,10 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1   # all s
 cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all -- --check
 cargo clippy --manifest-path apps/desktop/src-tauri/Cargo.toml --all-targets -- -D warnings
 cargo test --manifest-path apps/desktop/src-tauri/Cargo.toml --lib   # 36 passed
+npm run lint --prefix apps/desktop                                   # clean
 npm run build --prefix apps/desktop
 npm test --prefix apps/desktop                                       # 11 passed
-python ml\venv\Scripts\python.exe -m pytest ml\tests -q              # 28 passed
+python ml\venv\Scripts\python.exe -m pytest ml\tests -q              # 33 passed
 python ml\venv\Scripts\python.exe scripts\secret_scan.py             # clean
 ```
 
@@ -121,9 +131,6 @@ The gate was run end to end on 2026-10-23: all steps PASS.
 
 ## Residual risks
 
-- ESLint is declared in `package.json` but not installed and has no config, so
-  `npm run lint` is not part of the gate; the frontend step is typecheck + build
-  + tests. Add ESLint config and a dependency before enabling it in CI.
 - `scripts/verify.ps1` targets Windows PowerShell 5.1+ semantics; `pwsh` is
   only available on the CI runner, so local reproduction uses `powershell.exe`.
 - The gate installs `ml/requirements.txt` (XGBoost, LightGBM, ONNX) in CI,

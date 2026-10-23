@@ -188,7 +188,7 @@ team-change effect, which now only refreshes recommendations.
 
 There is no automated check for Rust formatting/clippy/tests, TypeScript typecheck/lint, Python compile/tests, secret scanning, or the ML feature contract.
 
-Resolved (Step 8): `scripts/verify.ps1` runs the full gate locally and in CI, `scripts/secret_scan.py` scans every change, and `.github/workflows/ci.yml` enforces it. ESLint remains declared but uninstalled/unconfigured, so lint is covered by typecheck + build + tests for now. See [`STEP_08_CI.md`](STEP_08_CI.md).
+Resolved (Step 8): `scripts/verify.ps1` runs the full gate locally and in CI, `scripts/secret_scan.py` scans every change, and `.github/workflows/ci.yml` enforces it. ESLint 9 (flat config) is installed with `@eslint/js` + `typescript-eslint` recommended plus the React hooks/refresh plugins, and `npm run lint` is part of the gate. See [`STEP_08_CI.md`](STEP_08_CI.md).
 
 ### L2. Duplicated or unclear ownership of configuration
 
