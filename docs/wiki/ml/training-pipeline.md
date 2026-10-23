@@ -13,7 +13,7 @@ Reported model quality was optimistic and not reproducible: the test split was r
 
 - `training/splits.py`: `start_time`-first chronological `time_split` into train/validation/test, `match_id` fallback with an explicit flag, and stable `file_sha256`/`schema_fingerprint`/`frame_fingerprint` helpers.
 - `training/manifest.py`: writes `{stem}_manifest.json` with dataset hash, feature-schema fingerprint and order, split provenance, hyperparameters, `best_iteration`, validation/test metrics, artifacts, and library versions.
-- `training/train_full.py`: the model producer. Splits by `start_time`, early-stops on validation, evaluates the test set once, exports model/ONNX/features/schema/config/manifest, and supports effective `--skip-train` and `--evaluate-only` flags.
+- `training/train_full.py`: the model producer. Defaults to the runtime contract (`draft_features.parquet` → 887 features, stem `draft_model_xgboost_full`) and excludes feature families the Rust runtime cannot build (`rad_lane_*`, `dire_lane_*`, `emb_*`). Splits by `start_time`, early-stops on validation, evaluates the test set once, exports model/ONNX/features/schema/config/manifest, verifies the feature count on `--skip-train`/`--evaluate-only`, and supports effective `--skip-train` and `--evaluate-only` flags.
 - `training/trainer.py`: `time_based_split` prefers `start_time`, `three_way_split` feeds `train_model`, which early-stops on validation and reports test separately.
 - `feature-engineering/processor.py`: writes `start_time` so future parquets carry a real timestamp.
 - `training/data_collector.py`: reconstructed as a multi-line module. `OpenDotaCollector` (pro/public discovery, captain's-mode and All Pick detail fetches, disk-based resume, resumable metadata) and `StratzCollector` (GraphQL batch fetch and draft-enhancement) restore the interface `train_pipeline.py` expects.
@@ -21,9 +21,10 @@ Reported model quality was optimistic and not reproducible: the test split was r
 
 ## Test coverage
 
-`ml/tests/test_training_splits.py` (7), `ml/tests/test_training_fixture.py` (2), and `ml/tests/test_data_collector.py` (4) cover chronological disjointness, determinism, fingerprints, a full synthetic split → train → ONNX/schema/manifest run including `--skip-train` reuse, and offline collector pagination/dedup/resume plus the no-discovery `NameError` regression.
+`ml/tests/test_training_splits.py` (7), `ml/tests/test_training_fixture.py` (4), and `ml/tests/test_data_collector.py` (4) cover chronological disjointness, determinism, fingerprints, a full synthetic split → train → ONNX/schema/manifest run including `--skip-train` reuse and feature-count rejection, runtime-unsupported feature exclusion, and offline collector pagination/dedup/resume plus the no-discovery `NameError` regression.
 
 ## Residual risks
 
 - No `start_time` in the current processed parquet, so runs fall back to `match_id` until features are regenerated.
-- The bundled `_full` model (887 inputs) does not match `train_full.py`'s 1139-feature selection; retraining remains gated on the feature-contract fix.
+
+Resolved: the bundled `_full` model (887 inputs) now matches `train_full.py`'s default selection; the old 887-vs-1139 gap came from defaulting to the embedding dataset with an `_emb` stem while the runtime contract is the non-embedding 887 set.

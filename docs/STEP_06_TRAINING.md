@@ -18,6 +18,7 @@
 - [x] Reconstruct `data_collector.py` into a normal multi-line module.
 - [x] Restore the `OpenDotaCollector` interface expected by `train_pipeline.py`.
 - [x] Fix `train_pipeline.py` import path, boolean flags, and `--config` handling so both `python -m training.train_pipeline` and `python training/train_pipeline.py` run.
+- [x] Default `train_full.py` to the runtime contract and exclude runtime-unsupported families (887 features, not 1139).
 
 ## Problem
 
@@ -51,13 +52,17 @@ The advertised training path was not reproducible:
 
 ## `train_full.py`
 
-The script that produces the bundled feature set (default stem `draft_model_xgboost_emb`) was reworked:
+The script that produces the bundled feature set (default stem `draft_model_xgboost_full`, default data `ml/datasets/processed/draft_features.parquet`) was reworked:
 
 - Exposes `select_feature_columns`, `encode_features`, `evaluate`, and `run` so it is testable.
+- Excludes identity/label/time columns and the feature families the Rust runtime cannot reconstruct (`rad_lane_*`, `dire_lane_*`, `emb_*`), so the exported model always matches `ml.rs build_feature_map`.
+- Defaults target the bundled contract: `draft_features.parquet` (889 columns → 887 features) as `draft_model_xgboost_full`. The embedding dataset is a separate experiment and is never the default.
 - Splits by `start_time`, early-stops on validation, then evaluates the held-out test set exactly once.
 - Writes `<stem>.joblib` (XGBoost native), `<stem>.onnx`, `<stem>_features.json`, `<stem>_schema.json`, `<stem>_config.json`, and `<stem>_manifest.json`.
 - New CLI: `--train-frac/--val-frac/--test-frac`, `--n-estimators`, `--seed`, `--config`, `--current-patch`, `--skip-train`, `--evaluate-only`.
-- `--skip-train` reuses an existing model (no fit, `best_iteration` recorded as null); `--evaluate-only` additionally suppresses artifact writes and only reports metrics plus the manifest.
+- `--skip-train` reuses an existing model (no fit, `best_iteration` recorded as null) and verifies the dataset's feature count matches the model's `n_features_in_`, failing with an actionable message instead of a raw shape error; `--evaluate-only` additionally suppresses artifact writes and only reports metrics plus the manifest.
+
+`export_model_schema.py` defaults to the same `draft_features.parquet`, so the schema export matches the model contract.
 
 ## `trainer.py`
 
@@ -83,14 +88,14 @@ The script that produces the bundled feature set (default stem `draft_model_xgbo
 
 `ml/tests/test_training_splits.py` (7 tests): start-time preference, `match_id` fallback, chronological and disjoint partitions, determinism across input order, fraction validation, and schema/frame fingerprint stability.
 
-`ml/tests/test_training_fixture.py` (2 tests): runs the real pipeline on a synthetic parquet into a temp directory, asserting manifest metrics, split sizes, schema, and a valid ONNX session whose input width matches the manifest; then re-runs with `--skip-train` to confirm model reuse.
+`ml/tests/test_training_fixture.py` (4 tests): runs the real pipeline on a synthetic parquet into a temp directory, asserting manifest metrics, split sizes, schema, and a valid ONNX session whose input width matches the manifest; then re-runs with `--skip-train` to confirm model reuse. It also asserts that runtime-unsupported families (`emb_*`, `rad_lane_*`, `dire_lane_*`) and identity/time columns are excluded from the feature set, and that `--skip-train` rejects a dataset whose feature count does not match the model.
 
 `ml/tests/test_data_collector.py` (4 tests): collector interface presence, game-mode helpers, offline pagination/dedup/download via a fake collector, and the no-discovery path that previously raised `NameError`.
 
 ## Verification
 
 ```powershell
-python ml\venv\Scripts\python.exe -m pytest ml\tests -q   # 28 passed
+python ml\venv\Scripts\python.exe -m pytest ml\tests -q   # 30 passed
 python ml\venv\Scripts\python.exe ml\training\train_full.py --model-stem draft_model_xgboost_smoke --n-estimators 5
 python ml\venv\Scripts\python.exe -m training.data_collector --help
 python ml\venv\Scripts\python.exe -m training.train_pipeline --help
@@ -100,5 +105,6 @@ The smoke run wrote model, ONNX, features, schema, config, and manifest in ~17 s
 
 ## Residual risks
 
-- On the current `draft_features_emb.parquet` there is no `start_time`, so training falls back to `match_id`; regenerate features to switch to true timestamps.
-- The bundled `draft_model_xgboost_full` artifact has 887 inputs while `train_full.py` selects 1139 features from `draft_features_emb.parquet`; that model was produced by a different historical path, so `--evaluate-only` against the emb parquet fails with a feature-shape mismatch by design. Retraining stays gated on the feature-contract fix.
+- On the current `draft_features_emb.parquet` (and until features are regenerated) there is no `start_time`, so training falls back to `match_id`; regenerate features to switch to true timestamps.
+
+Resolved (feature contract): `train_full.py` now defaults to the bundled contract (`draft_features.parquet` → 887 features, stem `draft_model_xgboost_full`) and excludes the families the runtime cannot build, so `--evaluate-only` reproduces the bundled model instead of failing with a feature-shape mismatch. The old 887-vs-1139 gap came from defaulting to the embedding dataset with a matching `_emb` stem while the runtime contract is the non-embedding 887 set.

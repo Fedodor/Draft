@@ -234,7 +234,7 @@ End-to-end: `schema 2, heroes 126, matchups 9052, synergies 7381, active_patch 7
 **Verification**
 
 ```powershell
-python ml\venv\Scripts\python.exe -m pytest ml\tests -q   # 28 passed
+python ml\venv\Scripts\python.exe -m pytest ml\tests -q   # 30 passed
 python ml\venv\Scripts\python.exe ml\training\train_full.py --model-stem draft_model_xgboost_smoke --n-estimators 5
 python ml\venv\Scripts\python.exe -m training.train_pipeline --help
 ```
@@ -348,5 +348,6 @@ A step is complete only when:
 | 2026-10-23 | 6 | `splits.py` (start_time-first 3-way), `manifest.py`, reworked `train_full.py`, `trainer.py` val-only early stopping, `onnx`/`onnxmltools` deps, `start_time` in processor | 24 Python tests pass; smoke run trains, exports ONNX + schema + manifest in ~17 s |
 | 2026-10-23 | 8 | `scripts/verify.ps1` + `scripts/secret_scan.py` unified gate, `.github/workflows/ci.yml`, generated-artifact ignore policy, cleared ten pre-existing clippy lints | `verify.ps1` all steps PASS: secret scan clean, 36 Rust + 1 seeder + 11 frontend + 28 Python tests, `fmt`/`clippy -D warnings` clean |
 | 2026-10-23 | 1 | Rotated the STRATZ key and stored the replacement only in `ml/.env`; searched Git history and confirmed no secrets or datasets | `describe_environment` reports STRATZ `set`; `git ls-files` shows only `ml/.env.example`; OpenDota rotation pending |
+| 2026-10-23 | 6 | Aligned `train_full.py` defaults with the runtime contract (`draft_features.parquet` → 887 features), excluded runtime-unsupported families (`rad_lane_*`, `dire_lane_*`, `emb_*`), added a feature-count guard, and fixed `export_model_schema.py` default data | `--evaluate-only` reports 887 features and bundled metrics (ROC-AUC 0.5402); 2 new fixture tests; 30 Python tests pass |
 
 
