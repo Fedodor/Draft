@@ -1,7 +1,7 @@
 ﻿# Remediation Plan
 
 - Type: Execution plan
-- Status: Implemented (Steps 1-8; Step 9 post-remediation increment)
+- Status: Implemented (Steps 1-8; Steps 9-10 post-remediation increments)
 - Canonical source: [`../../REMEDIATION_PLAN.md`](../../REMEDIATION_PLAN.md)
 - Source audit: [Project audit, 2026-10-22](../audits/project-audit-2026-10-22.md)
 
@@ -61,6 +61,8 @@ Step 8 is documented at [`../../STEP_08_CI.md`](../../STEP_08_CI.md), with its s
 
 Step 9 (2026-10-27) implements the previously dead meta layer: a patch-scoped meta snapshot exported from winrates/pickrates, seeded by `seed_matchups`, used in scoring and explanations, reported by health, and paired with label-based recommendation categories. Detail: [`../../STEP_09_META.md`](../../STEP_09_META.md); summary: [Patch meta data](../engine/meta.md).
 
+Step 10 (2026-10-27) adds a lazy score-breakdown disclosure to each recommendation card, surfacing the six weighted components from `get_score_breakdown`. Detail: [`../../STEP_10_SCORE_BREAKDOWN.md`](../../STEP_10_SCORE_BREAKDOWN.md); summary: [Score breakdown panel](../engine/score-breakdown.md).
+
 ## Related
 
 - [Secrets management](../security/secrets-management.md)
@@ -72,5 +74,6 @@ Step 9 (2026-10-27) implements the previously dead meta layer: a patch-scoped me
 - [Settings, GSI, and UI state](../engine/settings-gsi.md)
 - [CI and quality gates](../ci/quality-gates.md)
 - [Patch meta data](../engine/meta.md)
+- [Score breakdown panel](../engine/score-breakdown.md)
 - [Wiki index](../index.md)
 

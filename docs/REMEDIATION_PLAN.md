@@ -1,7 +1,7 @@
 ﻿# Remediation Plan: Smart Draft Assistant
 
 - Date: 2026-10-22
-- Status: Implemented (Steps 1-8; Step 9 is a post-remediation increment)
+- Status: Implemented (Steps 1-8; Steps 9-10 are post-remediation increments)
 - Source audit: [`AUDIT.md`](AUDIT.md)
 - Wiki summary: [`wiki/plans/remediation-plan.md`](wiki/plans/remediation-plan.md)
 
@@ -47,6 +47,7 @@ These extend the completed eight-step plan and keep the same acceptance discipli
 | Step | Theme | Status | Exit gate | Detail |
 | --- | --- | --- | --- | --- |
 | 9 | Patch meta data | Implemented | Seeded meta snapshot scores the full roster; health reports coverage; explanations use raw winrate | [`STEP_09_META.md`](STEP_09_META.md) |
+| 10 | Score breakdown panel | Implemented | Recommendation cards expose component values, weights, contributions, and reconstructed total via `get_score_breakdown` | [`STEP_10_SCORE_BREAKDOWN.md`](STEP_10_SCORE_BREAKDOWN.md) |
 
 ## Step 1: Secrets and environment
 
@@ -361,5 +362,6 @@ A step is complete only when:
 | 2026-10-23 | 6 | Retrained and swapped in the bundled `draft_model_xgboost_full` (887 inputs) from the start-time-aware parquet; repointed `generate_golden.py` at `draft_features.parquet` and refreshed the golden fixture | Held-out test ROC-AUC 0.5388 / Brier 0.2481; schema, ONNX, and Rust contract tests pass; full quality gate PASS |
 | 2026-10-23 | 8 | Added ESLint 9 flat config (`eslint.config.js`) with `@eslint/js`, `typescript-eslint` recommended, and the React hooks/refresh plugins; wired `npm run lint` (`--max-warnings 0`) into `verify.ps1` and therefore CI | 20 files lint clean; full quality gate PASS (new "Frontend lint" step) |
 | 2026-10-27 | 9 | Implemented the dead meta layer: `build_meta_rows` percentile meta export, `seed_matchups` meta parsing/validation/upsert (real and synthetic), integer `updated_at` fix, `meta_hero_count` health, raw-winrate meta explanations, and label-based recommendation categories with Top Picks always populated | 40 Rust lib + 1 seeder + 11 frontend + 36 Python tests pass; `fmt`/`clippy -D warnings`/lint/build clean; seeded DB has `meta_data` patch `7.41` for 126 heroes |
+| 2026-10-27 | 10 | Added a lazy score-breakdown disclosure to every recommendation card, calling the existing `get_score_breakdown` command; extracted the component weights/labels and contribution math into `services/scoreBreakdown.ts` with unit tests | 14 frontend tests pass (11 IPC + 3 breakdown); frontend lint/build clean; full quality gate PASS |
 
 

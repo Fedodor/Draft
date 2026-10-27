@@ -21,6 +21,7 @@ Production-quality desktop AI assistant for Dota 2 draft analysis.
 - [Step 4 design: Tauri IPC and manual drafting](docs/STEP_04_IPC.md): snake_case command args, typed errors, validation, and undo.
 - [Step 8 design: CI and quality gates](docs/STEP_08_CI.md): the single `verify.ps1` gate, the GitHub Actions workflow, and merge requirements.
 - [Step 9 design: Patch meta data](docs/STEP_09_META.md): meta snapshot export, percentile scoring, explanations, and recommendation category labels.
+- [Step 10 design: Score breakdown panel](docs/STEP_10_SCORE_BREAKDOWN.md): per-card component values, weights, weighted contributions, and total.
 - [Project wiki](docs/wiki/index.md): persistent summaries, security runbooks, and cross-references.
 
 Reference:
@@ -347,6 +348,7 @@ smart-draft-assistant/
 │   ├── STEP_07_GSI_SETTINGS.md
 │   ├── STEP_08_CI.md
 │   ├── STEP_09_META.md
+│   ├── STEP_10_SCORE_BREAKDOWN.md
 │   └── wiki/
 └── .opencode/rules/       # AI agent rules
 ```
@@ -378,6 +380,7 @@ Settings stored in Tauri store (`config.json`):
 3. ✅ **Tree Search Engine** — Beam-search minimax lookahead over opponent responses (`engine/simulation.rs`), exposed via `get_search_recommendations`.
 4. ✅ **Live Overlay UI** — Compact always-on-top, transparent overlay window showing live win probability, team hero icons, and top recommendations with reasoning. Toggle from the main window header (`Overlay` button).
 5. ✅ **Patch Meta Data** — `seed_matchups` now writes a patch-scoped meta snapshot for all 126 heroes (shrunk winrate + pickrate percentile blend); the engine uses it in the `W_META` component and explanations, health reports coverage, and recommendation categories are labels rather than exclusive buckets. See [`STEP_09_META.md`](docs/STEP_09_META.md).
+6. ✅ **Score Breakdown Panel** — Every recommendation card can reveal the six weighted components from `get_score_breakdown` (value, weight, contribution, and reconstructed total), with a typed error path and side-aware refetch. See [`STEP_10_SCORE_BREAKDOWN.md`](docs/STEP_10_SCORE_BREAKDOWN.md).
 
 ### High Priority
 4. ✅ **Live Overlay UI** — React overlay with hero icons, win probabilities, reasoning

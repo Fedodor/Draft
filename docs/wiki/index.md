@@ -9,13 +9,14 @@ Persistent, linked summaries of the project's audits, plans, and operational kno
 - [Secrets management](security/secrets-management.md): environment contract and rotation runbook.
 - [ML inference contract](ml/inference-contract.md): schema, positive class, and golden-vector checks.
 - [Scoring data flow](engine/scoring.md): startup wiring, role normalization, and real seed data.
+- [Score breakdown panel](engine/score-breakdown.md): per-card component values, weights, and weighted total.
 - [Tauri IPC conventions](engine/ipc.md): command naming, typed errors, manual drafting, and undo.
 - [Database, seeding, and patch](engine/data.md): shared paths, active patch, transactional seeding, and health checks.
 - [Patch meta data](engine/meta.md): meta snapshot export, percentile scoring, explanations, and category labels.
 - [Training pipeline](ml/training-pipeline.md): chronological splits, validation-only early stopping, and the model manifest.
 - [Settings, GSI, and UI state](engine/settings-gsi.md): persisted config, real GSI schema, turn state machine, and side-aware overlay.
 - [CI and quality gates](ci/quality-gates.md): the single verify script, the CI workflow, and the merge gate.
-- Canonical detail: [`../AUDIT.md`](../AUDIT.md), [`../REMEDIATION_PLAN.md`](../REMEDIATION_PLAN.md), [`../STEP_01_SECRETS_AND_ENV.md`](../STEP_01_SECRETS_AND_ENV.md), [`../STEP_02_ML_INFERENCE.md`](../STEP_02_ML_INFERENCE.md), [`../STEP_03_SCORING.md`](../STEP_03_SCORING.md), [`../STEP_04_IPC.md`](../STEP_04_IPC.md), [`../STEP_05_DATA.md`](../STEP_05_DATA.md), [`../STEP_06_TRAINING.md`](../STEP_06_TRAINING.md), [`../STEP_07_GSI_SETTINGS.md`](../STEP_07_GSI_SETTINGS.md), [`../STEP_08_CI.md`](../STEP_08_CI.md), [`../STEP_09_META.md`](../STEP_09_META.md).
+- Canonical detail: [`../AUDIT.md`](../AUDIT.md), [`../REMEDIATION_PLAN.md`](../REMEDIATION_PLAN.md), [`../STEP_01_SECRETS_AND_ENV.md`](../STEP_01_SECRETS_AND_ENV.md), [`../STEP_02_ML_INFERENCE.md`](../STEP_02_ML_INFERENCE.md), [`../STEP_03_SCORING.md`](../STEP_03_SCORING.md), [`../STEP_04_IPC.md`](../STEP_04_IPC.md), [`../STEP_05_DATA.md`](../STEP_05_DATA.md), [`../STEP_06_TRAINING.md`](../STEP_06_TRAINING.md), [`../STEP_07_GSI_SETTINGS.md`](../STEP_07_GSI_SETTINGS.md), [`../STEP_08_CI.md`](../STEP_08_CI.md), [`../STEP_09_META.md`](../STEP_09_META.md), [`../STEP_10_SCORE_BREAKDOWN.md`](../STEP_10_SCORE_BREAKDOWN.md).
 
 ## Catalog
 
@@ -29,6 +30,7 @@ Persistent, linked summaries of the project's audits, plans, and operational kno
 | [Tauri IPC conventions](engine/ipc.md) | Engine | snake_case command args, typed errors, manual drafting, undo, frontend smoke test | Implemented | 2026-10-23 | [`STEP_04_IPC.md`](../STEP_04_IPC.md) |
 | [Database, seeding, and patch](engine/data.md) | Engine | Shared DB path, active patch in `app_settings`, transactional seeding, health check, WAL | Implemented | 2026-10-23 | [`STEP_05_DATA.md`](../STEP_05_DATA.md) |
 | [Patch meta data](engine/meta.md) | Engine | Patch-scoped meta snapshot, shrunk-winrate percentile scoring, explanations, category labels | Implemented | 2026-10-27 | [`STEP_09_META.md`](../STEP_09_META.md) |
+| [Score breakdown panel](engine/score-breakdown.md) | Engine | Lazy per-card component values, weights, weighted contributions, and total | Implemented | 2026-10-27 | [`STEP_10_SCORE_BREAKDOWN.md`](../STEP_10_SCORE_BREAKDOWN.md) |
 | [Training pipeline](ml/training-pipeline.md) | ML | `start_time`-first 3-way split, validation-only early stopping, model manifest, reconstructed collector | Implemented | 2026-10-23 | [`STEP_06_TRAINING.md`](../STEP_06_TRAINING.md) |
 | [Settings, GSI, and UI state](engine/settings-gsi.md) | Engine | Persisted config, real GSI schema, turn state machine, optional auth, side-aware overlay | Implemented | 2026-10-23 | [`STEP_07_GSI_SETTINGS.md`](../STEP_07_GSI_SETTINGS.md) |
 | [CI and quality gates](ci/quality-gates.md) | Process | One `verify.ps1` gate, GitHub Actions workflow, secret scan, merge requirement | Implemented | 2026-10-23 | [`STEP_08_CI.md`](../STEP_08_CI.md) |

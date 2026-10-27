@@ -14,4 +14,4 @@ Canonical source: [`../../STEP_03_SCORING.md`](../../STEP_03_SCORING.md).
 
 - ~~Unify the seeder and application database paths.~~ Done in Step 5; see [Database, seeding, and patch](data.md).
 - ~~Make matchup queries patch-aware.~~ Done in Step 5; matchups/synergies/meta load for the persisted active patch.
-- Add a debug panel in Step 7; the IPC command already exists.
+- ~~Add a debug panel in Step 7; the IPC command already exists.~~ Done in Step 10; see [Score breakdown panel](score-breakdown.md).

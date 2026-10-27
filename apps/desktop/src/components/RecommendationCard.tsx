@@ -1,7 +1,11 @@
-import { useEngineStore } from '../stores';
+import { useEffect, useState } from 'react';
+import { ChevronDown } from 'lucide-react';
+import { useEngineStore, useUIStore } from '../stores';
 import { HeroPortrait } from './HeroPortrait';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Recommendation } from '@shared';
+import { api, describeCommandError, type ScoreBreakdown } from '../services/api';
+import { breakdownRows, breakdownTotal } from '../services/scoreBreakdown';
 
 interface RecommendationCardProps {
   recommendation: Recommendation;
@@ -9,12 +13,40 @@ interface RecommendationCardProps {
 
 export function RecommendationCard({ recommendation }: RecommendationCardProps) {
   const { getHero } = useEngineStore();
+  const selectedTeam = useUIStore((state) => state.selectedTeam);
   const hero = getHero(recommendation.hero_id);
   const heroName = hero?.localized_name ?? `Hero ${recommendation.hero_id}`;
   const heroIcon = hero?.icon ?? '';
 
+  const [showBreakdown, setShowBreakdown] = useState(false);
+  const [breakdown, setBreakdown] = useState<ScoreBreakdown | null>(null);
+  const [breakdownLoading, setBreakdownLoading] = useState(false);
+  const [breakdownError, setBreakdownError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!showBreakdown) return;
+    let cancelled = false;
+    setBreakdownLoading(true);
+    setBreakdownError(null);
+    api
+      .getScoreBreakdown(recommendation.hero_id, selectedTeam)
+      .then((next) => {
+        if (!cancelled) setBreakdown(next);
+      })
+      .catch((error) => {
+        if (!cancelled) setBreakdownError(describeCommandError(error));
+      })
+      .finally(() => {
+        if (!cancelled) setBreakdownLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [showBreakdown, recommendation.hero_id, selectedTeam]);
+
   const scorePercent = Math.round(recommendation.score * 100);
   const confidencePercent = Math.round(recommendation.confidence * 100);
+  const breakdownRowData = breakdown ? breakdownRows(breakdown) : [];
 
   const getScoreColor = (score: number) => {
     if (score >= 0.7) return 'bg-green-500';
@@ -118,6 +150,57 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
                 {role}
               </span>
             ))}
+          </div>
+        )}
+
+        {/* Score breakdown (lazy, via get_score_breakdown) */}
+        <button
+          type="button"
+          onClick={() => setShowBreakdown((open) => !open)}
+          aria-expanded={showBreakdown}
+          className="mt-2 flex w-full items-center justify-between rounded border border-dota-border/50 px-2 py-1 text-xs text-dota-textMuted transition-colors hover:bg-dota-border/40 hover:text-dota-text"
+        >
+          <span>Score breakdown</span>
+          <ChevronDown
+            className={`h-3.5 w-3.5 transition-transform ${showBreakdown ? 'rotate-180' : ''}`}
+          />
+        </button>
+
+        {showBreakdown && (
+          <div className="mt-2 space-y-1.5 rounded border border-dota-border/50 bg-dota-bg/40 p-2">
+            {breakdownLoading && (
+              <div className="text-xs text-dota-textMuted">Loading breakdown…</div>
+            )}
+            {breakdownError && (
+              <div className="text-xs text-red-400">{breakdownError}</div>
+            )}
+            {breakdown && !breakdownLoading && (
+              <>
+                {breakdownRowData.map((row) => (
+                  <div key={row.key}>
+                    <div className="flex items-center justify-between text-[11px]">
+                      <span className="text-dota-textMuted">{row.label}</span>
+                      <span className="font-mono text-dota-text">
+                        {Math.round(row.value * 100)}% × {Math.round(row.weight * 100)}% ={' '}
+                        {(row.contribution * 100).toFixed(1)} pts
+                      </span>
+                    </div>
+                    <div className="mt-0.5 h-1 overflow-hidden rounded-full bg-dota-border">
+                      <div
+                        className={`h-full rounded-full ${getScoreColor(row.value)}`}
+                        style={{ width: `${row.value * 100}%` }}
+                      />
+                    </div>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between border-t border-dota-border/50 pt-1.5 text-[11px] font-medium">
+                  <span className="text-dota-textMuted">Weighted total</span>
+                  <span className="font-mono text-dota-text">
+                    {Math.round(breakdownTotal(breakdownRowData) * 100)}%
+                  </span>
+                </div>
+              </>
+            )}
           </div>
         )}
       </div>

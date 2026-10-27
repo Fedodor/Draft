@@ -2,6 +2,14 @@
 
 Append-only chronology. Newest entries at the top. Format: `## [YYYY-MM-DD] ingest | Source Title`.
 
+## [2026-10-27] update | Score breakdown panel (Step 10)
+
+- Added [Score breakdown panel](engine/score-breakdown.md); canonical source: [`../STEP_10_SCORE_BREAKDOWN.md`](../STEP_10_SCORE_BREAKDOWN.md).
+- Recommendation cards now expose a lazy disclosure that calls the existing `get_score_breakdown` command for the hero and selected side.
+- Rows show component value × weight = weighted contribution, a value bar, and the reconstructed total; the panel refetches on side change and shows typed errors.
+- Added `services/scoreBreakdown.ts` (weights/labels, `breakdownRows`, `breakdownTotal`) and 3 pure-helper tests asserting the weights sum to one and reconstruct the total.
+- Verification: frontend lint/build clean; 14 frontend tests pass (11 IPC + 3 breakdown).
+
 ## [2026-10-27] update | Meta data pipeline (Step 9)
 
 - Added [Patch meta data](engine/meta.md); canonical source: [`../STEP_09_META.md`](../STEP_09_META.md).
