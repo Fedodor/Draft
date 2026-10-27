@@ -1,16 +1,12 @@
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
 import { X, Crosshair, Shield, Sword, Sparkles } from 'lucide-react';
-import type { DraftState, RecommendationSet } from '@shared';
+import type { DraftState, RecommendationSet, TeamSide } from '@shared';
 import { api } from '../services/api';
 import { useEngineStore } from '../stores';
+import { useRecommendationFeed } from '../hooks/useRecommendationFeed';
 import { HeroPortrait } from './HeroPortrait';
-
-interface WinProb {
-  radiant: number;
-  dire: number;
-}
 
 const appWindow = getCurrentWindow();
 
@@ -18,9 +14,11 @@ export function OverlayWindow() {
   const { heroes, setHeroes, getHero } = useEngineStore();
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationSet | null>(null);
-  const [winProb, setWinProb] = useState<WinProb | null>(null);
+  // `null` means the optional model could not produce a value; the overlay must
+  // still render picks in that case.
+  const [radiantWinProb, setRadiantWinProb] = useState<number | null>(null);
   const [gsiLive, setGsiLive] = useState(false);
-  const selectedRef = useRef<'radiant' | 'dire'>('radiant');
+  const selectedRef = useRef<TeamSide>('radiant');
 
   // Load hero roster once
   useEffect(() => {
@@ -29,53 +27,62 @@ export function OverlayWindow() {
     }
   }, [heroes.length, setHeroes]);
 
-  const refresh = async (forceTeam?: 'radiant' | 'dire') => {
+  // Optional prediction is isolated: its failure clears only the win-probability
+  // display, never the recommendations.
+  const refreshWinProbability = useCallback(async () => {
     try {
-      const [state, status] = await Promise.all([
-        api.getDraftState(),
-        api.getGsiStatus(),
-      ]);
-      setDraft(state);
-      setGsiLive(status.running);
-
-      // Recommend for the team whose turn it is (or keep the last selection)
-      const turn = state.current_pick ?? selectedRef.current;
-      if (forceTeam) {
-        selectedRef.current = forceTeam;
-      } else {
-        selectedRef.current = turn;
-      }
-
-      const [recs, radiantProb] = await Promise.all([
-        api.getRecommendations({ team: selectedRef.current, limit: 3 }),
-        api.predictDraftValue('radiant'),
-      ]);
-      setRecommendations(recs);
-      setWinProb({ radiant: radiantProb, dire: 1 - radiantProb });
+      setRadiantWinProb(await api.predictDraftValue('radiant'));
     } catch {
-      // Backend not ready yet
+      setRadiantWinProb(null);
     }
-  };
+  }, []);
 
-  // Listen for live GSI updates and poll on mount
+  useRecommendationFeed({
+    getTeam: () => selectedRef.current,
+    limit: 3,
+    onDraft: setDraft,
+    onRecommendations: (next) => {
+      setRecommendations(next);
+      void refreshWinProbability();
+    },
+    onError: () => {
+      // Keep the last good recommendations; the draft is still usable.
+    },
+    pollMs: 15_000,
+  });
+
+  // The player's own side, reported by Dota.
   useEffect(() => {
-    const unlisten = listen('gsi-update', () => {
-      void refresh();
+    const unlisten = listen<TeamSide>('gsi-team', (event) => {
+      if (event.payload === 'radiant' || event.payload === 'dire') {
+        selectedRef.current = event.payload;
+      }
     });
-
-    void refresh();
-
-    const interval = window.setInterval(() => {
-      void refresh();
-    }, 5000);
-
     return () => {
       unlisten.then((fn) => fn());
+    };
+  }, []);
+
+  // GSI health indicator, independent of recommendation work.
+  useEffect(() => {
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const status = await api.getGsiStatus();
+        if (!cancelled) setGsiLive(status.running);
+      } catch {
+        if (!cancelled) setGsiLive(false);
+      }
+    };
+    void poll();
+    const interval = window.setInterval(poll, 15_000);
+    return () => {
+      cancelled = true;
       window.clearInterval(interval);
     };
   }, []);
 
-  const radiantProb = winProb ? winProb.radiant * 100 : 50;
+  const radiantPercent = radiantWinProb === null ? null : radiantWinProb * 100;
   const radiantPicks = draft?.radiant_picks ?? [];
   const direPicks = draft?.dire_picks ?? [];
   const topPicks = recommendations?.top_picks ?? [];
@@ -106,25 +113,31 @@ export function OverlayWindow() {
           </div>
         </div>
 
-        {/* Win probability */}
+        {/* Win probability (optional ML; hidden value when unavailable) */}
         <div className="px-3 pt-3">
           <div className="flex items-center justify-between text-xs font-semibold mb-1">
             <span className="flex items-center gap-1 text-dota-text">
               <Shield className="w-3.5 h-3.5 text-green-400" /> Radiant
             </span>
             <span className="font-mono text-dota-text">
-              {radiantProb.toFixed(1)}%
+              {radiantPercent === null ? '—' : `${radiantPercent.toFixed(1)}%`}
             </span>
             <span className="flex items-center gap-1 text-dota-text">
               Dire <Sword className="w-3.5 h-3.5 text-red-400" />
             </span>
           </div>
           <div className="h-2 bg-dota-border rounded-full overflow-hidden flex">
-            <div
-              className="h-full bg-green-500/80 transition-all duration-500"
-              style={{ width: `${radiantProb}%` }}
-            />
-            <div className="h-full flex-1 bg-red-500/80 transition-all duration-500" />
+            {radiantPercent === null ? (
+              <div className="h-full w-full bg-dota-border" />
+            ) : (
+              <>
+                <div
+                  className="h-full bg-green-500/80 transition-all duration-500"
+                  style={{ width: `${radiantPercent}%` }}
+                />
+                <div className="h-full flex-1 bg-red-500/80 transition-all duration-500" />
+              </>
+            )}
           </div>
         </div>
 

@@ -17,6 +17,21 @@ use gsi::GsiServer;
 use tauri::Manager;
 use tracing::info;
 
+/// Rotate the diagnostic log once it exceeds this size. One backup is kept.
+const MAX_LOG_BYTES: u64 = 5 * 1024 * 1024;
+
+fn rotate_log_if_needed(log_path: &std::path::Path, max_bytes: u64) {
+    let Ok(metadata) = std::fs::metadata(log_path) else {
+        return;
+    };
+    if metadata.len() <= max_bytes {
+        return;
+    }
+    let rotated = log_path.with_extension("log.1");
+    let _ = std::fs::remove_file(&rotated);
+    let _ = std::fs::rename(log_path, rotated);
+}
+
 /// Initialize tracing subscriber writing to a file (and stdout as fallback).
 /// This captures the app's `tracing::info!/warn!/error!` calls that
 /// `tauri_plugin_log` (which bridges the `log` crate) does not see.
@@ -27,6 +42,7 @@ fn init_file_logging() {
         .join("logs");
     let _ = std::fs::create_dir_all(&log_dir);
     let log_path = log_dir.join("app-diagnostics.log");
+    rotate_log_if_needed(&log_path, MAX_LOG_BYTES);
 
     // ort emits ~40 lines of session-init INFO under `ort::logging`; keep that
     // quiet while still surfacing the one-time load notice under
@@ -184,6 +200,13 @@ pub fn run() {
                 }
             };
 
+            // Gate the ML component from persisted settings. This happens before
+            // the GSI listener can serve a recommendation request.
+            {
+                let mut engine_guard = engine.lock().unwrap();
+                engine_guard.set_ml_enabled(config.ml_enabled);
+            }
+
             // Load the ONNX model + runtime (non-fatal). A configured model path
             // wins if it exists; otherwise fall back to the bundled resource.
             // ml::load_model locates onnxruntime.dll itself (next to the model,
@@ -240,4 +263,37 @@ pub fn run() {
         })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::rotate_log_if_needed;
+
+    #[test]
+    fn test_rotate_log_keeps_one_backup_after_size_limit() {
+        let dir = std::env::temp_dir().join(format!(
+            "sda-log-test-{}-{}",
+            std::process::id(),
+            std::time::SystemTime::now()
+                .duration_since(std::time::UNIX_EPOCH)
+                .unwrap()
+                .as_nanos()
+        ));
+        std::fs::create_dir_all(&dir).unwrap();
+        let log = dir.join("app-diagnostics.log");
+        std::fs::write(&log, b"0123456789").unwrap();
+
+        rotate_log_if_needed(&log, 5);
+        assert!(!log.exists(), "oversized log should be moved");
+        let rotated = log.with_extension("log.1");
+        assert_eq!(std::fs::read(&rotated).unwrap(), b"0123456789");
+
+        // A log under the limit is left alone.
+        std::fs::write(&log, b"abc").unwrap();
+        rotate_log_if_needed(&log, 5);
+        assert!(log.exists());
+        assert_eq!(std::fs::read(&log).unwrap(), b"abc");
+
+        let _ = std::fs::remove_dir_all(&dir);
+    }
 }

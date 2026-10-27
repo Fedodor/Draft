@@ -181,6 +181,11 @@ export function SettingsPanel() {
             {gsi.last_error && (
               <p className="text-xs text-red-400">{gsi.last_error}</p>
             )}
+            {!gsi.auth_required && (
+              <p className="text-xs text-amber-400">
+                Auth token is empty: any local process can post a draft payload.
+              </p>
+            )}
             <code className="text-xs text-dota-textMuted bg-dota-bg px-2 py-1 rounded block whitespace-pre-wrap font-mono">
               {`gamestate_integration_smart_draft.cfg`}
             </code>
@@ -261,7 +266,7 @@ export function SettingsPanel() {
         <div className="space-y-4">
           <SettingItem
             label="Enable ML Recommendations"
-            description="Use trained model for enhanced predictions"
+            description="Experimental. The bundled model is near the 0.5 baseline; off by default."
           >
             <Toggle 
               checked={config.ml_enabled} 
@@ -278,17 +283,7 @@ export function SettingsPanel() {
               value={config.ml_model_path}
               onChange={(e) => setConfig({ ml_model_path: e.target.value })}
               className="w-full px-3 py-2 bg-dota-bg border border-dota-border rounded-lg text-sm text-dota-text focus:outline-none focus:ring-2 focus:ring-dota-accent focus:border-transparent font-mono"
-              placeholder="ml/models/draft_model.onnx"
-            />
-          </SettingItem>
-
-          <SettingItem
-            label="Auto-update Meta"
-            description="Fetch latest hero statistics from OpenDota"
-          >
-            <Toggle 
-              checked={config.auto_update_meta} 
-              onChange={(checked) => setConfig({ auto_update_meta: checked })} 
+              placeholder="ml/models/draft_model_xgboost_full.onnx"
             />
           </SettingItem>
 

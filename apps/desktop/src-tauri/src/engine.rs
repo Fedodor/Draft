@@ -3,12 +3,13 @@
 //! Implements a modular scoring system for hero recommendations
 
 use std::collections::HashMap;
+use std::hash::{Hash, Hasher};
 use std::sync::Arc;
 
 use crate::database::Database;
 use crate::models::*;
 use anyhow::Result;
-use parking_lot::RwLock;
+use parking_lot::{Mutex, RwLock};
 use tracing::{debug, info, warn};
 
 pub mod scorer;
@@ -26,6 +27,35 @@ fn team_label(team: TeamSide) -> &'static str {
     }
 }
 
+/// Component weights for the current ML mode. With ML disabled the remaining
+/// weights are renormalized so they still sum to 1.0.
+fn active_weights(ml_enabled: bool) -> [f32; 6] {
+    if ml_enabled {
+        return [W_MATCHUP, W_SYNERGY, W_COMPOSITION, W_META, W_COMFORT, W_ML];
+    }
+
+    let heuristic_sum = W_MATCHUP + W_SYNERGY + W_COMPOSITION + W_META + W_COMFORT;
+    [
+        W_MATCHUP / heuristic_sum,
+        W_SYNERGY / heuristic_sum,
+        W_COMPOSITION / heuristic_sum,
+        W_META / heuristic_sum,
+        W_COMFORT / heuristic_sum,
+        0.0,
+    ]
+}
+
+/// Weighted sum of the six components, clamped to [0, 1].
+fn weighted_total(values: [f32; 6], ml_enabled: bool) -> f32 {
+    let weights = active_weights(ml_enabled);
+    values
+        .iter()
+        .zip(weights.iter())
+        .map(|(value, weight)| value * weight)
+        .sum::<f32>()
+        .clamp(0.0, 1.0)
+}
+
 /// Main draft engine that maintains state and generates recommendations
 #[derive(Clone)]
 pub struct DraftEngine {
@@ -40,6 +70,20 @@ pub struct DraftEngine {
     database: Option<Arc<Database>>,
     undo_stack: Arc<RwLock<Vec<DraftAction>>>,
     active_patch: Option<String>,
+    /// Whether the ML component may contribute to the recommendation score.
+    ///
+    /// Wired from `AppConfig::ml_enabled`. It exists on the engine (not only in
+    /// config) because scoring happens on a hot path that must not re-read
+    /// SQLite. `false` removes the ML term and renormalizes the remaining
+    /// weights, so the score stays in [0, 1].
+    pub ml_enabled: bool,
+    /// Heroes the user undid manually during the current match. GSI ingestion
+    /// skips them until the next match reset, so a stale GSI snapshot cannot
+    /// silently re-add a manual correction.
+    suppressed_heroes: Arc<Mutex<std::collections::HashSet<HeroId>>>,
+    /// Short-lived, state-keyed cache shared by the main window and overlay.
+    /// The key covers every input of a recommendation, so a hit is safe.
+    recommendation_cache: Arc<Mutex<Vec<(u64, RecommendationSet)>>>,
 }
 
 #[derive(Default)]
@@ -110,6 +154,11 @@ impl DraftEngine {
             database: None,
             undo_stack: Arc::new(RwLock::new(Vec::new())),
             active_patch: None,
+            // Defaults to enabled for library/test callers. `lib.rs` overrides
+            // this from persisted config before serving any command.
+            ml_enabled: true,
+            suppressed_heroes: Arc::new(Mutex::new(std::collections::HashSet::new())),
+            recommendation_cache: Arc::new(Mutex::new(Vec::new())),
         }
     }
 
@@ -222,7 +271,7 @@ impl DraftEngine {
         Ok(())
     }
 
-    fn fallback_heroes() -> Vec<Hero> {
+    pub(crate) fn fallback_heroes() -> Vec<Hero> {
         vec![Hero {
             id: HeroId(1),
             name: "npc_dota_hero_axe".to_string(),
@@ -415,6 +464,7 @@ impl DraftEngine {
         state.pick_number += 1;
         state.timestamp = chrono::Utc::now().timestamp();
         drop(state);
+        self.invalidate_recommendation_cache();
 
         self.undo_stack.write().push(DraftAction::Pick {
             pick: pick_for_log.clone(),
@@ -434,6 +484,7 @@ impl DraftEngine {
         state.bans.push(ban.clone());
         state.timestamp = chrono::Utc::now().timestamp();
         drop(state);
+        self.invalidate_recommendation_cache();
 
         self.undo_stack.write().push(DraftAction::Ban {
             ban: ban_for_log.clone(),
@@ -466,9 +517,25 @@ impl DraftEngine {
             state.available_heroes.sort_by_key(|a| a.0);
         }
         state.timestamp = chrono::Utc::now().timestamp();
+        drop(state);
+        self.invalidate_recommendation_cache();
+
+        // Remember the manual correction so the next GSI snapshot does not
+        // immediately re-add the same action.
+        self.suppressed_heroes.lock().insert(action.hero_id());
 
         info!("Undid {:?}", action);
         Some(action)
+    }
+
+    /// Whether the user manually undid this hero during the current match.
+    pub fn is_suppressed(&self, hero_id: &HeroId) -> bool {
+        self.suppressed_heroes.lock().contains(hero_id)
+    }
+
+    /// Let an explicit manual action win over an earlier manual undo.
+    pub fn lift_suppression(&self, hero_id: &HeroId) {
+        self.suppressed_heroes.lock().remove(hero_id);
     }
 
     /// Number of actions currently available to undo.
@@ -491,6 +558,8 @@ impl DraftEngine {
         };
         drop(state);
         self.undo_stack.write().clear();
+        self.suppressed_heroes.lock().clear();
+        self.invalidate_recommendation_cache();
         info!("Draft reset");
     }
 
@@ -513,17 +582,21 @@ impl DraftEngine {
         let composition = self.scorer.composition_scorer.score(hero, state, team);
         let meta = self.get_meta_score(&hero.id);
         let comfort = self.get_comfort_score(&hero.id);
-        let ml = match &self.scorer.ml_scorer {
-            Some(ml_scorer) => ml_scorer.score(hero, state, team),
-            None => 0.5,
+        let ml = if self.ml_enabled {
+            match &self.scorer.ml_scorer {
+                Some(ml_scorer) => ml_scorer.score(hero, state, team),
+                None => 0.5,
+            }
+        } else {
+            // Skip inference entirely when the user disabled ML. The value is
+            // still reported as neutral for a stable breakdown shape.
+            0.5
         };
-        let total = (matchup * W_MATCHUP
-            + synergy * W_SYNERGY
-            + composition * W_COMPOSITION
-            + meta * W_META
-            + comfort * W_COMFORT
-            + ml * W_ML)
-            .clamp(0.0, 1.0);
+
+        let total = weighted_total(
+            [matchup, synergy, composition, meta, comfort, ml],
+            self.ml_enabled,
+        );
 
         ScoreBreakdown {
             matchup,
@@ -534,6 +607,83 @@ impl DraftEngine {
             ml,
             total,
         }
+    }
+
+    /// Enable or disable the ML component at runtime. Disabling it also
+    /// renormalizes the heuristic weights (see [`active_weights`]) and drops
+    /// cached recommendations.
+    pub fn set_ml_enabled(&mut self, enabled: bool) {
+        if self.ml_enabled != enabled {
+            self.ml_enabled = enabled;
+            self.invalidate_recommendation_cache();
+            info!(
+                "ML contribution {}",
+                if enabled { "enabled" } else { "disabled" }
+            );
+        }
+    }
+
+    /// Weights for the six components. When ML is disabled its weight is
+    /// removed and the remaining weights are renormalized so their sum is 1.0.
+    /// This keeps the displayed score on the same scale and leaves the relative
+    /// ordering of the heuristic components unchanged.
+    fn recommendation_key(&self, team: TeamSide, limit: usize) -> u64 {
+        let state = self.state.read();
+        let mut hasher = std::collections::hash_map::DefaultHasher::new();
+        team.hash(&mut hasher);
+        limit.hash(&mut hasher);
+        self.ml_enabled.hash(&mut hasher);
+        state.patch_version.hash(&mut hasher);
+        state.current_pick.hash(&mut hasher);
+        state.is_picking_phase.hash(&mut hasher);
+        for pick in state.radiant_picks.iter().chain(state.dire_picks.iter()) {
+            pick.hero_id.hash(&mut hasher);
+            pick.team.hash(&mut hasher);
+            pick.order.hash(&mut hasher);
+        }
+        for ban in &state.bans {
+            ban.hero_id.hash(&mut hasher);
+            ban.team.hash(&mut hasher);
+            ban.order.hash(&mut hasher);
+        }
+        for hero_id in &state.available_heroes {
+            hero_id.hash(&mut hasher);
+        }
+        hasher.finish()
+    }
+
+    /// Cached variant of [`Self::get_recommendations`] used by the IPC layer.
+    ///
+    /// The main window and the overlay issue the same request for the same
+    /// draft; the cache makes the second caller reuse the first result instead
+    /// of repeating all inference. The key covers every scoring input, so a hit
+    /// cannot return a result for a different state.
+    pub fn get_recommendations_cached(&self, team: TeamSide, limit: usize) -> RecommendationSet {
+        let key = self.recommendation_key(team, limit);
+        {
+            let cache = self.recommendation_cache.lock();
+            if let Some((_, cached)) = cache.iter().find(|(k, _)| *k == key) {
+                return cached.clone();
+            }
+        }
+
+        let result = self.get_recommendations(team, limit);
+        let mut cache = self.recommendation_cache.lock();
+        cache.retain(|(k, _)| *k != key);
+        cache.push((key, result.clone()));
+        if cache.len() > 4 {
+            cache.remove(0);
+        }
+        result
+    }
+
+    /// Number of cached recommendation entries (test/diagnostic helper).
+    pub fn recommendation_cache_len(&self) -> usize {
+        self.recommendation_cache.lock().len()
+    }
+
+    fn invalidate_recommendation_cache(&self) {
+        self.recommendation_cache.lock().clear();
     }
 
     /// Generate recommendations for the current draft state
@@ -576,14 +726,14 @@ impl DraftEngine {
                 explanations.push("High comfort hero".to_string());
             }
 
-            if breakdown.ml > 0.55 {
+            if self.ml_enabled && breakdown.ml > 0.55 {
                 explanations.push(format!(
-                    "ML model favors this pick ({:.0}%)",
+                    "Model estimate: {:.0}% for this pick (experimental)",
                     breakdown.ml * 100.0
                 ));
-            } else if breakdown.ml < 0.45 {
+            } else if self.ml_enabled && breakdown.ml < 0.45 {
                 explanations.push(format!(
-                    "ML model dislikes this pick ({:.0}%)",
+                    "Model estimate: {:.0}% against this pick (experimental)",
                     breakdown.ml * 100.0
                 ));
             }
@@ -591,8 +741,9 @@ impl DraftEngine {
             scored_heroes.push((hero_id.clone(), breakdown.total, explanations));
         }
 
-        // Sort by score descending
-        scored_heroes.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        // Sort by score descending. `total_cmp` gives a total order even if a
+        // component ever produces NaN, instead of panicking on `unwrap`.
+        scored_heroes.sort_by(|a, b| b.1.total_cmp(&a.1));
 
         let total = scored_heroes.len();
         let saturated = scored_heroes.iter().filter(|(_, s, _)| *s >= 1.0).count();
@@ -815,10 +966,12 @@ impl DraftEngine {
 
     pub fn set_player_profile(&mut self, profile: PlayerProfile) {
         self.player_profile = Some(profile);
+        self.invalidate_recommendation_cache();
     }
 
     pub fn update_meta(&mut self, meta: MetaData) {
         self.meta_data = meta;
+        self.invalidate_recommendation_cache();
     }
 }
 
@@ -915,6 +1068,162 @@ mod tests {
         assert!(engine
             .score_breakdown(&HeroId(999), TeamSide::Radiant)
             .is_none());
+    }
+
+    #[test]
+    fn test_weights_are_renormalized_when_ml_is_disabled() {
+        let enabled = active_weights(true);
+        let disabled = active_weights(false);
+        assert!((enabled.iter().sum::<f32>() - 1.0).abs() < 1e-6);
+        assert!((disabled.iter().sum::<f32>() - 1.0).abs() < 1e-6);
+        assert_eq!(disabled[5], 0.0);
+        assert!((disabled[0] - W_MATCHUP / 0.75).abs() < 1e-6);
+
+        // A neutral vector scores 0.5 in both modes, so disabling ML does not
+        // shift the scale for untouched components.
+        assert!((weighted_total([0.5; 6], true) - 0.5).abs() < 1e-6);
+        assert!((weighted_total([0.5; 6], false) - 0.5).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_ml_gate_changes_only_the_ml_term() {
+        let mut engine = engine_with_heroes(2);
+        engine.ml_enabled = true;
+        let with_ml = engine
+            .score_breakdown(&HeroId(1), TeamSide::Radiant)
+            .unwrap();
+        engine.set_ml_enabled(false);
+        let without_ml = engine
+            .score_breakdown(&HeroId(1), TeamSide::Radiant)
+            .unwrap();
+
+        // Component values are unchanged; only the combination differs.
+        assert!((with_ml.matchup - without_ml.matchup).abs() < 1e-6);
+        assert!((with_ml.ml - without_ml.ml).abs() < 1e-6);
+        // Disabling ML removes its neutral 0.5 contribution and renormalizes
+        // the remaining weights.
+        let heuristic_sum = W_MATCHUP + W_SYNERGY + W_COMPOSITION + W_META + W_COMFORT;
+        let expected_without = (with_ml.matchup * W_MATCHUP
+            + with_ml.synergy * W_SYNERGY
+            + with_ml.composition * W_COMPOSITION
+            + with_ml.meta * W_META
+            + with_ml.comfort * W_COMFORT)
+            / heuristic_sum;
+        assert!((without_ml.total - expected_without).abs() < 1e-5);
+        let expected_with = expected_without * heuristic_sum + with_ml.ml * W_ML;
+        assert!((with_ml.total - expected_with).abs() < 1e-5);
+    }
+
+    #[test]
+    fn test_recommendation_cache_hits_and_invalidates_on_pick() {
+        let engine = engine_with_heroes(3);
+        let first = engine.get_recommendations_cached(TeamSide::Radiant, 5);
+        assert_eq!(engine.recommendation_cache_len(), 1);
+        let second = engine.get_recommendations_cached(TeamSide::Radiant, 5);
+        assert_eq!(engine.recommendation_cache_len(), 1);
+        assert_eq!(first.top_picks.len(), second.top_picks.len());
+        assert_eq!(first.top_picks[0].hero_id, second.top_picks[0].hero_id);
+
+        engine.add_pick(radiant_pick(1, 1));
+        assert_eq!(
+            engine.recommendation_cache_len(),
+            0,
+            "a draft mutation must invalidate cached recommendations"
+        );
+    }
+
+    #[test]
+    fn test_undo_suppresses_hero_until_next_match() {
+        let engine = engine_with_heroes(3);
+        engine.add_pick(radiant_pick(1, 1));
+        assert!(!engine.is_suppressed(&HeroId(1)));
+        engine.undo_last_action();
+        assert!(engine.is_suppressed(&HeroId(1)));
+        engine.reset();
+        assert!(!engine.is_suppressed(&HeroId(1)));
+    }
+
+    /// Latency benchmark for the real recommendation path.
+    ///
+    /// This is ignored by default because it needs the bundled ONNX model and
+    /// runtime. Run it explicitly:
+    /// `cargo test --lib bench_recommendation_latency -- --ignored --nocapture`
+    #[test]
+    #[ignore = "benchmark; requires bundled ONNX model"]
+    fn bench_recommendation_latency() {
+        let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let dll = manifest.join("resources/onnxruntime.dll");
+        let model = manifest.join("../../../ml/models/draft_model_xgboost_full.onnx");
+        if !dll.exists() || !model.exists() {
+            eprintln!("skipping benchmark: model or onnxruntime.dll missing");
+            return;
+        }
+        std::env::set_var("ORT_DYLIB_PATH", &dll);
+        crate::ml::get_ml_engine()
+            .write()
+            .load_model(&model.to_string_lossy())
+            .expect("load bundled model");
+        eprintln!(
+            "bench: ml status loaded={} features={}",
+            crate::ml::get_ml_engine().read().status().loaded,
+            crate::ml::get_ml_engine().read().status().feature_count
+        );
+
+        let mut engine = engine_with_heroes(120);
+        let ml_scorer = MLScorer::new(
+            HashMap::new(),
+            engine.meta_data.clone(),
+            engine.hero_db.clone(),
+            HashMap::new(),
+        );
+        engine.scorer.set_ml_scorer(ml_scorer);
+
+        // Warm-up (feature schema + ORT session).
+        let _ = engine.get_recommendations(TeamSide::Radiant, 10);
+
+        // Direct ML cost for a single candidate, to separate it from the rest
+        // of the recommendation path.
+        if let Some(scorer) = engine.scorer.ml_scorer.as_ref() {
+            let state = engine.get_state();
+            let hero = engine.hero_db[0].clone();
+            let start = std::time::Instant::now();
+            for _ in 0..10 {
+                let _ = scorer.score(&hero, &state, TeamSide::Radiant);
+            }
+            eprintln!(
+                "bench: single MLScorer::score avg={:.3} ms (10 calls)",
+                start.elapsed().as_secs_f64() * 100.0
+            );
+        }
+
+        for ml_enabled in [false, true] {
+            engine.ml_enabled = ml_enabled;
+            let iterations = 3;
+            let start = std::time::Instant::now();
+            for _ in 0..iterations {
+                let _ = engine.get_recommendations(TeamSide::Radiant, 10);
+            }
+            let elapsed = start.elapsed();
+            eprintln!(
+                "bench: ml_enabled={} heroes={} avg={:.1} ms/request ({} iterations)",
+                ml_enabled,
+                engine.hero_db.len(),
+                elapsed.as_secs_f64() * 1000.0 / iterations as f64,
+                iterations
+            );
+        }
+
+        // Cache hit path: same state, same team/limit.
+        engine.ml_enabled = true;
+        engine.get_recommendations_cached(TeamSide::Radiant, 10);
+        let start = std::time::Instant::now();
+        for _ in 0..100 {
+            let _ = engine.get_recommendations_cached(TeamSide::Radiant, 10);
+        }
+        eprintln!(
+            "bench: cache-hit avg={:.3} ms/request (100 iterations)",
+            start.elapsed().as_secs_f64() * 10.0
+        );
     }
 
     fn engine_with_heroes(count: i32) -> DraftEngine {

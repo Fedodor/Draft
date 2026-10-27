@@ -30,6 +30,17 @@ impl Default for SearchConfig {
     }
 }
 
+impl SearchConfig {
+    /// Clamp user-supplied bounds so a single IPC call cannot request an
+    /// unbounded tree search. Returns the config unchanged when already valid.
+    pub fn sanitized(mut self) -> Self {
+        self.max_candidates = self.max_candidates.clamp(1, 50);
+        self.max_depth = self.max_depth.min(3);
+        self.beam_width = self.beam_width.clamp(1, 20);
+        self
+    }
+}
+
 /// Result of a simulated pick evaluation
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct SimulationResult {
@@ -93,7 +104,7 @@ impl DraftSimulator {
         }
 
         // Sort by expected value descending
-        results.sort_by(|a, b| b.expected_value.partial_cmp(&a.expected_value).unwrap());
+        results.sort_by(|a, b| b.expected_value.total_cmp(&a.expected_value));
 
         results.into_iter().take(limit).collect()
     }
@@ -136,7 +147,7 @@ impl DraftSimulator {
             scored.push((hero_id.clone(), score));
         }
 
-        scored.sort_by(|a, b| b.1.partial_cmp(&a.1).unwrap());
+        scored.sort_by(|a, b| b.1.total_cmp(&a.1));
         scored.into_iter().take(max).map(|(id, _)| id).collect()
     }
 
@@ -226,9 +237,18 @@ impl DraftSimulator {
         // Comfort
         total += self.engine.get_comfort_score(&hero.id) * W_COMFORT;
 
-        // ML (if available)
-        if let Some(ml_scorer) = self.ml_scorer() {
-            total += ml_scorer.score(hero, state, team) * W_ML;
+        // ML (if available and enabled)
+        let ml_enabled = self.engine.ml_enabled;
+        if ml_enabled {
+            if let Some(ml_scorer) = self.ml_scorer() {
+                total += ml_scorer.score(hero, state, team) * W_ML;
+            }
+        }
+
+        if !ml_enabled {
+            // Remove the absent ML weight and keep the score on a 0..1 scale.
+            let heuristic_sum = W_MATCHUP + W_SYNERGY + W_COMPOSITION + W_META + W_COMFORT;
+            total /= heuristic_sum;
         }
 
         total.clamp(0.0, 1.0)

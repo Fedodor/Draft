@@ -10,7 +10,7 @@ use crate::gsi::GsiServer;
 use crate::ml::get_ml_engine;
 use crate::models::*;
 use std::sync::Arc;
-use tauri::{command, AppHandle, State};
+use tauri::{command, AppHandle, Manager, State};
 use tracing::{error, info};
 
 fn parse_team(team: &str) -> Result<TeamSide, CommandError> {
@@ -34,8 +34,8 @@ pub async fn get_recommendations(
     let engine = engine.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
         let engine_guard = engine.lock().unwrap();
-        let recommendations = (*engine_guard).get_recommendations(team_side, limit);
-        info!(
+        let recommendations = (*engine_guard).get_recommendations_cached(team_side, limit);
+        tracing::debug!(
             "get_recommendations(team={}, limit={}): {} categories, top pick: {:?}",
             team,
             limit,
@@ -60,10 +60,17 @@ pub async fn get_score_breakdown(
     team: String,
 ) -> Result<ScoreBreakdown, CommandError> {
     let team_side = parse_team(&team)?;
-    let engine_guard = engine.lock().unwrap();
-    (*engine_guard)
-        .score_breakdown(&HeroId(hero_id), team_side)
-        .ok_or(CommandError::InvalidHeroId { hero_id })
+    let engine = engine.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let engine_guard = engine.lock().unwrap();
+        (*engine_guard)
+            .score_breakdown(&HeroId(hero_id), team_side)
+            .ok_or(CommandError::InvalidHeroId { hero_id })
+    })
+    .await
+    .map_err(|e| CommandError::Internal {
+        message: e.to_string(),
+    })?
 }
 
 fn count_categories(recs: &RecommendationSet) -> usize {
@@ -83,7 +90,7 @@ pub async fn get_search_recommendations(
 ) -> Result<Vec<crate::engine::simulation::SimulationResult>, CommandError> {
     let team_side = parse_team(&team)?;
     let limit = limit.unwrap_or(10);
-    let config = config.unwrap_or_default();
+    let config = config.unwrap_or_default().sanitized();
     let engine = engine.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
         let engine_guard = engine.lock().unwrap();
@@ -124,6 +131,7 @@ pub async fn manual_pick(
     (*engine_guard)
         .validate_pick(&pick)
         .map_err(CommandError::from)?;
+    (*engine_guard).lift_suppression(&pick.hero_id);
     (*engine_guard).add_pick(pick);
     info!("Manual pick added: hero_id={}, team={}", hero_id, team);
     Ok(())
@@ -148,6 +156,7 @@ pub async fn manual_ban(
     (*engine_guard)
         .validate_ban(&ban)
         .map_err(CommandError::from)?;
+    (*engine_guard).lift_suppression(&ban.hero_id);
     (*engine_guard).add_ban(ban);
     info!("Manual ban added: hero_id={}, team={}", hero_id, team);
     Ok(())
@@ -196,6 +205,7 @@ pub async fn get_hero_details(
 pub async fn set_config(
     db: State<'_, Arc<Database>>,
     gsi: State<'_, GsiServer>,
+    engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
     config: AppConfig,
 ) -> Result<(), CommandError> {
     config
@@ -206,7 +216,15 @@ pub async fn set_config(
     // listener keeps its current binding until `restart_gsi` is called.
     gsi.inner()
         .configure(config.gsi_port, config.gsi_auth_token.clone());
-    info!("Config saved (gsi_port={})", config.gsi_port);
+    // Apply ML gating immediately; the model itself is loaded at startup.
+    {
+        let mut engine_guard = engine.lock().unwrap();
+        engine_guard.set_ml_enabled(config.ml_enabled);
+    }
+    info!(
+        "Config saved (gsi_port={}, ml_enabled={})",
+        config.gsi_port, config.ml_enabled
+    );
     Ok(())
 }
 
@@ -316,21 +334,26 @@ pub async fn predict_draft_value(
     let engine = engine.inner().clone();
     let ml_engine = get_ml_engine();
     tauri::async_runtime::spawn_blocking(move || {
-        let ml_engine_guard = ml_engine.read();
+        // Snapshot engine data first and drop its lock before touching the ML
+        // engine. This keeps a single lock order (engine -> ML) across all
+        // callers and avoids holding two global locks at once.
+        let (state, hero_db, hero_semantics, meta_data, matchup_data) = {
+            let engine_lock = engine.lock().unwrap();
+            (
+                (*engine_lock).get_state(),
+                engine_lock.hero_db.clone(),
+                engine_lock.hero_semantics.clone(),
+                engine_lock.meta_data.clone(),
+                engine_lock.matchup_data.clone(),
+            )
+        };
 
+        let ml_engine_guard = ml_engine.read();
         if !ml_engine_guard.status().loaded {
             return Err(CommandError::ModelError {
                 message: "ML model is not loaded".to_string(),
             });
         }
-
-        let engine_lock = engine.lock().unwrap();
-        let state = (*engine_lock).get_state();
-        let hero_db = engine_lock.hero_db.clone();
-        let hero_semantics = engine_lock.hero_semantics.clone();
-        let meta_data = engine_lock.meta_data.clone();
-        let matchup_data = engine_lock.matchup_data.clone();
-        drop(engine_lock);
 
         let feature_schema = ml_engine_guard.feature_schema();
         let features = crate::ml::build_feature_map(
@@ -377,19 +400,65 @@ pub async fn get_data_health(
 }
 
 #[command(rename_all = "snake_case")]
-pub fn load_ml_model(model_path: String) -> Result<(), CommandError> {
-    if !std::path::Path::new(&model_path).exists() {
-        return Err(CommandError::MissingModelFile { path: model_path });
-    }
+pub fn load_ml_model(app: AppHandle, model_path: String) -> Result<(), CommandError> {
+    let canonical = canonical_model_path(&app, &model_path)?;
 
     let ml_engine = get_ml_engine();
     let result = ml_engine
         .write()
-        .load_model(&model_path)
+        .load_model(&canonical.to_string_lossy())
         .map_err(|e| CommandError::ModelError {
             message: e.to_string(),
         });
     result
+}
+
+/// Resolve a user-supplied model path and reject anything outside the roots the
+/// app owns. This prevents loading an arbitrary ONNX file (and, with it, an
+/// `onnxruntime.dll` sitting next to it) from an untrusted directory.
+fn canonical_model_path(
+    app: &AppHandle,
+    requested: &str,
+) -> Result<std::path::PathBuf, CommandError> {
+    let path = std::path::Path::new(requested);
+    if !path.exists() {
+        return Err(CommandError::MissingModelFile {
+            path: requested.to_string(),
+        });
+    }
+
+    let canonical = path.canonicalize().map_err(|e| CommandError::Internal {
+        message: format!("Failed to resolve model path: {e}"),
+    })?;
+
+    let mut roots = Vec::new();
+    if let Ok(dir) = app.path().app_data_dir() {
+        roots.push(dir);
+    }
+    if let Ok(dir) = app.path().resource_dir() {
+        roots.push(dir);
+    }
+    if let Ok(dir) = std::env::current_dir() {
+        roots.push(dir.join("ml").join("models"));
+    }
+    // Development fallback for `cargo tauri dev` from the repository root.
+    roots.push(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../ml/models"));
+
+    let allowed = roots
+        .iter()
+        .filter_map(|root| root.canonicalize().ok())
+        .any(|root| canonical.starts_with(&root));
+
+    if !allowed {
+        return Err(CommandError::Internal {
+            message: format!(
+                "Model path is outside the allowed model directories: {}",
+                canonical.display()
+            ),
+        });
+    }
+
+    Ok(canonical)
 }
 
 #[command(rename_all = "snake_case")]

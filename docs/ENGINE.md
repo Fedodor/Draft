@@ -69,7 +69,10 @@ When `get_recommendations(team, limit)` is called:
     | Comfort      | 0.05   |
 
 3.  Because weights sum to 1.0 and inputs are bounded, the total stays in `[0, 1]` without saturating the clamp — scores remain discriminative.
+
+    **ML is opt-in.** `AppConfig::ml_enabled` defaults to `false` because the bundled model's held-out test ROC-AUC (0.5388) is close to the 0.5 baseline. When it is disabled the ML term is skipped entirely (no ONNX inference), the ML component reports neutral `0.5`, and the remaining weights are renormalized to sum to 1.0 (`active_weights` / `weighted_total` in `engine.rs`). If a model is unavailable or inference fails, the engine still returns recommendations with ML treated as neutral — the heuristic path never depends on the model.
 4.  The top N heroes are categorized (top/safe/aggressive/comfort/anti-meta) and returned with explanations.
+5.  Results are memoized by a hash of the full draft state, team, limit, and ML flag. The main window and the overlay share the cache, so an identical request costs no extra inference.
 
 ## Database Operations
 

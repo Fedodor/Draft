@@ -91,6 +91,42 @@ NAMED_SEMANTICS = {
 }
 
 
+def resolve_matchup_hero_id(value: Any, name_to_id: Dict[str, int]) -> Optional[int]:
+    """Normalize a matchup hero reference to a numeric hero id.
+
+    The matchup writer changed shape over time: current parquet files store
+    numeric ``hero_a``/``hero_b`` ids (also as floats once pandas widens the
+    column), while older exports stored normalized hero names, sometimes
+    prefixed with ``_``. Both shapes are accepted so the matchup block can be
+    regenerated from either source.
+    """
+    if value is None:
+        return None
+
+    # pandas represents a missing scalar as NaN/NA.
+    try:
+        if pd.isna(value):
+            return None
+    except (TypeError, ValueError):
+        pass
+
+    if isinstance(value, str):
+        text = value.strip().lstrip('_')
+        if not text:
+            return None
+        try:
+            numeric = int(float(text))
+        except ValueError:
+            return name_to_id.get(text.lower())
+    else:
+        try:
+            numeric = int(value)
+        except (TypeError, ValueError):
+            return None
+
+    return numeric if numeric > 0 else None
+
+
 class FeatureProcessor:
     def __init__(
         self,
@@ -180,33 +216,38 @@ class FeatureProcessor:
             print(f"Warning: failed to load hero win rates ({e})")
     
     def _load_hero_matchups(self) -> None:
-        """Load hero matchup winrates (hero_a vs hero_b)."""
+        """Load hero matchup winrates (hero_a vs hero_b).
+
+        Supports both historical shapes:
+        - the current writer: numeric ``hero_a``/``hero_b`` ids and
+          ``hero_a_winrate``;
+        - older exports: hero names in ``hero_a``/``hero_b`` and ``winrate``.
+        """
         matchup_file = self.output_dir / "hero_matchups.parquet"
         if not matchup_file.exists():
             return
         try:
             df = pd.read_parquet(matchup_file)
             heroes_file = ML_ROOT / "datasets" / "heroes.json"
+            name_to_id = {}
             if heroes_file.exists():
                 with open(heroes_file) as f:
                     roster = json.load(f)
-                name_to_id = {}
                 for hid_str, hero in roster.items():
                     name = hero.get('localized_name', '').lower().replace(' ', '_').replace("'", '').replace('-', '_')
                     name_to_id[name] = int(hid_str)
 
-                for _, row in df.iterrows():
-                    h_a_name = str(row.get('hero_a', '')).lstrip('_')
-                    h_b_name = str(row.get('hero_b', '')).lstrip('_')
-                    h_a = name_to_id.get(h_a_name)
-                    h_b = name_to_id.get(h_b_name)
-                    if h_a and h_b:
-                        if h_a not in self.hero_matchups:
-                            self.hero_matchups[h_a] = {}
-                        self.hero_matchups[h_a][h_b] = {
-                            'winrate': float(row.get('winrate', 0.5)),
-                            'games': int(row.get('games', 0)),
-                        }
+            for _, row in df.iterrows():
+                h_a = resolve_matchup_hero_id(row.get('hero_a'), name_to_id)
+                h_b = resolve_matchup_hero_id(row.get('hero_b'), name_to_id)
+                if h_a and h_b:
+                    winrate = row.get('hero_a_winrate', row.get('winrate', 0.5))
+                    if h_a not in self.hero_matchups:
+                        self.hero_matchups[h_a] = {}
+                    self.hero_matchups[h_a][h_b] = {
+                        'winrate': float(winrate),
+                        'games': int(row.get('games', 0)),
+                    }
             print(f"Loaded matchup data for {len(self.hero_matchups)} heroes")
         except Exception as e:
             print(f"Warning: failed to load hero matchups ({e})")

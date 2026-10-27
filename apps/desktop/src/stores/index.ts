@@ -54,8 +54,8 @@ const defaultConfig: AppConfig = {
   overlay_enabled: true,
   overlay_position: { x: 100, y: 100 },
   overlay_size: { width: 400, height: 600 },
-  ml_enabled: true,
-  ml_model_path: 'ml/models/draft_model.onnx',
+  ml_enabled: false,
+  ml_model_path: 'ml/models/draft_model_xgboost_full.onnx',
   auto_update_meta: true,
   preferred_language: 'en',
 };

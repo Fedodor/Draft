@@ -554,7 +554,7 @@ pub struct AppConfig {
     pub overlay_position: Position,
     #[serde(default = "default_size")]
     pub overlay_size: Size,
-    #[serde(default = "default_true")]
+    #[serde(default = "default_ml_enabled")]
     pub ml_enabled: bool,
     #[serde(default = "default_model_path")]
     pub ml_model_path: String,
@@ -577,7 +577,12 @@ fn default_size() -> Size {
     }
 }
 fn default_model_path() -> String {
-    "ml/models/draft_model.onnx".to_string()
+    "ml/models/draft_model_xgboost_full.onnx".to_string()
+}
+fn default_ml_enabled() -> bool {
+    // The bundled model is at ~0.539 test ROC-AUC (near the 0.5 baseline), so
+    // its 25% weight is opt-in until the model clears the quality gate.
+    false
 }
 fn default_language() -> String {
     "en".to_string()
@@ -604,7 +609,7 @@ impl Default for AppConfig {
             overlay_enabled: true,
             overlay_position: default_position(),
             overlay_size: default_size(),
-            ml_enabled: true,
+            ml_enabled: default_ml_enabled(),
             ml_model_path: default_model_path(),
             auto_update_meta: true,
             preferred_language: default_language(),
@@ -662,6 +667,13 @@ mod tests {
         let config = AppConfig::default();
         assert!(config.gsi_auto_start);
         assert!(config.gsi_auth_token.is_none());
+        assert!(
+            !config.ml_enabled,
+            "ML is opt-in until it clears the quality gate"
+        );
+        assert!(config
+            .ml_model_path
+            .ends_with("draft_model_xgboost_full.onnx"));
         assert!(config.validate().is_ok());
 
         let invalid = AppConfig {

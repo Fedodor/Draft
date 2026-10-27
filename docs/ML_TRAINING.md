@@ -226,7 +226,9 @@ Best results with **all patches** (more data beats patch consistency). Filtering
 python training/trainer.py --export-onnx --model-path ml/models/best_model.joblib
 ```
 
-Output: `ml/models/draft_model.onnx` — Ready for `ort` (ONNX Runtime) in Rust.
+Output: `ml/models/draft_model_xgboost_full.onnx` plus its `_schema.json` and `_manifest.json` — ready for `ort` (ONNX Runtime) in Rust. The trainer emits this exact name; `ml/models/draft_model.onnx` is not a file this repository ships.
+
+> ML is **opt-in at runtime**: `ml_enabled` defaults to `false` until a model clears the quality gate (ROC-AUC ≥ 0.60, Brier ≤ 0.235). The app works without a model.
 
 ### Rust Integration
 

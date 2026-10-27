@@ -1,0 +1,16 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "overlay",
+  "description": "Least-privilege capability for the always-on-top overlay window. It listens for draft events, hides itself, and drags; it does not need shell, filesystem, dialog, store, or logging access.",
+  "windows": ["overlay"],
+  "permissions": [
+    "core:default",
+    "core:event:default",
+    "core:app:default",
+    "core:window:default",
+    "core:window:allow-start-dragging",
+    "core:window:allow-hide",
+    "core:window:allow-show",
+    "core:window:allow-is-visible"
+  ]
+}

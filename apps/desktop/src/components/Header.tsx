@@ -1,6 +1,7 @@
-import { useEngineStore, useUIStore } from '../stores';
+import { useConfigStore, useEngineStore, useUIStore } from '../stores';
 import { useGsiStatus } from '../hooks/useGsiStatus';
 import { WebviewWindow } from '@tauri-apps/api/webviewWindow';
+import { LogicalPosition, LogicalSize } from '@tauri-apps/api/dpi';
 import { 
   GitBranch, 
   BarChart2, 
@@ -20,16 +21,48 @@ interface HeaderProps {
 
 export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
   const { setSelectedTeam } = useUIStore();
+  const config = useConfigStore((state) => state.config);
   const patchVersion = useEngineStore((state) => state.draft.patch_version);
   const gsi = useGsiStatus();
   const [overlayVisible, setOverlayVisible] = useState(false);
 
+  // Apply persisted overlay geometry and visibility. This runs on mount and
+  // whenever the saved settings change, so the position/size/enable controls
+  // are real rather than decorative.
   useEffect(() => {
-    WebviewWindow.getByLabel('overlay')
-      .then((overlay) => overlay?.isVisible())
-      .then((visible) => { if (visible !== undefined) setOverlayVisible(visible); })
-      .catch(() => {});
-  }, []);
+    let cancelled = false;
+    const apply = async () => {
+      const overlay = await WebviewWindow.getByLabel('overlay');
+      if (!overlay || cancelled) return;
+
+      await overlay.setPosition(
+        new LogicalPosition(config.overlay_position.x, config.overlay_position.y),
+      );
+      await overlay.setSize(
+        new LogicalSize(config.overlay_size.width, config.overlay_size.height),
+      );
+
+      if (!config.overlay_enabled) {
+        await overlay.hide();
+        if (!cancelled) setOverlayVisible(false);
+        return;
+      }
+
+      const visible = await overlay.isVisible();
+      if (!cancelled) setOverlayVisible(visible);
+    };
+
+    void apply().catch(() => {});
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    config.overlay_enabled,
+    config.overlay_position.x,
+    config.overlay_position.y,
+    config.overlay_size.width,
+    config.overlay_size.height,
+  ]);
 
   const toggleOverlay = async () => {
     const overlay = await WebviewWindow.getByLabel('overlay');
@@ -40,7 +73,8 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
     } else {
       await overlay.show();
       await overlay.setAlwaysOnTop(true);
-      await overlay.setFocus();
+      // Deliberately do not call setFocus(): stealing focus from Dota 2 during
+      // a draft is worse than an unfocused overlay.
       setOverlayVisible(true);
     }
   };

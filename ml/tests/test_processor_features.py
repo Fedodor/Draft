@@ -66,3 +66,61 @@ def test_start_time_defaults_to_zero_when_absent(feature_processor):
 
     assert features is not None
     assert features["start_time"] == 0
+
+
+@pytest.mark.parametrize(
+    ("value", "expected"),
+    [
+        (1, 1),
+        (145.0, 145),
+        ("155", 155),
+        (" 7 ", 7),
+        (0, None),
+        (-3, None),
+        (None, None),
+        (float("nan"), None),
+        ("", None),
+        ("_unknown_hero", None),
+    ],
+)
+def test_resolve_matchup_hero_id_numeric_shapes(value, expected):
+    assert processor.resolve_matchup_hero_id(value, {}) == expected
+
+
+def test_resolve_matchup_hero_id_accepts_legacy_names():
+    name_to_id = {"axe": 2, "crystal_maiden": 5}
+    assert processor.resolve_matchup_hero_id("Axe", name_to_id) == 2
+    assert processor.resolve_matchup_hero_id("_crystal_maiden", name_to_id) == 5
+    assert processor.resolve_matchup_hero_id("not_a_hero", name_to_id) is None
+
+
+def test_load_hero_matchups_reads_numeric_writer_shape(feature_processor, monkeypatch):
+    pd = pytest.importorskip("pandas")
+    frame = pd.DataFrame(
+        [
+            {"hero_a": 1, "hero_b": 2, "hero_a_winrate": 0.6, "games": 50},
+            {"hero_a": 3.0, "hero_b": 4.0, "hero_a_winrate": 0.4, "games": 60},
+        ]
+    )
+    monkeypatch.setattr(pd, "read_parquet", lambda _path: frame)
+    (feature_processor.output_dir / "hero_matchups.parquet").write_bytes(b"")
+
+    feature_processor.hero_matchups = {}
+    feature_processor._load_hero_matchups()
+
+    assert feature_processor.hero_matchups[1][2]["winrate"] == pytest.approx(0.6)
+    assert feature_processor.hero_matchups[3][4]["winrate"] == pytest.approx(0.4)
+
+
+def test_load_hero_matchups_reads_legacy_name_shape(feature_processor, monkeypatch):
+    pd = pytest.importorskip("pandas")
+    frame = pd.DataFrame(
+        [{"hero_a": "axe", "hero_b": "pudge", "winrate": 0.55, "games": 20}]
+    )
+    monkeypatch.setattr(pd, "read_parquet", lambda _path: frame)
+    (feature_processor.output_dir / "hero_matchups.parquet").write_bytes(b"")
+
+    feature_processor.hero_matchups = {}
+    feature_processor._load_hero_matchups()
+
+    assert feature_processor.hero_matchups[2][14]["winrate"] == pytest.approx(0.55)
