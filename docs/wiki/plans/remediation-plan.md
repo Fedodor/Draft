@@ -1,7 +1,7 @@
 ﻿# Remediation Plan
 
 - Type: Execution plan
-- Status: Implemented (Steps 1-8)
+- Status: Implemented (Steps 1-8; Step 9 post-remediation increment)
 - Canonical source: [`../../REMEDIATION_PLAN.md`](../../REMEDIATION_PLAN.md)
 - Source audit: [Project audit, 2026-10-22](../audits/project-audit-2026-10-22.md)
 
@@ -57,6 +57,10 @@ Step 7 is documented at [`../../STEP_07_GSI_SETTINGS.md`](../../STEP_07_GSI_SETT
 
 Step 8 is documented at [`../../STEP_08_CI.md`](../../STEP_08_CI.md), with its summary at [CI and quality gates](../ci/quality-gates.md). One script (`scripts/verify.ps1`) runs the gate locally and in CI.
 
+## Post-remediation increments
+
+Step 9 (2026-10-27) implements the previously dead meta layer: a patch-scoped meta snapshot exported from winrates/pickrates, seeded by `seed_matchups`, used in scoring and explanations, reported by health, and paired with label-based recommendation categories. Detail: [`../../STEP_09_META.md`](../../STEP_09_META.md); summary: [Patch meta data](../engine/meta.md).
+
 ## Related
 
 - [Secrets management](../security/secrets-management.md)
@@ -67,5 +71,6 @@ Step 8 is documented at [`../../STEP_08_CI.md`](../../STEP_08_CI.md), with its s
 - [Training pipeline](../ml/training-pipeline.md)
 - [Settings, GSI, and UI state](../engine/settings-gsi.md)
 - [CI and quality gates](../ci/quality-gates.md)
+- [Patch meta data](../engine/meta.md)
 - [Wiki index](../index.md)
 

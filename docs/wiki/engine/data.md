@@ -3,7 +3,7 @@
 - Type: Engine and data
 - Status: Implemented (Step 5)
 - Canonical source: [`../../STEP_05_DATA.md`](../../STEP_05_DATA.md)
-- Related: [`scoring.md`](scoring.md), [`ipc.md`](ipc.md), [Remediation plan](../plans/remediation-plan.md)
+- Related: [`scoring.md`](scoring.md), [`meta.md`](meta.md), [`ipc.md`](ipc.md), [Remediation plan](../plans/remediation-plan.md)
 
 ## Why it matters
 
@@ -31,18 +31,18 @@ Schema version 2 adds an `app_settings` key/value table. The active patch lives 
 ## Seeding
 
 - `seed_heroes` → `bulk_upsert_heroes` + `bulk_upsert_hero_semantics`, one transaction each.
-- `seed_matchups` → real data by default (`scoring_seed.json`), `bulk_upsert_matchups` + `bulk_upsert_synergies` + `set_active_patch`; `--synthetic` writes patch `synthetic`.
+- `seed_matchups` → real data by default (`scoring_seed.json`), `bulk_upsert_matchups` + `bulk_upsert_synergies` + `bulk_upsert_meta` + `set_active_patch`; `--synthetic` writes patch `synthetic` (including deterministic meta).
 - Re-running is idempotent. Rows from other patches are preserved, so delete a development database when switching from synthetic to real data.
 
 ## Health and runtime
 
-- `Database::health()` / Tauri `get_data_health` report schema version, row counts, active patch, WAL flag, and issues; startup logs them.
+- `Database::health()` / Tauri `get_data_health` report schema version, row counts (including `meta_hero_count`), active patch, WAL flag, and issues; startup logs them and flags a missing meta snapshot.
 - `Database::new` enables WAL; the health check verifies it.
 - `get_recommendations`, `get_search_recommendations`, `predict_draft_value`, and `get_data_health` run on `spawn_blocking`.
 
 ## Verified state
 
-`%APPDATA%\com.smartdraftassistant.app\smart_draft.db`: `schema 2, heroes 126, matchups 9052, synergies 7381, active_patch 7.41, journal wal`.
+`%APPDATA%\com.smartdraftassistant.app\smart_draft.db`: `schema 2, heroes 126, matchups 9052, synergies 7381, meta 126, active_patch 7.41, journal wal`.
 
 ## Residual risks
 

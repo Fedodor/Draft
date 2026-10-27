@@ -111,6 +111,7 @@ describe('manual draft IPC smoke test', () => {
       hero_count: 126,
       matchup_count: 9052,
       synergy_count: 7381,
+      meta_hero_count: 126,
       active_patch: '7.41',
       wal_enabled: true,
       healthy: true,

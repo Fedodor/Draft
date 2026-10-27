@@ -9,6 +9,10 @@ Sources:
 
 Synergy is the observed same-team pair winrate minus the average individual
 hero winrate, clamped to [-0.5, 0.5]. Only pairs with enough games are emitted.
+
+Meta rows combine a shrunk winrate with observed pickrate into a percentile
+score in [0, 1] where 0.5 is the median hero. Raw winrate and pickrate are
+exported alongside the score so the UI can explain it.
 """
 
 from __future__ import annotations
@@ -27,6 +31,11 @@ HEROES = ROOT / "infrastructure" / "seeders" / "heroes.json"
 SCHEMA = ROOT / "ml" / "models" / "draft_model_xgboost_full_schema.json"
 MIN_MATCHUP_GAMES = 20
 MIN_SYNERGY_GAMES = 50
+# Bayesian prior for winrate shrinkage: a hero with few games is pulled toward
+# 0.5 instead of dominating the meta ranking on a tiny sample.
+META_PRIOR_GAMES = 100.0
+META_WINRATE_WEIGHT = 0.75
+META_PICKRATE_WEIGHT = 0.25
 
 
 def active_patch() -> str:
@@ -52,6 +61,71 @@ def safe_name(localized_name: str) -> str:
         .replace("'", "")
         .replace("-", "_")
     )
+
+
+def build_meta_rows(
+    winrates_df: pd.DataFrame,
+    hero_ids: list[int],
+    pick_counts: dict[int, int],
+    total_matches: int,
+) -> list[dict]:
+    """Build one meta row per known hero.
+
+    Winrate is shrunk toward 0.5 before ranking so low-sample heroes do not
+    dominate. The exported score is a percentile blend in [0, 1]; 0.5 is the
+    median hero. Raw winrate/pickrate are kept for explainability.
+    """
+    known = set(hero_ids)
+    by_id = {int(row.hero_id): row for row in winrates_df.itertuples(index=False)}
+    rows: list[dict] = []
+
+    for hero_id in sorted(known):
+        row = by_id.get(hero_id)
+        games = int(row.games) if row is not None else 0
+        wins = int(row.wins) if row is not None else 0
+        raw_winrate = float(row.winrate) if row is not None else 0.5
+        smoothed = (wins + META_PRIOR_GAMES * 0.5) / (games + META_PRIOR_GAMES)
+        # Heroes without a feature column (e.g. brand-new heroes) have unknown
+        # pickrate; keep it missing so ranking does not treat them as unpicked.
+        raw_picks = pick_counts.get(hero_id)
+        pickrate = (
+            raw_picks / total_matches
+            if raw_picks is not None and total_matches > 0
+            else None
+        )
+        rows.append(
+            {
+                "hero_id": hero_id,
+                "games": games,
+                "winrate": raw_winrate,
+                "pickrate": pickrate,
+                "smoothed_winrate": smoothed,
+            }
+        )
+
+    if not rows:
+        return []
+
+    frame = pd.DataFrame(rows)
+    if len(frame) == 1:
+        frame["meta_score"] = 0.5
+    else:
+        winrate_rank = frame["smoothed_winrate"].rank(pct=True, method="average")
+        pickrate_rank = frame["pickrate"].rank(pct=True, method="average").fillna(0.5)
+        frame["meta_score"] = (
+            META_WINRATE_WEIGHT * winrate_rank + META_PICKRATE_WEIGHT * pickrate_rank
+        ).clip(0.0, 1.0)
+
+    return [
+        {
+            "hero_id": int(row.hero_id),
+            "games": int(row.games),
+            "winrate": round(float(row.winrate), 6),
+            "pickrate": round(float(row.pickrate) if pd.notna(row.pickrate) else 0.0, 6),
+            "meta_score": round(float(row.meta_score), 6),
+        }
+        for row in frame.itertuples(index=False)
+    ]
 
 
 def main() -> None:
@@ -137,6 +211,17 @@ def main() -> None:
             )
     synergies.sort(key=lambda row: (row["hero_id"], row["with_hero_id"]))
 
+    pick_counts = {
+        hero_ids[index]: int(radiant[:, index].sum() + dire[:, index].sum())
+        for index in range(len(hero_ids))
+    }
+    meta = build_meta_rows(
+        winrates_df,
+        sorted(known_ids),
+        pick_counts,
+        total_matches=int(len(features)),
+    )
+
     payload = {
         "generated_at": time.strftime("%Y-%m-%dT%H:%M:%S"),
         "patch_version": active_patch(),
@@ -149,13 +234,14 @@ def main() -> None:
             "matchup": MIN_MATCHUP_GAMES,
             "synergy": MIN_SYNERGY_GAMES,
         },
+        "meta": meta,
         "matchups": matchups,
         "synergies": synergies,
     }
     OUTPUT.write_text(json.dumps(payload, separators=(",", ":")), encoding="utf-8")
     print(
         f"Wrote {OUTPUT}: {len(matchups)} ordered matchups, "
-        f"{len(synergies)} synergy pairs "
+        f"{len(synergies)} synergy pairs, {len(meta)} meta rows "
         f"(skipped {skipped_unknown} rows with unknown hero ids)"
     )
 

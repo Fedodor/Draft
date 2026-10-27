@@ -558,11 +558,18 @@ impl DraftEngine {
             explanations.extend(self.scorer.synergy_scorer.explain(hero, &state, team));
             explanations.extend(self.scorer.composition_scorer.explain(hero, &state, team));
 
-            if breakdown.meta > 0.5 {
-                explanations.push(format!(
-                    "Strong in current meta ({:.0}%)",
-                    breakdown.meta * 100.0
-                ));
+            if breakdown.meta > 0.65 {
+                explanations.push(match self.meta_data.hero_winrates.get(hero_id) {
+                    Some(winrate) => {
+                        format!("Strong in current meta ({:.0}% winrate)", winrate * 100.0)
+                    }
+                    None => "Strong in current meta".to_string(),
+                });
+            } else if breakdown.meta < 0.35 {
+                explanations.push(match self.meta_data.hero_winrates.get(hero_id) {
+                    Some(winrate) => format!("Off-meta pick ({:.0}% winrate)", winrate * 100.0),
+                    None => "Off-meta pick".to_string(),
+                });
             }
 
             if breakdown.comfort > 0.5 {
@@ -662,25 +669,34 @@ impl DraftEngine {
                 category: RecommendationCategory::Top,
             };
 
-            // Categorize based on attributes
+            // Every candidate belongs to Top Picks; the remaining categories
+            // are additional labels, so the strongest hero is never hidden
+            // from the top list just because it is also aggressive or safe.
+            top_picks.push(recommendation.clone());
+
             if let Some(sem) = semantics {
                 if sem.scaling > 0.7 && sem.teamfight > 0.7 {
-                    aggressive_picks.push(recommendation.clone());
-                } else if sem.durability > 0.7 && sem.save > 0.5 {
-                    safe_picks.push(recommendation.clone());
-                } else {
-                    top_picks.push(recommendation.clone());
+                    let mut aggressive = recommendation.clone();
+                    aggressive.category = RecommendationCategory::Aggressive;
+                    aggressive_picks.push(aggressive);
                 }
-
+                if sem.durability > 0.7 && sem.save > 0.5 {
+                    let mut safe = recommendation.clone();
+                    safe.category = RecommendationCategory::Safe;
+                    safe_picks.push(safe);
+                }
                 if self.get_comfort_score(&hero_id_clone) > 0.65 {
-                    comfort_picks.push(recommendation.clone());
+                    let mut comfort = recommendation.clone();
+                    comfort.category = RecommendationCategory::Comfort;
+                    comfort_picks.push(comfort);
                 }
-
-                if self.get_meta_score(&hero_id_clone) > 0.7 && score < 0.6 {
-                    anti_meta_picks.push(recommendation.clone());
+                // Anti-meta: a low-meta hero whose contextual fit is still
+                // strong (counter/synergy/composition), i.e. a surprise pick.
+                if self.get_meta_score(&hero_id_clone) < 0.35 && score > 0.55 {
+                    let mut anti_meta = recommendation.clone();
+                    anti_meta.category = RecommendationCategory::AntiMeta;
+                    anti_meta_picks.push(anti_meta);
                 }
-            } else {
-                top_picks.push(recommendation);
             }
         }
 
@@ -995,5 +1011,107 @@ mod tests {
         assert_eq!(engine.undo_depth(), 0);
         assert!(engine.undo_last_action().is_none());
         assert_eq!(engine.get_state().available_heroes.len(), 2);
+    }
+
+    fn semantics(hero_id: i32) -> HeroSemantics {
+        HeroSemantics {
+            hero_id: HeroId(hero_id),
+            initiation: 0.5,
+            stun: 0.5,
+            save: 0.5,
+            push: 0.5,
+            scaling: 0.5,
+            mobility: 0.5,
+            durability: 0.5,
+            teamfight: 0.5,
+            splitpush: 0.5,
+            vision: 0.5,
+            magic_damage: 0.5,
+            physical_damage: 0.5,
+            pure_damage: 0.0,
+            disable_count: 1.0,
+            lane_strength: LaneStrength {
+                early: 0.5,
+                mid: 0.5,
+                late: 0.5,
+            },
+            tempo_profile: TempoProfile::Mid,
+            roles_probability: HashMap::new(),
+        }
+    }
+
+    #[test]
+    fn test_categories_are_labels_and_top_keeps_best_hero() {
+        let mut engine = engine_with_heroes(3);
+
+        let mut aggressive = semantics(1);
+        aggressive.scaling = 0.9;
+        aggressive.teamfight = 0.9;
+        engine.hero_semantics.insert(HeroId(1), aggressive);
+
+        let mut safe = semantics(2);
+        safe.durability = 0.9;
+        safe.save = 0.9;
+        engine.hero_semantics.insert(HeroId(2), safe);
+
+        engine.hero_semantics.insert(HeroId(3), semantics(3));
+
+        engine.meta_data.hero_meta_scores.insert(HeroId(1), 0.9);
+        engine.meta_data.hero_meta_scores.insert(HeroId(2), 0.5);
+        engine.meta_data.hero_meta_scores.insert(HeroId(3), 0.1);
+
+        let set = engine.categorize_recommendations(
+            vec![
+                (HeroId(1), 0.9, vec![]),
+                (HeroId(2), 0.8, vec![]),
+                (HeroId(3), 0.6, vec![]),
+            ],
+            &DraftState::default(),
+            true,
+        );
+
+        // Top Picks keeps every candidate, including the aggressive best pick.
+        assert_eq!(
+            set.top_picks
+                .iter()
+                .map(|rec| rec.hero_id.0)
+                .collect::<Vec<_>>(),
+            vec![1, 2, 3]
+        );
+        assert!(set
+            .top_picks
+            .iter()
+            .all(|rec| rec.category == RecommendationCategory::Top));
+        assert!(set
+            .aggressive_picks
+            .iter()
+            .any(|rec| rec.hero_id == HeroId(1)
+                && rec.category == RecommendationCategory::Aggressive));
+        assert!(set
+            .safe_picks
+            .iter()
+            .any(|rec| rec.hero_id == HeroId(2) && rec.category == RecommendationCategory::Safe));
+        assert!(set.anti_meta_picks.iter().any(
+            |rec| rec.hero_id == HeroId(3) && rec.category == RecommendationCategory::AntiMeta
+        ));
+    }
+
+    #[test]
+    fn test_recommendations_explain_meta_strength_with_winrate() {
+        let mut engine = engine_with_heroes(1);
+        engine.meta_data.hero_meta_scores.insert(HeroId(1), 0.9);
+        engine.meta_data.hero_winrates.insert(HeroId(1), 0.54);
+
+        let recommendations = engine.get_recommendations(TeamSide::Radiant, 5);
+        let top = recommendations
+            .top_picks
+            .iter()
+            .find(|rec| rec.hero_id == HeroId(1))
+            .expect("hero 1 should be recommended");
+
+        assert!(top
+            .explanations
+            .iter()
+            .any(|line| line == "Strong in current meta (54% winrate)"));
     }
 }

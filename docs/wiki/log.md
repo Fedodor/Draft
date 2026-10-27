@@ -2,6 +2,15 @@
 
 Append-only chronology. Newest entries at the top. Format: `## [YYYY-MM-DD] ingest | Source Title`.
 
+## [2026-10-27] update | Meta data pipeline (Step 9)
+
+- Added [Patch meta data](engine/meta.md); canonical source: [`../STEP_09_META.md`](../STEP_09_META.md).
+- Implemented the previously dead meta layer: `export_scoring_seed.py` now emits one `meta` row per hero, and `seed_matchups` validates and upserts it for the active patch (synthetic meta under `--synthetic`).
+- Meta score is a percentile blend of shrunk winrate (0.75) and pickrate rank (0.25); winrate uses a 100-game prior `(wins + 50) / (games + 100)`.
+- Fixed `Database::upsert_meta` to persist integer `updated_at`; `get_data_health` now reports `meta_hero_count` and flags a missing snapshot.
+- Recommendations explain strong/off-meta heroes with the raw winrate; Top Picks now includes every candidate and Safe/Aggressive/Comfort/Anti-Meta are labels with correct categories.
+- Verification: 40 Rust lib + 1 seeder + 11 frontend + 36 Python tests pass; `fmt`, `clippy -D warnings`, lint, and build clean; seeded DB has patch `7.41` meta for 126 heroes.
+
 ## [2026-10-23] update | ESLint (Step 8)
 
 - Added ESLint 9 flat config `apps/desktop/eslint.config.js` (`@eslint/js`, `typescript-eslint` recommended, `eslint-plugin-react-hooks`, `eslint-plugin-react-refresh`); `react-refresh/only-export-components` is off because hooks are co-located with components.

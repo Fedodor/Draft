@@ -1,7 +1,7 @@
 ﻿# Remediation Plan: Smart Draft Assistant
 
 - Date: 2026-10-22
-- Status: Implemented (Steps 1-8)
+- Status: Implemented (Steps 1-8; Step 9 is a post-remediation increment)
 - Source audit: [`AUDIT.md`](AUDIT.md)
 - Wiki summary: [`wiki/plans/remediation-plan.md`](wiki/plans/remediation-plan.md)
 
@@ -39,6 +39,14 @@ Turn the prototype into a safe, reproducible, and trustworthy draft assistant wi
 - Wave 4, enforcement: Step 8.
 
 Steps inside a wave may run in parallel. Step 2 must not be closed by editing the feature vector only; the contract must be testable from Python to Rust.
+
+## Post-remediation increments
+
+These extend the completed eight-step plan and keep the same acceptance discipline.
+
+| Step | Theme | Status | Exit gate | Detail |
+| --- | --- | --- | --- | --- |
+| 9 | Patch meta data | Implemented | Seeded meta snapshot scores the full roster; health reports coverage; explanations use raw winrate | [`STEP_09_META.md`](STEP_09_META.md) |
 
 ## Step 1: Secrets and environment
 
@@ -352,5 +360,6 @@ A step is complete only when:
 | 2026-10-23 | 6 | Regenerated `draft_features.parquet` (111,945 raw → 102,118 rows, 890 columns) so it carries `start_time`; added processor field-mapping tests | Split now uses `start_time` (no fallback warning); `--evaluate-only` ROC-AUC 0.5424; 33 Python tests pass |
 | 2026-10-23 | 6 | Retrained and swapped in the bundled `draft_model_xgboost_full` (887 inputs) from the start-time-aware parquet; repointed `generate_golden.py` at `draft_features.parquet` and refreshed the golden fixture | Held-out test ROC-AUC 0.5388 / Brier 0.2481; schema, ONNX, and Rust contract tests pass; full quality gate PASS |
 | 2026-10-23 | 8 | Added ESLint 9 flat config (`eslint.config.js`) with `@eslint/js`, `typescript-eslint` recommended, and the React hooks/refresh plugins; wired `npm run lint` (`--max-warnings 0`) into `verify.ps1` and therefore CI | 20 files lint clean; full quality gate PASS (new "Frontend lint" step) |
+| 2026-10-27 | 9 | Implemented the dead meta layer: `build_meta_rows` percentile meta export, `seed_matchups` meta parsing/validation/upsert (real and synthetic), integer `updated_at` fix, `meta_hero_count` health, raw-winrate meta explanations, and label-based recommendation categories with Top Picks always populated | 40 Rust lib + 1 seeder + 11 frontend + 36 Python tests pass; `fmt`/`clippy -D warnings`/lint/build clean; seeded DB has `meta_data` patch `7.41` for 126 heroes |
 
 

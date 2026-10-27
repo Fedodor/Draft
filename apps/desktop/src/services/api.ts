@@ -125,6 +125,7 @@ export interface DataHealth {
   hero_count: number;
   matchup_count: number;
   synergy_count: number;
+  meta_hero_count: number;
   active_patch: string | null;
   wal_enabled: boolean;
   healthy: boolean;

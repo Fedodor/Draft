@@ -11,18 +11,34 @@
 use anyhow::Result;
 use serde::Deserialize;
 use smart_draft_assistant::database::Database;
-use smart_draft_assistant::models::{Hero, HeroMatchup, HeroSynergy};
+use smart_draft_assistant::models::{Hero, HeroId, HeroMatchup, HeroSynergy, MetaData};
 use smart_draft_assistant::paths::app_data_dir;
 use std::env;
 use std::path::Path;
+use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{info, warn};
 
 const SEED_PATH: &str = "infrastructure/seeders/scoring_seed.json";
+
+/// One row of the exported meta section. `meta_score` is a percentile in
+/// [0, 1] where 0.5 is the median hero; `winrate`/`pickrate` are raw values
+/// kept for explainability.
+#[derive(Deserialize)]
+struct MetaSeedRow {
+    hero_id: i32,
+    #[serde(default)]
+    games: i32,
+    winrate: f32,
+    pickrate: f32,
+    meta_score: f32,
+}
 
 #[derive(Deserialize)]
 struct ScoringSeed {
     #[serde(default)]
     patch_version: Option<String>,
+    #[serde(default)]
+    meta: Vec<MetaSeedRow>,
     matchups: Vec<HeroMatchup>,
     synergies: Vec<HeroSynergy>,
 }
@@ -119,7 +135,88 @@ fn seed_synthetic(db: &Database, heroes: &[Hero]) -> Result<()> {
     db.set_active_patch(SYNTHETIC_PATCH)?;
     info!("Seeded {} synthetic synergies", synergies.len());
 
+    seed_synthetic_meta(db, heroes)?;
+
     Ok(())
+}
+
+fn now_unix() -> i64 {
+    SystemTime::now()
+        .duration_since(UNIX_EPOCH)
+        .map(|duration| duration.as_secs() as i64)
+        .unwrap_or(0)
+}
+
+/// Persist the patch meta snapshot. Rows are validated before writing so a
+/// malformed seed fails loudly instead of silently skewing recommendations.
+fn seed_meta(db: &Database, patch: &str, rows: &[MetaSeedRow]) -> Result<()> {
+    if rows.is_empty() {
+        warn!("Scoring seed has no meta rows; meta scoring stays neutral (0.5)");
+        return Ok(());
+    }
+
+    for row in rows {
+        if row.games < 0 {
+            anyhow::bail!("invalid meta row for hero {}: games < 0", row.hero_id);
+        }
+        for (name, value) in [
+            ("winrate", row.winrate),
+            ("pickrate", row.pickrate),
+            ("meta_score", row.meta_score),
+        ] {
+            if !(0.0..=1.0).contains(&value) {
+                anyhow::bail!(
+                    "invalid meta row for hero {}: {name}={value} is outside [0, 1]",
+                    row.hero_id
+                );
+            }
+        }
+    }
+
+    let meta = MetaData {
+        patch_version: patch.to_string(),
+        hero_meta_scores: rows
+            .iter()
+            .map(|row| (HeroId(row.hero_id), row.meta_score))
+            .collect(),
+        hero_pickrates: rows
+            .iter()
+            .map(|row| (HeroId(row.hero_id), row.pickrate))
+            .collect(),
+        hero_winrates: rows
+            .iter()
+            .map(|row| (HeroId(row.hero_id), row.winrate))
+            .collect(),
+        updated_at: now_unix(),
+    };
+
+    db.upsert_meta(&meta)?;
+    info!(
+        "Seeded meta scores for {} heroes (patch {patch})",
+        rows.len()
+    );
+    Ok(())
+}
+
+fn seed_synthetic_meta(db: &Database, heroes: &[Hero]) -> Result<()> {
+    warn!(
+        "SYNTHETIC MODE: writing placeholder meta scores; do not use these \
+         values for production recommendations"
+    );
+    let rows: Vec<MetaSeedRow> = heroes
+        .iter()
+        .map(|hero| {
+            let hash = pair_hash(hero.id.0, 0x4d45_5441);
+            MetaSeedRow {
+                hero_id: hero.id.0,
+                games: 0,
+                winrate: hash_to_range(hash, 0.45, 0.55),
+                pickrate: hash_to_range(hash.rotate_left(7), 0.02, 0.25),
+                meta_score: hash_to_range(hash.rotate_left(13), 0.2, 0.8),
+            }
+        })
+        .collect();
+    seed_meta(db, SYNTHETIC_PATCH, &rows)
 }
 
 fn seed_real(db: &Database) -> Result<()> {
@@ -151,13 +248,15 @@ fn seed_real(db: &Database) -> Result<()> {
         })?;
 
     info!(
-        "Seeding real data for patch {patch} from {} ({} matchups, {} synergies)",
+        "Seeding real data for patch {patch} from {} ({} matchups, {} synergies, {} meta rows)",
         SEED_PATH,
         payload.matchups.len(),
-        payload.synergies.len()
+        payload.synergies.len(),
+        payload.meta.len()
     );
     db.bulk_upsert_matchups(&payload.matchups, &patch)?;
     db.bulk_upsert_synergies(&payload.synergies, &patch)?;
+    seed_meta(db, &patch, &payload.meta)?;
     db.set_active_patch(&patch)?;
     info!(
         "Seeded {} matchups and {} synergies for patch {patch}",
@@ -227,5 +326,28 @@ mod tests {
             .synergies
             .iter()
             .all(|row| row.hero_id != row.with_hero_id));
+
+        assert!(
+            payload.meta.len() > 100,
+            "expected meta rows for the roster"
+        );
+        assert!(payload.meta.iter().all(|row| {
+            (0.0..=1.0).contains(&row.meta_score)
+                && (0.0..=1.0).contains(&row.winrate)
+                && (0.0..=1.0).contains(&row.pickrate)
+                && row.games >= 0
+        }));
+        // The percentile score must not collapse to a single neutral value.
+        let min = payload
+            .meta
+            .iter()
+            .map(|row| row.meta_score)
+            .fold(f32::INFINITY, f32::min);
+        let max = payload
+            .meta
+            .iter()
+            .map(|row| row.meta_score)
+            .fold(f32::NEG_INFINITY, f32::max);
+        assert!(max - min > 0.2, "meta scores are not differentiated");
     }
 }

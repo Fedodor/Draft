@@ -266,6 +266,7 @@ pub struct DataHealth {
     pub hero_count: i64,
     pub matchup_count: i64,
     pub synergy_count: i64,
+    pub meta_hero_count: i64,
     pub active_patch: Option<String>,
     pub wal_enabled: bool,
     pub healthy: bool,

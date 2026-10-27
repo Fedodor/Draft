@@ -20,6 +20,7 @@ Production-quality desktop AI assistant for Dota 2 draft analysis.
 - [Step 3 design: Scoring correctness](docs/STEP_03_SCORING.md): startup scorer wiring, role normalization, real seed data, and score breakdowns.
 - [Step 4 design: Tauri IPC and manual drafting](docs/STEP_04_IPC.md): snake_case command args, typed errors, validation, and undo.
 - [Step 8 design: CI and quality gates](docs/STEP_08_CI.md): the single `verify.ps1` gate, the GitHub Actions workflow, and merge requirements.
+- [Step 9 design: Patch meta data](docs/STEP_09_META.md): meta snapshot export, percentile scoring, explanations, and recommendation category labels.
 - [Project wiki](docs/wiki/index.md): persistent summaries, security runbooks, and cross-references.
 
 Reference:
@@ -117,7 +118,7 @@ RUST_LOG=info infrastructure/seeders/target/release/seed_matchups.exe
 This populates the database with:
 - **126 heroes** — full Dota 2 roster (Str, Agi, Int, and Universal/All heroes) with base stats, attack types, roles, and image paths
 - **126 hero semantics** — initiation, stun, save, push, scaling, mobility, durability, teamfight, splitpush, vision, damage types, lane strength, tempo profiles, and role probabilities
-- **9,052 matchups + 7,381 synergies** — real data from `infrastructure/seeders/scoring_seed.json`, tagged with the active patch (`7.41`)
+- **9,052 matchups + 7,381 synergies + 126 meta scores** — real data from `infrastructure/seeders/scoring_seed.json`, tagged with the active patch (`7.41`)
 
 `seed_matchups` writes real data by default. Pass `--synthetic` only for UI work when the processed datasets are unavailable; synthetic rows are tagged with patch `synthetic` and never selected silently.
 
@@ -333,7 +334,7 @@ smart-draft-assistant/
 │       ├── generate_heroes.py    # Python — fetches OpenDota API, generates JSON
 │       ├── heroes.json           # Full hero roster (126 heroes)
 │       ├── hero_semantics.json   # Hero semantic attributes
-│       └── scoring_seed.json     # Real data-derived matchups and synergies
+│       └── scoring_seed.json     # Real data-derived matchups, synergies, and meta
 ├── docs/                  # Audit, remediation plan, and wiki
 │   ├── AUDIT.md
 │   ├── REMEDIATION_PLAN.md
@@ -341,6 +342,11 @@ smart-draft-assistant/
 │   ├── STEP_02_ML_INFERENCE.md
 │   ├── STEP_03_SCORING.md
 │   ├── STEP_04_IPC.md
+│   ├── STEP_05_DATA.md
+│   ├── STEP_06_TRAINING.md
+│   ├── STEP_07_GSI_SETTINGS.md
+│   ├── STEP_08_CI.md
+│   ├── STEP_09_META.md
 │   └── wiki/
 └── .opencode/rules/       # AI agent rules
 ```
@@ -371,6 +377,7 @@ Settings stored in Tauri store (`config.json`):
 2. ✅ **ONNX Inference in Rust** — `ml.rs` loads the exported XGBoost ONNX model via ONNX Runtime (`ort`), reconstructs the full feature vector (896 columns) from the live draft state, and exposes `predict_draft_value`, `load_ml_model`, and `get_ml_status` commands. Verified working end-to-end with a bundled `onnxruntime.dll` (1.28.0); graceful neutral fallback when the model/runtime is unavailable.
 3. ✅ **Tree Search Engine** — Beam-search minimax lookahead over opponent responses (`engine/simulation.rs`), exposed via `get_search_recommendations`.
 4. ✅ **Live Overlay UI** — Compact always-on-top, transparent overlay window showing live win probability, team hero icons, and top recommendations with reasoning. Toggle from the main window header (`Overlay` button).
+5. ✅ **Patch Meta Data** — `seed_matchups` now writes a patch-scoped meta snapshot for all 126 heroes (shrunk winrate + pickrate percentile blend); the engine uses it in the `W_META` component and explanations, health reports coverage, and recommendation categories are labels rather than exclusive buckets. See [`STEP_09_META.md`](docs/STEP_09_META.md).
 
 ### High Priority
 4. ✅ **Live Overlay UI** — React overlay with hero icons, win probabilities, reasoning

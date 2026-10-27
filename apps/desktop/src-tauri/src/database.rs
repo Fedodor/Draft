@@ -198,7 +198,7 @@ impl Database {
                 hero_meta_scores TEXT NOT NULL, -- JSON: hero_id -> score
                 hero_pickrates TEXT NOT NULL, -- JSON: hero_id -> rate
                 hero_winrates TEXT NOT NULL, -- JSON: hero_id -> rate
-                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                updated_at INTEGER NOT NULL DEFAULT 0 -- unix seconds
             )",
             [],
         )?;
@@ -354,6 +354,13 @@ impl Database {
         };
 
         let active_patch = self.get_active_patch()?;
+        let meta_hero_count = match &active_patch {
+            Some(patch) => self
+                .get_meta(patch)?
+                .map(|meta| meta.hero_meta_scores.len() as i64)
+                .unwrap_or(0),
+            None => 0,
+        };
         let mut issues = Vec::new();
         if schema_version < DB_VERSION {
             issues.push(format!(
@@ -369,6 +376,9 @@ impl Database {
         if synergy_count == 0 {
             issues.push("no synergies seeded".to_string());
         }
+        if meta_hero_count == 0 {
+            issues.push("no meta scores seeded".to_string());
+        }
         if active_patch.is_none() {
             issues.push("active patch is not set".to_string());
         }
@@ -381,6 +391,7 @@ impl Database {
             hero_count,
             matchup_count,
             synergy_count,
+            meta_hero_count,
             active_patch,
             wal_enabled,
             healthy: issues.is_empty(),
@@ -884,18 +895,19 @@ impl Database {
         let winrates_json = serde_json::to_string(&meta.hero_winrates)?;
 
         conn.execute(
-            "INSERT INTO meta_data (patch_version, hero_meta_scores, hero_pickrates, hero_winrates)
-            VALUES (?, ?, ?, ?)
+            "INSERT INTO meta_data (patch_version, hero_meta_scores, hero_pickrates, hero_winrates, updated_at)
+            VALUES (?, ?, ?, ?, ?)
             ON CONFLICT(patch_version) DO UPDATE SET
                 hero_meta_scores=excluded.hero_meta_scores,
                 hero_pickrates=excluded.hero_pickrates,
                 hero_winrates=excluded.hero_winrates,
-                updated_at=CURRENT_TIMESTAMP",
+                updated_at=excluded.updated_at",
             params![
                 meta.patch_version,
                 scores_json,
                 pickrates_json,
-                winrates_json
+                winrates_json,
+                meta.updated_at
             ],
         )?;
         Ok(())
@@ -1010,6 +1022,53 @@ mod tests {
 
         let loaded = db.get_app_config().unwrap().expect("stored config");
         assert_eq!(loaded, config);
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_meta_round_trips_with_hero_id_keys() {
+        let (db, dir) = temp_database();
+        let meta = MetaData {
+            patch_version: "7.41".to_string(),
+            hero_meta_scores: [(HeroId(1), 0.75), (HeroId(2), 0.25)].into_iter().collect(),
+            hero_pickrates: [(HeroId(1), 0.12), (HeroId(2), 0.04)].into_iter().collect(),
+            hero_winrates: [(HeroId(1), 0.53), (HeroId(2), 0.47)].into_iter().collect(),
+            updated_at: 123,
+        };
+
+        db.upsert_meta(&meta).unwrap();
+        let loaded = db.get_meta("7.41").unwrap().expect("stored meta");
+        assert_eq!(loaded.patch_version, "7.41");
+        assert_eq!(loaded.hero_meta_scores.get(&HeroId(1)), Some(&0.75));
+        assert_eq!(loaded.hero_winrates.get(&HeroId(2)), Some(&0.47));
+        assert_eq!(loaded.hero_pickrates.len(), 2);
+        assert!(db.get_meta("7.40").unwrap().is_none());
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_health_reports_meta_coverage() {
+        let (db, dir) = temp_database();
+
+        let before = db.health().unwrap();
+        assert_eq!(before.meta_hero_count, 0);
+        assert!(before.issues.iter().any(|issue| issue.contains("meta")));
+
+        db.set_active_patch("7.41").unwrap();
+        db.upsert_meta(&MetaData {
+            patch_version: "7.41".to_string(),
+            hero_meta_scores: [(HeroId(1), 0.75)].into_iter().collect(),
+            hero_pickrates: [(HeroId(1), 0.1)].into_iter().collect(),
+            hero_winrates: [(HeroId(1), 0.53)].into_iter().collect(),
+            updated_at: 123,
+        })
+        .unwrap();
+
+        let after = db.health().unwrap();
+        assert_eq!(after.meta_hero_count, 1);
+        assert!(!after.issues.iter().any(|issue| issue.contains("meta")));
 
         let _ = std::fs::remove_dir_all(dir);
     }
