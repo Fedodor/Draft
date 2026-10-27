@@ -1,9 +1,9 @@
 # Roadmap & Live Status: Smart Draft Assistant
 
-- Updated: 2026-10-27
+- Updated: 2026-10-28 (session 3)
 - Source audit: [`AUDIT_2026-10-27.md`](AUDIT_2026-10-27.md) (historical findings, preserved)
 - Predecessor audit: [`AUDIT.md`](AUDIT.md) (2026-10-22)
-- Branch: `master`, changes **uncommitted** (nothing was committed or pushed)
+- Branch: `master`, HEAD `2ef74fd`, session-3 changes **uncommitted** (nothing was committed or pushed)
 - Purpose: single source of truth for what is fixed, what is verified, and what is next.
 
 Status vocabulary:
@@ -60,6 +60,17 @@ Second session (GSI lifecycle integration, 2026-10-27):
 | Rust format | `cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all` | applied, no diff after |
 | Full gate | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` | **PASSED** — 12/12 (49 Python tests, 19 frontend tests) |
 
+Third session (ML quality gate, schema reproducibility, leakage evidence, 2026-10-28):
+
+| Check | Command | Result |
+| --- | --- | --- |
+| Dataset fingerprint | `Get-FileHash ml/datasets/processed/draft_features.parquet -Algorithm SHA256` | `264a6ad5…91621`, matches the manifest; 102,118 rows × 890 columns |
+| Bundled model, as-trained | `python ml/training/train_full.py --evaluate-only` | test ROC-AUC **0.5388**, Brier **0.2481**, log loss **0.6893** |
+| Quality gate (inference mode) | `python ml/training/quality_gate.py` | **FAIL** (exit 1): AUC **0.5122**, Brier **0.2495**, ECE **0.0241**; baseline Brier **0.2493** |
+| Contract + gate tests | `python -m pytest ml/tests/test_feature_schema.py ml/tests/test_quality_gate.py -q` | **14 passed** |
+| Python suite | `python -m pytest ml/tests -q` | **63 passed**, 24 warnings |
+| Full gate | `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` | **PASSED** — 13/13 steps; Rust 69, frontend 19, Python 14 + 49 |
+
 
 Notes:
 
@@ -73,17 +84,25 @@ Notes:
 ### P0 — correctness and trust
 
 #### P0-1 — ML contributes 25% while near baseline
-- **Status:** `in_progress` (mitigation `verified_fixed`; model quality `open`)
-- **Files:** `src-tauri/src/models.rs`, `src-tauri/src/engine.rs`, `src-tauri/src/commands.rs`, `src-tauri/src/lib.rs`, `src/App.tsx`, `src/stores/index.ts`, `src/components/SettingsPanel.tsx`
+- **Status:** `in_progress` (mitigation `verified_fixed`; automated promotion gate `verified_fixed`; model quality `open`)
+- **Files:** `src-tauri/src/models.rs`, `src-tauri/src/engine.rs`, `src-tauri/src/commands.rs`, `src-tauri/src/lib.rs`, `src/App.tsx`, `src/stores/index.ts`, `src/components/SettingsPanel.tsx`, `ml/training/quality_gate.py` (new), `ml/training/inference_contract.py` (new), `ml/tests/test_quality_gate.py` (new)
 - **Implemented:**
   - `AppConfig::ml_enabled` now defaults to `false` and is forwarded to `DraftEngine::set_ml_enabled` at startup and from `set_config`.
   - When disabled, `MLScorer::score` is not called at all (no inference), the ML term is reported as neutral `0.5`, and the five heuristic weights are renormalized so scores stay in `[0,1]` (`active_weights`, `weighted_total`).
   - The same gate is applied in `simulation.rs` so the search path cannot silently re-enable ML scoring.
   - Explanations now say "Model estimate: … (experimental)" and only when ML is enabled; the previous "ML model favors this pick" wording is gone.
   - Default model path corrected to the bundled `draft_model_xgboost_full.onnx`.
-- **Tests:** `test_weights_are_renormalized_when_ml_is_disabled`, `test_ml_gate_changes_only_the_ml_term`, `test_app_config_defaults_and_validation` (asserts `!ml_enabled` and the `.onnx` default).
-- **Remaining risk:** the shipped model still has test ROC-AUC 0.5388 / Brier 0.2481. Opt-in does not make it trustworthy; P1-6 and Phase 3 must land before it is re-enabled by default.
-- **Next action:** add a manifest-driven quality gate (AUC ≥ 0.60, Brier ≤ 0.235, calibration report) that refuses to enable ML for a model that fails it.
+  - **Session 3:** `ml/training/quality_gate.py` validates the artifact bundle (manifest ↔ schema ↔ feature order), dataset fingerprint, chronological split independence, labels, and ONNX input/output contract, then re-evaluates the held-out test partition twice: `as_trained` (logged values) and `inference` (runtime defaults for `patch`, `patch_version`, `duration`, `avg_mmr`, `game_mode`, `lobby_type`). The promotion policy applies to `inference` by default.
+  - Exit codes are explicit: **0** pass/promotion eligible, **1** quality failure, **2** evaluation error (untrustworthy or unrunnable). `--promote-to` copies the bundle only when the gate passed. Manual runtime opt-in is still allowed because ML is off by default; only automatic promotion is blocked.
+- **Tests:** `test_weights_are_renormalized_when_ml_is_disabled`, `test_ml_gate_changes_only_the_ml_term`, `test_app_config_defaults_and_validation` (asserts `!ml_enabled` and the `.onnx` default); `ml/tests/test_quality_gate.py` covers pass, threshold failure, fingerprint mismatch, malformed/missing artifacts, schema order drift, invalid labels/predictions, baselines, leakage classification, and promotion refusal.
+- **Fresh evidence (2026-10-28, full dataset):**
+  - Policy: ROC-AUC ≥ 0.60, Brier ≤ 0.235, ECE ≤ 0.10, ≥ 500 test rows.
+  - `inference`: ROC-AUC **0.5122** (95% CI 0.5010-0.5234), Brier **0.2495**, ECE **0.0241**, log loss 0.6922, accuracy 0.5125, 10,213 rows.
+  - `as_trained`: ROC-AUC **0.5388** (CI 0.5277-0.5500), Brier **0.2481**, ECE **0.0124**.
+  - Constant train-prior baseline on the same rows: Brier **0.2493** (probability 0.5245). The model is not better than the baseline on Brier and is barely above chance on AUC.
+  - Decision: `promotion_eligible=false`, failed checks `policy.roc_auc`, `policy.brier_score`.
+- **Remaining risk:** the shipped model is still untrustworthy. The gate now blocks *automatic* promotion, but a user can still opt in manually. Fixing quality needs a retrain and a feature ablation, not a threshold change.
+- **Next action:** train a candidate with post-draft/ordinal fields removed (P1-6), evaluate it through the gate in `inference` mode, and only bundle it if all checks pass. Keep the current artifact in place until then.
 
 #### P0-2 — Draft lifecycle corruption in GSI ingestion
 - **Status:** `verified_fixed` (payload → engine; live GSI replay and warp/Tauri emission outstanding)
@@ -165,18 +184,30 @@ Notes:
 - **Next action:** either implement localization or remove/hide `preferred_language`; decide on `auto_update_meta` (implement or delete from the model in a follow-up migration).
 
 #### P1-5 — Feature pipeline cannot reproduce the shipped feature set
-- **Status:** `in_progress`
-- **Files:** `ml/feature-engineering/processor.py`, `ml/tests/test_processor_features.py`
+- **Status:** `fixed_unverified` (set reproduced and unit-tested; full real-data regeneration not run)
+- **Files:** `ml/feature-engineering/processor.py`, `ml/tests/test_processor_features.py`, `ml/tests/test_feature_schema.py` (new), `ml/training/inference_contract.py` (new)
 - **Implemented:** `_load_hero_matchups` now accepts numeric `hero_a`/`hero_b` ids (int, float, numeric string) and `hero_a_winrate`, and still accepts the legacy name + `winrate` shape. New `resolve_matchup_hero_id()` normalizes both. Tests cover numeric shapes, legacy names, and both parquet shapes via a stubbed reader.
 - **Deliberately unchanged:** `all_hero_ids = range(1, 140)`. The shipped 887-feature contract (locked by the golden fixture and the manifest) includes `*_hero_139` has/ban features and separate win-rate features for 145/155. Changing the range without retraining would break the golden contract.
-- **Not done:** lane features remain commented out; no full pipeline regeneration (dataset is 1.9 GB / 121,746 files); no schema-parity test between generated features and the manifest beyond the existing contract tests.
-- **Next action:** add a reproducible-from-fixture pipeline test (small synthetic raw matches → generated feature names == manifest names), then regenerate on a sampled dataset.
+- **Session 3 evidence:** `ml/tests/test_feature_schema.py` drives the real `FeatureProcessor.process_match` on a deterministic synthetic fixture:
+  - **887-name set reproduced exactly** without matchup data. All 633 non-win-rate inputs keep a stable code-defined order except the two `*_ban_avg_winrate` columns (631 exact-order matches).
+  - 254 per-hero win-rate features match as a set; their order (and the position of the two ban averages) is first-seen row history in the shipped parquet, not a code contract. The shipped file lists the ban averages at the end (indices 885/886); the processor emits them beside the other win-rate aggregates.
+  - With matchup data the processor emits **894** names: exactly the shipped set plus the 7 `*_matchup_*`/`matchup_advantage` features. The bundled parquet has no matchup columns, so shipping them requires a regenerated dataset, a retrain, and a new export.
+  - A generated row encodes to a finite 887-element schema-ordered vector and the bundled ONNX model accepts it.
+- **Not done:** lane features remain commented out; no full pipeline regeneration (dataset is 1.9 GB / 121,746 files). `process_all()` collects thread results in completion order, so the *column order* of a regenerated dataset can vary between runs; that does not change the name set but it is not reproducible. No retrain on regenerated data.
+- **Next action:** make `process_all()` order deterministic (sort matches before processing or reindex to a canonical column list), then regenerate on a representative sample and diff names + order against the schema before any retrain.
 
 #### P1-6 — Post-draft and ordinal features (leakage / train-serve skew)
-- **Status:** `open`
-- **Evidence:** `duration`, `avg_mmr`, `game_mode`, `lobby_type`, and raw `rad_pick_i`/`dire_pick_i` are numeric inputs; `duration` is post-draft and replaced by a median at inference.
+- **Status:** `in_progress` (magnitude measured; ablation and retrain not done)
+- **Files:** `ml/training/quality_gate.py`, `ml/training/inference_contract.py`, `ml/training/train_full.py`
+- **Evidence (original):** `duration`, `avg_mmr`, `game_mode`, `lobby_type`, and raw `rad_pick_i`/`dire_pick_i` are numeric inputs; `duration` is post-draft and replaced by a median at inference.
+- **Session 3 measurements (10,213 held-out rows):**
+  - Replacing the six match-context fields with their schema defaults costs **0.0266 ROC-AUC** (0.5388 → 0.5122) and **0.0014 Brier** (0.2481 → 0.2495). That is the measured train/serve skew for this artifact, not an estimate.
+  - `duration`: univariate AUC **0.4624**, gain rank **6**, 2,974 distinct values. It is a weak, slightly anti-correlated signal here, but the model does rely on it (top-10 gain).
+  - `game_mode` univariate AUC **0.5103** (gain rank 327); `lobby_type` **0.5009** (no gain); `avg_mmr` is constant `0` (one value, no gain); `patch` is categorical (gain rank 131) and `patch_version` has no gain.
+  - Ordinal pick slots (`rad_pick_0..4`, `dire_pick_0..4`) are near chance individually (AUC 0.4947-0.5027, gain ranks 298-411), so they are low-impact but still inputs the runtime only partially knows.
+  - Split integrity is clean: train/validation/test sizes 81,694 / 10,211 / 10,213; zero `match_id` overlap; strict time boundaries (`train.max` 1,764,427,633 < `validation.min` 1,764,427,877; `validation.max` 1,775,425,453 < `test.min` 1,775,425,870). The gate checks all of this on every run.
 - **Why untouched:** requires retraining plus held-out evaluation; changing the schema without that would invalidate the bundled model and the 887-feature contract.
-- **Next action:** build an ablation (drop duration/game_mode/ordinal pick index) on the chronological split, compare AUC/Brier/calibration against the current model, and only then change the schema.
+- **Next action:** train an ablation that drops `duration`, `avg_mmr`, `game_mode`, `lobby_type`, and the raw pick-index columns (or replaces pick index with something available mid-draft), then compare AUC/Brier/ECE through the gate in `inference` mode. Only ship it if it beats the policy and the constant-prior baseline.
 
 ### P2 — medium impact
 
@@ -191,7 +222,7 @@ Notes:
 | P2-7 | Sync mutex in async commands, lock order | `in_progress` | `get_recommendations`, `get_score_breakdown`, `predict_draft_value` moved to `spawn_blocking`; predict lock order fixed (engine → ML). Other small commands still lock `std::sync::Mutex` briefly. |
 | P2-8 | No log rotation, per-request info logs | `verified_fixed` | `rotate_log_if_needed` at 5 MB with one backup + test; per-recommendation and per-GSI-update logs dropped to `debug!`. |
 | P2-9 | Dataset storage / versioning / retention | `open` | 1.9 GB, 121,746 loose files. No registry. Blocked by policy decision, not code. |
-| P2-10 | Docs conflict (feature counts, AUC, lane status) | `in_progress` | `ROADMAP.md`, `AUDIT_2026-10-27.md`, `GSI.md`, `ENGINE.md` and `ML_TRAINING.md` now agree on 887 inputs, 0.5388 AUC / 0.2481 Brier, ML opt-in, and the real ingestion rules. `README.md` metrics table already matched the manifest. Remaining: sweep the older step/design docs and decide what to do with the empty `RefactorML.md`. |
+| P2-10 | Docs conflict (feature counts, AUC, lane status) | `in_progress` | `ROADMAP.md`, `AUDIT_2026-10-27.md`, `GSI.md`, `ENGINE.md`, `ML_TRAINING.md` and `README.md` now agree on 887 inputs, the measured 0.5388 as-trained / 0.5122 inference AUC, ML opt-in, and real ingestion rules. Remaining: older step/design docs and the empty `RefactorML.md`. |
 | P2-11 | Data health not surfaced | `open` | `get_data_health` / `getMlStatus` exist; no UI panel. Candidate for Phase 4. |
 
 ### P3 — lower priority
@@ -208,6 +239,35 @@ Notes:
 ## 3. Measurements
 
 All numbers below are **measured in this environment**, not estimates from the earlier audit. They are not production p95 values.
+
+### Model quality gate (2026-10-28)
+
+- Command: `ml/venv/Scripts/python.exe ml/training/quality_gate.py` (or `--json`, `--report <path>`, `--evaluation-mode as_trained`).
+- Artifact: `ml/models/draft_model_xgboost_full.onnx` + `_schema.json` + `_features.json` + `_manifest.json`; dataset SHA-256 `264a6ad5…91621`.
+- Split: chronological 80/10/10 on `start_time`; test partition = last 10,213 matches (min 1,775,425,870, max 1,787,903,076).
+- Policy (default): ROC-AUC ≥ 0.60, Brier ≤ 0.235, ECE ≤ 0.10, ≥ 500 test rows.
+
+| Mode | ROC-AUC (95% CI) | Brier | Log loss | Accuracy | ECE | Decision |
+| --- | --- | --- | --- | --- | --- | --- |
+| `as_trained` (logged match fields) | 0.5388 (0.5277-0.5500) | 0.2481 | 0.6893 | 0.5294 | 0.0124 | reference only |
+| `inference` (runtime defaults, policy default) | **0.5122** (0.5010-0.5234) | **0.2495** | 0.6922 | 0.5125 | 0.0241 | **fails AUC + Brier** |
+| Constant train prior (0.5245) | 0.5 | 0.2493 | 0.6917 | 0.5274 | — | reference |
+
+The gate exits **1** on these numbers, writes `draft_model_xgboost_full_quality_report.json`, and refuses `--promote-to`. A fingerprint mismatch also exits **1** (evaluation runs but is never promotion-eligible). It exits **2** for missing/malformed artifacts, schema drift, invalid labels, or malformed predictions.
+
+Leakage/univariate audit from the same run (held-out rows):
+
+| Feature | Availability | Univariate AUC | Gain rank |
+| --- | --- | --- | --- |
+| `duration` | post-draft (runtime uses median) | 0.4624 | 6 |
+| `game_mode` | match setting (median) | 0.5103 | 327 |
+| `lobby_type` | match setting (median) | 0.5009 | none |
+| `avg_mmr` | constant 0 | — | none |
+| `patch` | categorical | — | 131 |
+| `rad_pick_0..4` | partial draft | 0.4964-0.5027 | 319-411 |
+| `dire_pick_0..4` | partial draft | 0.4947-0.5012 | 298-381 |
+
+Interpretation: post-draft substitution is worth ~0.027 AUC on this model, but the model is near a constant predictor in both modes. Removing leakage alone will not make it useful; see P1-6 and §8.
 
 ### Recommendation benchmark
 
@@ -227,9 +287,9 @@ Interpretation: inference dominates the ML-on path (~120 candidates × ~0.14 ms 
 
 ### Not measured
 
+- Model quality on a fresh held-out set: **now measured** for the bundled artifact (§ above); still no candidate model that passes the gate.
 - In-app p95 latency, UI-thread responsiveness, or OGSI event rate.
 - ONNX inferences per GSI event (expected ≤ 1 per coalesced request + cache hit for the second window, but not instrumented).
-- Model quality on a fresh held-out set (the 0.5388 AUC / 0.2481 Brier figures are from the bundled manifest).
 - Memory use, startup time with a cold ONNX session, or dataset I/O throughput.
 
 ---
@@ -249,6 +309,10 @@ Interpretation: inference dominates the ML-on path (~120 candidates × ~0.14 ms 
 | 2026-10-27 | Overlay never calls `setFocus()` | An unfocused overlay is better than stealing input from Dota 2. |
 | 2026-10-27 | Keep `all_hero_ids = 1..139` | The shipped 887-feature contract and golden fixture depend on it; changing it requires retraining. |
 | 2026-10-27 | Do not change scoring weights | P0-1 is a model-quality problem, not a weight-tuning problem; blind reweighting would hide it. |
+| 2026-10-28 | Gate `inference` mode, not `as_trained` | The runtime never sees post-draft fields; scoring logged values would overstate the model users can actually run. |
+| 2026-10-28 | Three exit codes (0/1/2) | Separates "model is not good enough" (1) from "evaluation cannot be trusted" (2), which need different responses. |
+| 2026-10-28 | Block automatic promotion, keep manual opt-in | ML is already off by default; the gate guards the bundled artifact without removing the existing diagnostic opt-in. |
+| 2026-10-28 | Do not change the shipped schema to satisfy the gate | Thresholds are a floor for new candidates; mutating the bundled artifact would invalidate the app and the golden tests. |
 
 ---
 
@@ -281,14 +345,23 @@ ML (`ml/`):
 
 - `feature-engineering/processor.py` — matchup loader accepts numeric and legacy shapes; `resolve_matchup_hero_id`.
 - `tests/test_processor_features.py` — resolver + both parquet shapes.
+- `training/quality_gate.py` (new) — artifact/contract validation, chronological split checks, fresh evaluation in both modes, calibration/baseline reporting, leakage audit, promotion refusal.
+- `training/inference_contract.py` (new) — schema-order encoder and runtime-default feature vector builder used by the gate and schema tests.
+- `tests/test_feature_schema.py` (new) — deterministic processor → 887-name contract, matchup extension, and ONNX acceptance.
+- `tests/test_quality_gate.py` (new) — gate thresholds, error paths, fingerprint mismatch, leakage audit, promotion blocking.
+
+Scripts:
+
+- `scripts/verify.ps1` — dedicated "Python ML contract + quality-gate tests" step; the remaining Python suite excludes those two modules so each test runs once (13 steps total).
 
 Docs (`docs/`):
 
-- `AUDIT_2026-10-27.md` (new) — preserved audit.
-- `ROADMAP.md` (this file, new).
+- `AUDIT_2026-10-27.md` — P0-1/P1-5/P1-6 remediation addenda; original findings preserved.
+- `ROADMAP.md` (this file) — session-3 status, measurements, decisions, verification log.
 - `GSI.md` — rewritten to describe the real lifecycle, validation, dedupe, suppression, and turn resolution.
 - `ENGINE.md` — ML opt-in, weight renormalization, cache behavior.
-- `ML_TRAINING.md` — corrected ONNX output name and added the opt-in notice.
+- `ML_TRAINING.md` — replaced stale 0.6710 AUC / 896-feature claims with the bundled model's measured metrics, gate usage, and corrected feature inventory.
+- `README.md` — rewritten: real setup/verification commands, model limitations, and accurate status.
 
 ---
 
@@ -309,10 +382,13 @@ npm test             # 19 passed, 3 files
 npm run build        # success
 
 # Python
-ml/venv/Scripts/python.exe -m pytest ml/tests -q   # 49 passed, 7 warnings
+ml/venv/Scripts/python.exe -m pytest ml/tests -q                                   # 63 passed, 24 warnings
+ml/venv/Scripts/python.exe -m pytest ml/tests/test_feature_schema.py ml/tests/test_quality_gate.py -q  # 14 passed
+ml/venv/Scripts/python.exe ml/training/train_full.py --evaluate-only               # test AUC 0.5388, Brier 0.2481
+ml/venv/Scripts/python.exe ml/training/quality_gate.py                             # exit 1, promotion_eligible=false
 ```
 
-Session 2 note: the full lib suite grew from 51 to 69 tests because of the 18 lifecycle tests. No existing test was removed or weakened; the only production-behavior change in session 2 is the per-team ban cap, which the property test found and now pins.
+Session 3 note: the Python suite grew from 49 to 63 tests (14 new contract/gate tests); the full gate gained one visible step and runs each test exactly once. Full gate result is recorded below after the run.
 
 Full gate — **run and passed** at the end of this session:
 
@@ -320,7 +396,7 @@ Full gate — **run and passed** at the end of this session:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1
 ```
 
-Result: `Quality gate PASSED.` with 12/12 steps green (secret scan, Rust format desktop + seeders, Rust clippy desktop + seeders, Rust tests desktop + seeders, frontend lint, frontend typecheck + build, frontend tests, Python byte-compile, Python tests). `pwsh` is not installed in this environment; use `powershell` as above.
+Result: `Quality gate PASSED.` with **13/13** steps green (secret scan, Rust format desktop + seeders, Rust clippy desktop + seeders, Rust tests desktop + seeders, frontend lint, frontend typecheck + build, frontend tests, Python byte-compile, Python ML contract + quality-gate tests, Python tests). Counts from the run: Rust 69 passed / 1 ignored (desktop lib), 1 seeder test, frontend 19 tests / 3 files, Python 14 contract/gate tests + 49 remaining = 63 total. `pwsh` is not installed in this environment; use `powershell` as above.
 
 Known warning noise (non-failing): XGBoost emits a CUDA/CPU device-mismatch warning plus UBJSON format warnings from the Python training fixture; these are pre-existing and unrelated to this session's changes.
 
@@ -330,11 +406,11 @@ Empty-result note: `docs/RefactorML.md` is an empty tracked file; it is listed h
 
 ## 7. Open risks (ranked)
 
-1. **Model trust (P0-1 / P1-6):** ML is off by default, but a user can turn it on and get a near-baseline 25% term. No quality gate stops that yet.
+1. **Model trust (P0-1 / P1-6):** ML is off by default and automatic promotion is now gated, but a user can still opt in and get a near-baseline 25% term. Fresh inference-mode AUC is 0.5122 with Brier 0.2495, slightly worse than the constant-prior baseline.
 2. **Lifecycle confidence (P0-2):** ingestion is now covered by 18 payload-level tests (consecutive matches, duplicates, undo, attribution, 300-payload invariants), but never driven through a real multi-match GSI stream. The warp status mapping and event emission are not executed by tests, and an out-of-order second stale hero-selection snapshot is still indistinguishable from a new draft.
 3. **CSP / capability regression (P2-1, P2-2):** the app has not been launched with the new CSP and split capabilities; a broken permission would only appear at runtime.
 4. **Semantics (P2-5):** confidence is the score, lane balance is constant, and risk is a score threshold. The UI can still imply more certainty than the engine has.
-5. **Reproducibility (P1-5):** the matchup block is fixed, but lane features are still disabled and a full regeneration was not run.
+5. **Reproducibility (P1-5):** the 887-name set is reproduced by a fixture test, but lane features are disabled, the real 1.9 GB dataset was not regenerated, and `process_all()` column order depends on thread completion order. Matchup-data runs emit 894 names and require a retrain.
 6. **Latency (P0-4):** 23.2 ms is a harness number; in-app p95 and inference count per event are unmeasured.
 7. **Data platform (P2-9):** 1.9 GB of loose dataset files with no versioning or retention.
 
@@ -342,13 +418,15 @@ Empty-result note: `docs/RefactorML.md` is an empty tracked file; it is listed h
 
 ## 8. Next three tasks
 
-1. **ML quality gate + feature-schema reproducibility (P0-1, P1-5).** Add a manifest-driven gate (AUC ≥ 0.60, Brier ≤ 0.235, calibration report) that refuses to enable ML for a failing model, plus a fixture pipeline test (small synthetic raw matches → generated feature names == manifest names). See the continuation note below.
+1. **Candidate model: leakage ablation and retrain (P0-1, P1-6).** Train on the chronological split without `duration`, `avg_mmr`, `game_mode`, `lobby_type`, and raw pick-index columns; evaluate through `quality_gate.py` in `inference` mode; compare AUC/Brier/ECE to the constant-prior baseline. Promote only on exit 0.
 2. **Live GSI replay + Tauri runtime validation (P0-2 residual, P2-1, P2-2, P1-2, P1-3).** Replay a captured multi-match GSI stream through the running app, then launch with the new CSP/split capabilities and confirm overlay show/hide/drag and the missing-model fallback. This is the only way to close the runtime assumptions the tests cannot cover.
-3. **P1-6 leakage ablation + in-app latency (P1-6, P0-4).** Drop `duration`/`game_mode`/ordinal pick index on the chronological split, compare AUC/Brier/calibration, then measure in-app p95 over ≥100 GSI-driven requests before optimizing further.
+3. **Deterministic regeneration + in-app latency (P1-5 residual, P0-4).** Make `process_all()` column order deterministic, regenerate a representative sample, diff names/order against the schema, then measure in-app p95 over ≥100 GSI-driven requests before optimizing further.
 
-### Continuation note (2026-10-27, session 3)
+### Continuation note (2026-10-28, session 4)
 
-Start with task 1. P0-2 is `verified_fixed` at the payload → engine level; do **not** re-open it without new evidence, and do not mark the live-runtime box as done without an actual replay/session. The GSI lifecycle work left these files changed and uncommitted: `src-tauri/src/gsi.rs` (seam + ban cap) and `src-tauri/src/gsi/lifecycle_tests.rs` (new). The next task touches `ml/` and `src-tauri/src/commands.rs`/`models.rs` for the gate; it does not need to touch `gsi.rs` except to add a captured-fixture test if a real payload is obtained.
+Start with task 1. The gate is in place and the bundled artifact **fails** it: do not lower thresholds, do not edit the shipped schema, and do not mark P0-1 fixed because a gate exists. A passing candidate must beat the constant-prior baseline (Brier < 0.2493 on this test split) as well as the policy floor to be worth bundling. `ml/models/*` is gitignored: gate reports and candidate artifacts stay local; only source/tests/docs are tracked.
+
+Before changing feature code, read `ml/tests/test_feature_schema.py`: 631 structural features have a pinned order, while the two `*_ban_avg_winrate` columns and the 254 per-hero win-rates are history-ordered. `process_all()` uses `as_completed`, so regenerate with a deterministic match order or add an explicit canonical column list. Any schema change requires retraining, re-exporting the schema, updating the golden fixture, and re-running `scripts/verify.ps1`.
 
 ---
 
@@ -357,9 +435,10 @@ Start with task 1. P0-2 is `verified_fixed` at the payload → engine level; do 
 Start here, in this order:
 
 1. Read this file, then §4-§5 of [`AUDIT_2026-10-27.md`](AUDIT_2026-10-27.md) for the evidence behind each ID.
-2. Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` to confirm the baseline still holds (Rust 69 / frontend 19 / Python 49, 12/12 steps).
-3. Pick the next task from §8 (currently the ML quality gate + feature-schema reproducibility task). The task ID maps 1:1 to the audit finding, so no re-audit is needed.
-4. Update this file's status column and the verification log **after** running the check — never before.
-5. Leave changes uncommitted unless the user explicitly authorizes a commit.
+2. Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1` to confirm the baseline still holds (Rust 69 / frontend 19 / Python 63, 13/13 steps).
+3. Run `ml/venv/Scripts/python.exe ml/training/quality_gate.py`; expect exit 1 until a candidate replaces the bundled model. Use `--evaluation-mode as_trained` only to compare against the manifest, not to judge runtime quality.
+4. Pick the next task from §8 (currently the candidate-model ablation/retrain). The task ID maps 1:1 to the audit finding, so no re-audit is needed.
+5. Update this file's status column and the verification log **after** running the check — never before.
+6. Leave changes uncommitted unless the user explicitly authorizes a commit.
 
 Known environment limitations to carry forward: no live Dota 2 client, no Tauri GUI launch in-session, Python dataset regeneration is impractical locally (1.9 GB / 121,746 files), and PowerShell may report a false non-zero exit for `cargo test` because of stderr piping.

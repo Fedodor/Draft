@@ -5,8 +5,10 @@
 .DESCRIPTION
     Runs the same checks locally and in CI: secret scan, Rust format/lint/tests,
     frontend lint + TypeScript typecheck + build + tests, and Python compile +
-    tests. Any failure is reported at the end and makes the script exit
-    non-zero.
+    tests. The ML feature-contract and model quality-gate tests run as their own
+    visible step (they need no dataset download); the remaining Python suite
+    runs after them. Any failure is reported at the end and makes the script
+    exit non-zero.
 
 .PARAMETER Python
     Path to the Python interpreter. Defaults to ml\venv\Scripts\python.exe
@@ -146,8 +148,11 @@ if (-not $SkipPython) {
     Invoke-Step -Name "Python byte-compile" -Action {
         & $pythonExe -m compileall -q "ml/training" "ml/feature-engineering" "scripts"
     }
+    Invoke-Step -Name "Python ML contract + quality-gate tests" -Action {
+        & $pythonExe -m pytest "ml/tests/test_feature_schema.py" "ml/tests/test_quality_gate.py" -q
+    }
     Invoke-Step -Name "Python tests" -Action {
-        & $pythonExe -m pytest "ml/tests" -q
+        & $pythonExe -m pytest "ml/tests" -q --ignore="ml/tests/test_feature_schema.py" --ignore="ml/tests/test_quality_gate.py"
     }
 }
 
