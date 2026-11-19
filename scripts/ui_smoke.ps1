@@ -35,6 +35,16 @@ $vitePort = 1420
 $cdpPort = 9333
 $gsiPort = 3000
 
+# WebView2 runtime 150+ ignores WEBVIEW2_* variables (and HKCU policy) for an
+# elevated host process, which is what GitHub-hosted Windows runners are. HKLM
+# policy is the documented channel that survives elevation.
+$isElevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
+    [Security.Principal.WindowsBuiltInRole]::Administrator)
+$policyKey = "HKLM:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
+$policyName = "smart-draft-assistant.exe"
+$policySet = $false
+$policyPrevious = $null
+
 if (-not $ArtifactsDir) {
     $ArtifactsDir = if ($env:RUNNER_TEMP) {
         Join-Path $env:RUNNER_TEMP "ui-smoke"
@@ -161,6 +171,9 @@ function Write-AppDiagnostics {
         $hasPort = @($browserProcs | Where-Object { ([string]$_.CommandLine) -like "*remote-debugging-port*" }).Count -gt 0
         $lines.Add("any webview cmdline has remote-debugging-port: $hasPort")
     }
+    $lines.Add("host elevated: $isElevated")
+    $policyValue = (Get-ItemProperty -Path $policyKey -Name $policyName -ErrorAction SilentlyContinue).$policyName
+    $lines.Add("WebView2 HKLM policy: $(if ($policyValue) { $policyValue } else { 'not set' })")
     $lines.Add("cdp port ${cdpPort} listening: $(Test-PortInUse -Port $cdpPort)")
     $lines.Add("gsi port ${gsiPort} listening: $(Test-PortInUse -Port $gsiPort)")
     $profileDir = Join-Path $env:LOCALAPPDATA "com.smartdraftassistant.app\EBWebView"
@@ -394,6 +407,23 @@ try {
     if (-not $viteReady) { throw "Vite did not start" }
 
     Write-Host "==> Launching the app"
+
+    # Set the HKLM policy when we have the rights, and restore it afterwards.
+    if ($isElevated) {
+        try {
+            if (-not (Test-Path -LiteralPath $policyKey)) { New-Item -Path $policyKey -Force | Out-Null }
+            $existing = Get-ItemProperty -Path $policyKey -Name $policyName -ErrorAction SilentlyContinue
+            if ($existing) { $policyPrevious = $existing.$policyName }
+            Set-ItemProperty -Path $policyKey -Name $policyName -Value "--remote-debugging-port=$cdpPort" -Type String
+            $policySet = $true
+            Write-Host "    elevated host: WebView2 HKLM policy set for $policyName"
+        } catch {
+            Write-Host "    elevated host: HKLM policy write failed: $($_.Exception.Message)" -ForegroundColor Yellow
+        }
+    } else {
+        Write-Host "    standard user: relying on WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS"
+    }
+
     $env:WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS = "--remote-debugging-port=$cdpPort"
     try {
         $appProcess = Start-Process -FilePath $exePath -WorkingDirectory $tauriDir `
@@ -577,6 +607,15 @@ finally {
     }
     if ($viteProcess -and -not $viteProcess.HasExited) {
         & taskkill /PID $viteProcess.Id /T /F 2>&1 | Out-Null
+    }
+    if ($policySet) {
+        try {
+            if ($policyPrevious) {
+                Set-ItemProperty -Path $policyKey -Name $policyName -Value $policyPrevious -Type String
+            } else {
+                Remove-ItemProperty -Path $policyKey -Name $policyName -ErrorAction SilentlyContinue
+            }
+        } catch { }
     }
 }
 
