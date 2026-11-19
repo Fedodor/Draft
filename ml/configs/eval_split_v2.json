@@ -1,0 +1,78 @@
+{
+  "schema_version": 1,
+  "frozen_at": "2026-10-28",
+  "purpose": "Evaluation protocol for the corrected (pick/ban-fixed) dataset. Frozen before any model is trained on it so the partitions cannot be re-cut after seeing results.",
+  "dataset": {
+    "path": "ml/datasets/processed_v2/draft_features.parquet",
+    "sha256": "472a5086cf919d8077e43a263cab70642f318b5ddafed1641ca947b19d3b6ce7",
+    "bytes": 56332285,
+    "generation": "feature-engineering/processor.py --output-dir datasets/processed_v2 --lookup-dir datasets/processed --no-allpick --no-matchups --workers 3 --chunk-size 777",
+    "rows": 102118,
+    "columns": 890,
+    "non_meta_features": 882,
+    "feature_fingerprint": "9b04edda99e2d1cebfaf72f3d12cb8cfe802a913add2e66be5090d207c4b2599",
+    "label": "candidate_v2_pickban_fix",
+    "supersedes": {
+      "path": "ml/datasets/processed/draft_features.parquet",
+      "sha256": "264a6ad5a0cfdecfb60797212d7878019db26a87cb32a4c836de2b27ce991621",
+      "reason": "bans were encoded as picks (STRATZ camelCase isPick); presence vectors had 12 flags per side in 82,739 rows"
+    }
+  },
+  "rule": {
+    "order": "start_time ascending, match_id as tie-break (mergesort, stable)",
+    "boundaries": "epoch-second thresholds placed between distinct start_time values, so no timestamp appears in two partitions",
+    "match_isolation": "one row per match_id; match_id is unique in the dataset and never crosses a boundary",
+    "no_random_shuffle": true,
+    "fractions": {
+      "train": 0.8,
+      "validation": 0.1,
+      "test": 0.1
+    }
+  },
+  "partitions": {
+    "train": {
+      "role": "feature selection and model fitting",
+      "start_time_min": 1494167425,
+      "start_time_max": 1764427877,
+      "rows": 81695,
+      "unique_match_ids": 81695,
+      "radiant_win_rate": 0.5245
+    },
+    "validation": {
+      "role": "variant selection, hyperparameters, early stopping, calibration checks",
+      "start_time_min": 1764427877,
+      "start_time_max": 1775426573,
+      "rows": 10212,
+      "unique_match_ids": 10212,
+      "radiant_win_rate": 0.5344,
+      "note": "start_time_min equals the train maximum only because it is the inclusive lower bound of the open interval (train uses start_time <= max, validation uses start_time > train_max)"
+    },
+    "test": {
+      "role": "single final evaluation of one already-selected candidate; never for selection",
+      "start_time_min": 1775426573,
+      "start_time_max": 1787903076,
+      "rows": 10211,
+      "unique_match_ids": 10211,
+      "radiant_win_rate": 0.5273
+    }
+  },
+  "contamination": {
+    "untouched": false,
+    "reason": "The chronological tail of this corpus (2026-04-05 .. 2026-08-28) is the same match population as the 2026-10-28 ablation's test window. All 10,211 holdout match_ids are present in that previously inspected window, whose metrics were already reported.",
+    "shared_match_ids_with_previous_test_window": 10211,
+    "previous_test_window_rows": 10212,
+    "consequence": "This partition may be used as an internal reference and for regression checks, but a result on it is NOT a fresh held-out number and must not be presented as one.",
+    "clean_holdout_requirement": "Collect matches with start_time > 1787903076 (after 2026-08-28T07:44:36Z, the newest timestamp in the corpus) and freeze them before evaluating any candidate. No such data exists in the repository as of 2026-10-28."
+  },
+  "allowed_use": {
+    "feature_selection": ["train"],
+    "model_selection": ["train", "validation"],
+    "final_evaluation": ["validation"],
+    "reference_only": ["test"],
+    "forbidden": [
+      "choosing features or hyperparameters from test metrics",
+      "reporting a test result as a first, untouched final evaluation",
+      "re-cutting these boundaries after observing results"
+    ]
+  }
+}

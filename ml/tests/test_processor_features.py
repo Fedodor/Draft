@@ -39,6 +39,33 @@ def _match(**overrides) -> dict:
     return match
 
 
+def _stratz_match(**overrides) -> dict:
+    """STRATZ `pickBans` shape: camelCase `isPick`/`isRadiant`, bans included."""
+    pick_bans = [
+        {"heroId": hero_id, "isRadiant": True, "isPick": True, "order": order}
+        for order, hero_id in enumerate([1, 2, 3, 4, 5])
+    ]
+    pick_bans += [
+        {"heroId": hero_id, "isRadiant": False, "isPick": True, "order": 10 + order}
+        for order, hero_id in enumerate([6, 7, 8, 9, 10])
+    ]
+    pick_bans += [
+        {"heroId": hero_id, "isRadiant": True, "isPick": False, "order": 20 + order}
+        for order, hero_id in enumerate([11, 12])
+    ]
+    pick_bans += [
+        {"heroId": hero_id, "isRadiant": False, "isPick": False, "order": 30 + order}
+        for order, hero_id in enumerate([13, 14])
+    ]
+    match = {
+        "id": 456,
+        "pickBans": pick_bans,
+        "didRadiantWin": True,
+    }
+    match.update(overrides)
+    return match
+
+
 @pytest.fixture()
 def feature_processor(tmp_path):
     return processor.FeatureProcessor(
@@ -66,6 +93,48 @@ def test_start_time_defaults_to_zero_when_absent(feature_processor):
 
     assert features is not None
     assert features["start_time"] == 0
+
+
+def test_stratz_is_pick_false_is_a_ban_not_a_pick(feature_processor):
+    """STRATZ sends `isPick`; bans must not land in the presence vector."""
+    features = feature_processor.process_match(_stratz_match())
+
+    assert features is not None
+    # Picks: Radiant 1-5, Dire 6-10. Bans: Radiant 11-12, Dire 13-14.
+    for hero_id in (1, 2, 3, 4, 5):
+        token = feature_processor._safe_names[hero_id]
+        assert features[f"rad_has_{token}"] == 1
+    for hero_id in (6, 7, 8, 9, 10):
+        token = feature_processor._safe_names[hero_id]
+        assert features[f"dire_has_{token}"] == 1
+
+    for hero_id in (11, 12):
+        token = feature_processor._safe_names[hero_id]
+        assert features[f"rad_has_{token}"] == 0
+        assert features[f"rad_ban_{token}"] == 1
+    for hero_id in (13, 14):
+        token = feature_processor._safe_names[hero_id]
+        assert features[f"dire_has_{token}"] == 0
+        assert features[f"dire_ban_{token}"] == 1
+
+    # Exactly five heroes per side are present, matching what the runtime builds.
+    rad_present = [k for k, v in features.items() if k.startswith("rad_has_") and v == 1]
+    dire_present = [k for k, v in features.items() if k.startswith("dire_has_") and v == 1]
+    assert len(rad_present) == 5
+    assert len(dire_present) == 5
+
+    # Pick slots hold heroes actually drafted, in order, not bans.
+    assert [features[f"rad_pick_{i}"] for i in range(5)] == [1, 2, 3, 4, 5]
+    assert [features[f"dire_pick_{i}"] for i in range(5)] == [6, 7, 8, 9, 10]
+
+
+def test_opendota_is_pick_true_still_records_picks(feature_processor):
+    features = feature_processor.process_match(_match())
+
+    assert features is not None
+    rad_present = [k for k, v in features.items() if k.startswith("rad_has_") and v == 1]
+    assert len(rad_present) == 5
+    assert features["rad_pick_0"] == 1
 
 
 @pytest.mark.parametrize(
