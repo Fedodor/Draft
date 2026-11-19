@@ -40,6 +40,9 @@ apps/desktop/dist/
 apps/desktop/src-tauri/target/
 target/
 
+# Local agent instructions: kept on disk, never tracked
+AGENTS.md
+
 # Local OS and editor files
 .DS_Store
 Thumbs.db
