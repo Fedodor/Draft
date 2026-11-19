@@ -151,6 +151,15 @@ function Write-AppDiagnostics {
         $lines.Add("child processes: " + (($children | ForEach-Object { "$($_.Name)($($_.ProcessId))" }) -join ', '))
         $webviews = @(Get-Process -Name msedgewebview2 -ErrorAction SilentlyContinue)
         $lines.Add("msedgewebview2 processes: $($webviews.Count)")
+        $browserProcs = @(Get-CimInstance Win32_Process -Filter "Name='msedgewebview2.exe'" -ErrorAction SilentlyContinue |
+                Sort-Object CreationDate | Select-Object -First 2)
+        foreach ($browserProc in $browserProcs) {
+            $cmd = [string]$browserProc.CommandLine
+            if ($cmd.Length -gt 700) { $cmd = $cmd.Substring(0, 700) + ' ...' }
+            $lines.Add("msedgewebview2 cmdline: $cmd")
+        }
+        $hasPort = @($browserProcs | Where-Object { ([string]$_.CommandLine) -like "*remote-debugging-port*" }).Count -gt 0
+        $lines.Add("any webview cmdline has remote-debugging-port: $hasPort")
     }
     $lines.Add("cdp port ${cdpPort} listening: $(Test-PortInUse -Port $cdpPort)")
     $lines.Add("gsi port ${gsiPort} listening: $(Test-PortInUse -Port $gsiPort)")
