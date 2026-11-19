@@ -27,16 +27,8 @@ interface EngineState {
 // UI state
 interface UIState {
   selectedTeam: TeamSide;
-  overlayPosition: { x: number; y: number };
-  overlaySize: { width: number; height: number };
-  isOverlayVisible: boolean;
-  isSettingsOpen: boolean;
   activeTab: 'recommendations' | 'draft' | 'analysis' | 'settings';
   setSelectedTeam: (team: TeamSide) => void;
-  setOverlayPosition: (pos: { x: number; y: number }) => void;
-  setOverlaySize: (size: { width: number; height: number }) => void;
-  setOverlayVisible: (visible: boolean) => void;
-  setSettingsOpen: (open: boolean) => void;
   setActiveTab: (tab: UIState['activeTab']) => void;
 }
 
@@ -107,21 +99,19 @@ export const useUIStore = create<UIState>()(
   persist(
     (set) => ({
       selectedTeam: 'radiant',
-      overlayPosition: { x: 100, y: 100 },
-      overlaySize: { width: 400, height: 600 },
-      isOverlayVisible: true,
-      isSettingsOpen: false,
       activeTab: 'recommendations',
       
       setSelectedTeam: (selectedTeam) => set({ selectedTeam }),
-      setOverlayPosition: (overlayPosition) => set({ overlayPosition }),
-      setOverlaySize: (overlaySize) => set({ overlaySize }),
-      setOverlayVisible: (isOverlayVisible) => set({ isOverlayVisible }),
-      setSettingsOpen: (isSettingsOpen) => set({ isSettingsOpen }),
       setActiveTab: (activeTab) => set({ activeTab }),
     }),
     {
       name: 'ui-store',
+      // Only these two are real UI state; overlay geometry lives in the
+      // backend config, and the overlay window has its own local state.
+      partialize: (state) => ({
+        selectedTeam: state.selectedTeam,
+        activeTab: state.activeTab,
+      }),
     }
   )
 );
