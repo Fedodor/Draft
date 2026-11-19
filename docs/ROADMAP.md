@@ -3,7 +3,7 @@
 - Updated: 2026-11-19 (session 15)
 - Source audit: [`AUDIT_2026-11-19.md`](AUDIT_2026-11-19.md) (current pass), [`AUDIT_2026-10-27.md`](AUDIT_2026-10-27.md) (historical findings, preserved)
 - Predecessor audit: [`AUDIT.md`](AUDIT.md) (2026-10-22)
-- Branch: `master`, HEAD `a271401`; session 4-13 audit and ML work is committed and pushed; the Python 3.12 upgrade is uncommitted
+- Branch: `master`, HEAD `3922a1c`; session 4-13 audit and ML work is committed and pushed, and the Python 3.12 Actions gate is green
 - Purpose: single source of truth for what is fixed, what is verified, and what is next.
 
 Status vocabulary:

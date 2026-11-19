@@ -31,7 +31,8 @@ ONNX model.
 - Windows 10/11 (the verified platform)
 - Node.js 20+
 - Rust stable (with `rustfmt` and `clippy`)
-- Python 3.12.13 (the verified ML environment; CI uses the same patch)
+- Python 3.12.13 via uv (source-only on Windows; python.org has no installer)
+- uv (https://docs.astral.sh/uv/)
 - Dota 2, for live drafting
 
 ### Install
@@ -41,8 +42,9 @@ cd apps/desktop
 npm install
 
 cd ../../ml
-python -V   # must report 3.12.13
-python -m venv venv
+# Python 3.12.13 has no Windows installer; uv provides the managed build.
+uv python install 3.12.13
+uv venv --python 3.12.13 --seed venv
 venv\Scripts\activate
 pip install -r requirements.lock
 ```

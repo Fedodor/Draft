@@ -1184,10 +1184,14 @@ context. Do not quote them as the current model.
 
 Prerequisites:
 
+Python 3.12.13 is a source-only security release; python.org publishes no
+Windows installer for it (the last was 3.12.10). Provision the uv-managed build;
+install uv first from https://docs.astral.sh/uv/.
+
 ```bash
 cd ml
-python -V   # must report 3.12.13
-python -m venv venv
+uv python install 3.12.13
+uv venv --python 3.12.13 --seed venv
 # Windows
 venv\Scripts\activate
 pip install -r requirements.lock
