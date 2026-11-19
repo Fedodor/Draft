@@ -86,9 +86,9 @@ dispatch, with a concurrency group that cancels superseded runs.
 - `secret-scan` (ubuntu, Python 3.12.13): the fast, self-contained scan.
 - `quality-gate` (windows-latest): installs the Rust toolchain
   (`rustfmt`, `clippy`) with `Swatinem/rust-cache`, Node 20 (npm cache), and
-  Python 3.12.13 (pip cache keyed on `ml/requirements.lock`); installs the
-  locked dependencies; then runs
-  `pwsh -File scripts/verify.ps1 -ForceInstall`.
+  Python 3.12.13 via `astral-sh/setup-uv` (`setup-python` has no Windows build
+  for this patch). It installs `ml/requirements.lock` into `ml/venv` with uv,
+  then runs `pwsh -File scripts/verify.ps1 -ForceInstall`.
 
 Windows is the runner of record because the app targets Windows (bundled
 `onnxruntime.dll`, Tauri shell) and the golden Rust test needs the bundled DLL.
