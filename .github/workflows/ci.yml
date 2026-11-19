@@ -63,7 +63,7 @@ jobs:
         run: |
           uv python install 3.12.13
           uv venv --python 3.12.13 --seed ml/venv
-          uv pip install --python ml/venv/Scripts/python.exe -r ml/requirements.lock
+          uv pip install --require-hashes --python ml/venv/Scripts/python.exe -r ml/requirements.lock
 
       - name: Run quality gate
         run: pwsh -NoProfile -File scripts/verify.ps1 -ForceInstall

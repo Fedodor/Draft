@@ -34,7 +34,7 @@ Switches: `-SkipRust`, `-SkipFrontend`, `-SkipPython`, `-SkipSecrets`,
 
 - `secret-scan` (ubuntu, Python 3.12.13): the fast self-contained scan.
 - `quality-gate` (windows-latest): Rust (rustfmt + clippy) with `rust-cache`,
-  Node 20, uv-managed Python 3.12.13, `ml/requirements.lock`, then
+  Node 20, uv-managed Python 3.12.13, hash-pinned `ml/requirements.lock`, then
   `pwsh -File scripts/verify.ps1 -ForceInstall`.
 
 Windows is the runner of record (bundled `onnxruntime.dll`, Tauri shell, and the

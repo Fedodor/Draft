@@ -46,12 +46,20 @@ cd ../../ml
 uv python install 3.12.13
 uv venv --python 3.12.13 --seed venv
 venv\Scripts\activate
-pip install -r requirements.lock
+pip install --require-hashes -r requirements.lock
 ```
 
 `requirements.txt` lists the direct dependencies. `requirements.lock` pins the
-full verified Python 3.12.13 set and is what CI installs; regenerate it with
-`pip freeze > requirements.lock` only from a venv that has passed the ML suite.
+full verified Python 3.12.13 set with SHA-256 hashes for the Windows wheels and
+is what CI installs. From the repository root, check that it reproduces with:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\update_ml_lock.ps1
+```
+
+The script creates a fresh 3.12.13 venv, installs the current hashed lock, runs
+the ML suite, and compares the regenerated file. Add `-Update` to write it;
+versions are intentionally not upgraded by this command.
 
 Rust dependencies build automatically on first `cargo`/Tauri invocation.
 

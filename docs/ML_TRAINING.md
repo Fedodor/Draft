@@ -1194,11 +1194,20 @@ uv python install 3.12.13
 uv venv --python 3.12.13 --seed venv
 # Windows
 venv\Scripts\activate
-pip install -r requirements.lock
+pip install --require-hashes -r requirements.lock
 ```
 
 `requirements.txt` remains the direct-dependency list; `requirements.lock` pins
-the full verified Python 3.12.13 environment and is what CI installs.
+the full verified Python 3.12.13 environment with SHA-256 hashes for the Windows
+wheels and is what CI installs. From the repository root, this reproduces the
+lock in a clean venv (install, run `ml/tests`, re-hash):
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\update_ml_lock.ps1
+```
+
+The default mode only checks; add `-Update` to write the generated lock. The
+script does not upgrade versions.
 
 ### Reference training run
 

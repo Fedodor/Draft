@@ -9,6 +9,7 @@
 
 # Python
 ml/venv/
+.lock-refresh/
 __pycache__/
 *.py[cod]
 .pytest_cache/

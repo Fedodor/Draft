@@ -87,8 +87,9 @@ dispatch, with a concurrency group that cancels superseded runs.
 - `quality-gate` (windows-latest): installs the Rust toolchain
   (`rustfmt`, `clippy`) with `Swatinem/rust-cache`, Node 20 (npm cache), and
   Python 3.12.13 via `astral-sh/setup-uv` (`setup-python` has no Windows build
-  for this patch). It installs `ml/requirements.lock` into `ml/venv` with uv,
-  then runs `pwsh -File scripts/verify.ps1 -ForceInstall`.
+  for this patch). It installs the hash-pinned `ml/requirements.lock` into
+  `ml/venv` with uv (`--require-hashes`), then runs
+  `pwsh -File scripts/verify.ps1 -ForceInstall`.
 
 Windows is the runner of record because the app targets Windows (bundled
 `onnxruntime.dll`, Tauri shell) and the golden Rust test needs the bundled DLL.
@@ -134,7 +135,7 @@ The gate was run end to end on 2026-10-23: all steps PASS.
 
 - `scripts/verify.ps1` targets Windows PowerShell 5.1+ semantics; `pwsh` is
   only available on the CI runner, so local reproduction uses `powershell.exe`.
-- The gate installs `ml/requirements.lock` (XGBoost, LightGBM, ONNX) in CI,
-  which is the slowest step; the Rust and frontend caches offset this.
+- The gate installs the hash-pinned `ml/requirements.lock` (XGBoost, LightGBM,
+  ONNX) in CI, which is the slowest step; the Rust and frontend caches offset this.
 - CI does not build the full Tauri bundle (only `npm run build` + Rust tests);
   a packaging smoke test remains future work.
