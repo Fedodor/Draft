@@ -87,12 +87,12 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
   ] as const;
 
   return (
-    <header className="h-12 flex items-center justify-between px-4 border-b border-dota-border bg-dota-panel/80 backdrop-blur-sm z-10">
+    <header className="h-12 flex items-center justify-between px-3 border-b border-dota-border bg-dota-panel/80 backdrop-blur-sm z-10">
       {/* Team Selector */}
       <div className="flex items-center gap-2">
         <button
           onClick={() => setSelectedTeam('radiant')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             selectedTeam === 'radiant'
               ? 'bg-dota-accent/20 text-dota-accent'
               : 'text-dota-textMuted hover:text-dota-text hover:bg-dota-border'
@@ -103,7 +103,7 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
         </button>
         <button
           onClick={() => setSelectedTeam('dire')}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
+          className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-colors ${
             selectedTeam === 'dire'
               ? 'bg-dota-accent/20 text-dota-accent'
               : 'text-dota-textMuted hover:text-dota-text hover:bg-dota-border'
@@ -115,14 +115,14 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
       </div>
 
       {/* Tab Navigation */}
-      <nav className="flex items-center gap-1" role="tablist">
+      <nav className="flex items-center gap-0.5" role="tablist">
         {tabs.map(({ id, label, icon: Icon }) => (
           <button
             key={id}
             onClick={() => onTabChange(id)}
             role="tab"
             aria-selected={activeTab === id}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-sm font-medium transition-all duration-200 ${
               activeTab === id
                 ? 'bg-dota-accent/15 text-dota-accent border border-dota-accent/30'
                 : 'text-dota-textMuted hover:text-dota-text hover:bg-dota-border'
@@ -135,7 +135,7 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
       </nav>
 
       {/* Status Indicators */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-1.5 shrink-0">
         <button
           onClick={toggleOverlay}
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
@@ -150,10 +150,10 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
         </button>
         <div className="flex items-center gap-1.5 text-xs text-dota-textMuted" title={gsi.endpoint || 'GSI server'}>
           <span className={`w-2 h-2 rounded-full ${gsi.running ? 'bg-green-500 animate-pulse' : 'bg-red-500/70'}`} />
-          <span>{gsi.running ? 'GSI Live' : 'GSI Off'}</span>
+          <span className="whitespace-nowrap">{gsi.running ? 'GSI Live' : 'GSI Off'}</span>
         </div>
         <div className="w-1px h-6 bg-dota-border" />
-        <div className="text-xs text-dota-textMuted font-mono">
+        <div className="text-xs text-dota-textMuted font-mono whitespace-nowrap">
           Patch {patchVersion || '—'}
         </div>
       </div>
