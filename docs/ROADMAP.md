@@ -1,9 +1,9 @@
 # Roadmap & Live Status: Smart Draft Assistant
 
-- Updated: 2026-11-19 (session 13)
+- Updated: 2026-11-19 (session 14)
 - Source audit: [`AUDIT_2026-11-19.md`](AUDIT_2026-11-19.md) (current pass), [`AUDIT_2026-10-27.md`](AUDIT_2026-10-27.md) (historical findings, preserved)
 - Predecessor audit: [`AUDIT.md`](AUDIT.md) (2026-10-22)
-- Branch: `master`, HEAD `2ed6b36`; session 4-13 work is **uncommitted** (nothing was committed or pushed)
+- Branch: `master`, HEAD `1bdf797`; session 4-13 audit and ML work is committed and pushed; the A-07 dependency lock is uncommitted
 - Purpose: single source of truth for what is fixed, what is verified, and what is next.
 
 Status vocabulary:

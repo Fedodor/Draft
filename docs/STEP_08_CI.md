@@ -83,10 +83,11 @@ config files (20 files).
 `.github/workflows/ci.yml` runs on every push, pull request, and manual
 dispatch, with a concurrency group that cancels superseded runs.
 
-- `secret-scan` (ubuntu, Python 3.12): the fast, self-contained scan.
+- `secret-scan` (ubuntu, Python 3.10.11): the fast, self-contained scan.
 - `quality-gate` (windows-latest): installs the Rust toolchain
   (`rustfmt`, `clippy`) with `Swatinem/rust-cache`, Node 20 (npm cache), and
-  Python 3.11 (pip cache); installs `ml/requirements.txt`; then runs
+  Python 3.10.11 (pip cache keyed on `ml/requirements.lock`); installs the
+  locked dependencies; then runs
   `pwsh -File scripts/verify.ps1 -ForceInstall`.
 
 Windows is the runner of record because the app targets Windows (bundled
@@ -133,7 +134,7 @@ The gate was run end to end on 2026-10-23: all steps PASS.
 
 - `scripts/verify.ps1` targets Windows PowerShell 5.1+ semantics; `pwsh` is
   only available on the CI runner, so local reproduction uses `powershell.exe`.
-- The gate installs `ml/requirements.txt` (XGBoost, LightGBM, ONNX) in CI,
+- The gate installs `ml/requirements.lock` (XGBoost, LightGBM, ONNX) in CI,
   which is the slowest step; the Rust and frontend caches offset this.
 - CI does not build the full Tauri bundle (only `npm run build` + Rust tests);
   a packaging smoke test remains future work.

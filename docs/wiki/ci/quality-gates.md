@@ -32,9 +32,10 @@ Switches: `-SkipRust`, `-SkipFrontend`, `-SkipPython`, `-SkipSecrets`,
 
 `.github/workflows/ci.yml` runs on push, pull request, and manual dispatch:
 
-- `secret-scan` (ubuntu, Python 3.12): the fast self-contained scan.
+- `secret-scan` (ubuntu, Python 3.10.11): the fast self-contained scan.
 - `quality-gate` (windows-latest): Rust (rustfmt + clippy) with `rust-cache`,
-  Node 20, Python 3.11, then `pwsh -File scripts/verify.ps1 -ForceInstall`.
+  Node 20, Python 3.10.11, `ml/requirements.lock`, then
+  `pwsh -File scripts/verify.ps1 -ForceInstall`.
 
 Windows is the runner of record (bundled `onnxruntime.dll`, Tauri shell, and the
 Rust golden test needs the DLL).
