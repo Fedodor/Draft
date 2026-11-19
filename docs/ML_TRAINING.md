@@ -1186,6 +1186,7 @@ Prerequisites:
 
 ```bash
 cd ml
+python -V   # must report 3.12.13
 python -m venv venv
 # Windows
 venv\Scripts\activate
@@ -1193,7 +1194,7 @@ pip install -r requirements.lock
 ```
 
 `requirements.txt` remains the direct-dependency list; `requirements.lock` pins
-the full verified Python 3.10.11 environment and is what CI installs.
+the full verified Python 3.12.13 environment and is what CI installs.
 
 ### Reference training run
 

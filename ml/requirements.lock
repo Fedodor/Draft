@@ -1,4 +1,4 @@
-# Reproducible ML environment for Python 3.10.11 (Windows x64).
+# Reproducible ML environment for Python 3.12.13 (Windows x64).
 # Direct dependencies live in ml/requirements.txt; this file pins the
 # verified transitive set. Generated from the verified ml/venv with:
 #   ml/venv/Scripts/python.exe -m pip freeze

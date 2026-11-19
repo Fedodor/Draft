@@ -31,7 +31,7 @@ ONNX model.
 - Windows 10/11 (the verified platform)
 - Node.js 20+
 - Rust stable (with `rustfmt` and `clippy`)
-- Python 3.10.11 (the verified ML environment; CI uses the same patch)
+- Python 3.12.13 (the verified ML environment; CI uses the same patch)
 - Dota 2, for live drafting
 
 ### Install
@@ -41,13 +41,14 @@ cd apps/desktop
 npm install
 
 cd ../../ml
+python -V   # must report 3.12.13
 python -m venv venv
 venv\Scripts\activate
 pip install -r requirements.lock
 ```
 
 `requirements.txt` lists the direct dependencies. `requirements.lock` pins the
-full verified Python 3.10.11 set and is what CI installs; regenerate it with
+full verified Python 3.12.13 set and is what CI installs; regenerate it with
 `pip freeze > requirements.lock` only from a venv that has passed the ML suite.
 
 Rust dependencies build automatically on first `cargo`/Tauri invocation.

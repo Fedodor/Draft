@@ -83,10 +83,10 @@ config files (20 files).
 `.github/workflows/ci.yml` runs on every push, pull request, and manual
 dispatch, with a concurrency group that cancels superseded runs.
 
-- `secret-scan` (ubuntu, Python 3.10.11): the fast, self-contained scan.
+- `secret-scan` (ubuntu, Python 3.12.13): the fast, self-contained scan.
 - `quality-gate` (windows-latest): installs the Rust toolchain
   (`rustfmt`, `clippy`) with `Swatinem/rust-cache`, Node 20 (npm cache), and
-  Python 3.10.11 (pip cache keyed on `ml/requirements.lock`); installs the
+  Python 3.12.13 (pip cache keyed on `ml/requirements.lock`); installs the
   locked dependencies; then runs
   `pwsh -File scripts/verify.ps1 -ForceInstall`.
 

@@ -1,5 +1,5 @@
 # ML Training Dependencies
-# Exact reproducible pins: requirements.lock (Python 3.10.11; used by CI).
+# Exact reproducible pins: requirements.lock (Python 3.12.13; used by CI).
 pandas>=2.1.0
 python-dotenv>=1.0.0
 numpy>=1.24.0
