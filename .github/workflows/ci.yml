@@ -67,3 +67,48 @@ jobs:
 
       - name: Run quality gate
         run: pwsh -NoProfile -File scripts/verify.ps1 -ForceInstall
+
+  gui-smoke:
+    name: GUI smoke (Windows)
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust build artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: |
+            apps/desktop/src-tauri -> target
+            infrastructure/seeders -> target
+          key: gui-smoke
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: apps/desktop/package-lock.json
+
+      - name: Install frontend dependencies
+        working-directory: apps/desktop
+        run: npm ci
+
+      # Launches the real Tauri binary against the Vite dev server and drives the
+      # WebView2 renderer over CDP: CSP assets, tabs, GSI ingestion, card layout at
+      # 900 and 800 px, and the overlay toggle. Windows PowerShell (5.1) is the
+      # shell the script was verified on; it seeds the database itself when the
+      # runner has none.
+      - name: Run GUI smoke test
+        shell: powershell
+        run: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/ui_smoke.ps1
+
+      - name: Upload GUI smoke artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: gui-smoke
+          path: ${{ runner.temp }}/ui-smoke
+          if-no-files-found: ignore

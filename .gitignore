@@ -43,6 +43,9 @@ target/
 # Local agent instructions: kept on disk, never tracked
 AGENTS.md
 
+# GUI smoke test artifacts (scripts/ui_smoke.ps1)
+.ui-smoke/
+
 # Local OS and editor files
 .DS_Store
 Thumbs.db

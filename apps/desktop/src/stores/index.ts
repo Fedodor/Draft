@@ -19,6 +19,7 @@ interface EngineState {
   heroMap: Map<HeroId, Hero>;
   setDraft: (draft: DraftState) => void;
   setRecommendations: (recs: RecommendationSet) => void;
+  clearDraftData: () => void;
   setProcessing: (processing: boolean) => void;
   setHeroes: (heroes: Hero[]) => void;
   getHero: (id: HeroId) => Hero | undefined;
@@ -77,6 +78,9 @@ export const useEngineStore = create<EngineState>()(
       
       setDraft: (draft) => set({ draft, lastUpdate: Date.now() }),
       setRecommendations: (recommendations) => set({ recommendations, lastUpdate: Date.now() }),
+      // Used when the database holds no heroes: persisted draft/recommendation
+      // state from an earlier session would otherwise contradict the UI.
+      clearDraftData: () => set({ draft: initialDraftState, recommendations: null, lastUpdate: Date.now() }),
       setProcessing: (isProcessing) => set({ isProcessing }),
       setHeroes: (heroes) => {
         const heroMap = new Map(heroes.map(h => [h.id, h]));

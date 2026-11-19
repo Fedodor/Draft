@@ -1,8 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import type { TeamSide } from '@shared';
 import { useConfigStore, useEngineStore, useUIStore } from './stores';
-import { api } from './services/api';
+import { api, type DataHealth } from './services/api';
+import { describeDataHealth } from './services/dataHealth';
 import { useRecommendationFeed } from './hooks/useRecommendationFeed';
 import { DraftOverlay } from './components/DraftOverlay';
 import { SettingsPanel } from './components/SettingsPanel';
@@ -11,11 +12,29 @@ import { TeamAnalysisPanel } from './components/TeamAnalysisPanel';
 import { RecommendationPanel } from './components/RecommendationPanel';
 import { Header } from './components/Header';
 import { Toaster } from './components/Toaster';
+import { DataHealthNotice } from './components/DataHealthNotice';
 
 function App() {
-  const { setHeroes, setDraft, setRecommendations, setProcessing } = useEngineStore();
+  const { setHeroes, setDraft, setRecommendations, setProcessing, clearDraftData } = useEngineStore();
   const { setConfig } = useConfigStore();
   const { selectedTeam, activeTab, setActiveTab, setSelectedTeam } = useUIStore();
+  const [dataHealth, setDataHealth] = useState<DataHealth | null>(null);
+  const [healthChecked, setHealthChecked] = useState(false);
+  const [checkingHealth, setCheckingHealth] = useState(false);
+
+  // A fresh install has an empty database, which otherwise looks like a broken
+  // app: no heroes, no recommendations, no explanation. Surface it instead.
+  const loadDataHealth = useCallback(async () => {
+    setCheckingHealth(true);
+    try {
+      setDataHealth(await api.getDataHealth());
+    } catch {
+      setDataHealth(null);
+    } finally {
+      setCheckingHealth(false);
+      setHealthChecked(true);
+    }
+  }, []);
 
   // Keep the latest selected team available to the long-lived feed listener
   // without re-subscribing (and restarting the feed) on every team change.
@@ -43,14 +62,20 @@ function App() {
       try {
         setProcessing(true);
 
-        const [heroes, config] = await Promise.all([
+        const [heroes, config, health] = await Promise.all([
           api.getHeroList(),
           api.getConfig().catch(() => null),
+          api.getDataHealth().catch(() => null),
         ]);
         if (cancelled) return;
 
         setHeroes(heroes);
         if (config) setConfig(config);
+        setDataHealth(health);
+        setHealthChecked(true);
+        // An unseeded database has no heroes to show; drop draft data persisted
+        // by an earlier session so the notice and the panels agree.
+        if (health && health.hero_count === 0) clearDraftData();
       } catch (error) {
         console.error('Initialization error:', error);
       } finally {
@@ -62,7 +87,7 @@ function App() {
     return () => {
       cancelled = true;
     };
-  }, [setHeroes, setConfig, setProcessing]);
+  }, [setHeroes, setConfig, setProcessing, clearDraftData]);
 
   // Team change only refreshes recommendations; draft state is left intact.
   // The feed already fetches once on mount, so skip the first run.
@@ -98,6 +123,14 @@ function App() {
         onTabChange={setActiveTab}
         selectedTeam={selectedTeam}
       />
+
+      {healthChecked && (
+        <DataHealthNotice
+          summary={describeDataHealth(dataHealth)}
+          onRecheck={() => void loadDataHealth()}
+          checking={checkingHealth}
+        />
+      )}
 
       <div className="flex-1 flex overflow-hidden">
         {/* Main Draft Area */}

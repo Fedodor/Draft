@@ -22,7 +22,8 @@ ONNX model.
 | Patch meta | Working | Patch-scoped meta snapshot from seeded data |
 | ML scoring | **Experimental, opt-in** | 887-input ONNX model; fails the promotion gate |
 | Live GSI replay | Not verified | Payload-level tests exist; no captured real session was replayed in CI |
-| Tauri runtime smoke test | Verified manually (2026-11-19) | Dev build driven over WebView2 CDP: CSP assets, tabs, overlay toggle, GSI→UI, manual pick/undo. Still not a CI step |
+| Tauri runtime smoke test | Automated in CI | `scripts/ui_smoke.ps1` drives the dev build over WebView2 CDP in the `gui-smoke` job: CSP assets, four tabs, GSI→UI, card/header layout at 900 and 800 px, overlay toggle |
+| First-run state | Working | An unseeded database shows a notice with the seeder commands instead of an empty-looking draft |
 
 ## Quick start
 
@@ -120,13 +121,26 @@ contract/quality-gate tests, and the remaining Python suite. Current baseline:
 | --- | --- |
 | Rust library tests | 71 passed, 1 ignored (benchmark) |
 | Rust seeders | 1 passed |
-| Frontend tests | 19 passed (3 files) |
+| Frontend tests | 24 passed (4 files) |
 | Python contract + gate tests | 14 passed |
 | Remaining Python suite | 149 passed |
 | Full gate | 13/13 steps |
 
 `pwsh` is not installed in the verified environment; use Windows PowerShell as
 above.
+
+The GUI smoke test is a separate step because it launches the real app and needs
+ports 1420, 3000 and 9333 free:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ui_smoke.ps1
+```
+
+It builds the debug binary, starts Vite, drives the WebView2 renderer over CDP,
+and fails on a blocked CSP asset, a missing tab, a broken overlay toggle, GSI
+payloads that never reach the UI, or card/header layout regressions at the
+default and minimum window widths. Screenshots of any failure land in
+`.ui-smoke/`. CI runs it in the `gui-smoke` job on `windows-latest`.
 
 ## Model quality
 
@@ -222,7 +236,7 @@ of truth. `ROADMAP.md` and the current code win.
 - GSI is covered by fixture-driven lifecycle tests, but not by a replayed live
   session. The HTTP status mapping and Tauri event emission are type-checked,
   not exercised end-to-end in CI.
-- The runtime smoke test is manual and uses the dev build: no packaged bundle,
+- The runtime smoke test runs in CI against the dev build: no packaged bundle,
   no real Dota 2 stream, and no overlay drag/DPI verification yet.
 - `confidence` currently equals the score, `lane_balance` is a placeholder, and
   risk levels are score thresholds; treat UI certainty as indicative.

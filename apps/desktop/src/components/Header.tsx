@@ -135,7 +135,7 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
       </nav>
 
       {/* Status Indicators */}
-      <div className="flex items-center gap-1.5 shrink-0">
+      <div className="flex items-center gap-1.5 min-w-0">
         <button
           onClick={toggleOverlay}
           className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-xs font-medium transition-colors border ${
@@ -153,7 +153,12 @@ export function Header({ activeTab, onTabChange, selectedTeam }: HeaderProps) {
           <span className="whitespace-nowrap">{gsi.running ? 'GSI Live' : 'GSI Off'}</span>
         </div>
         <div className="w-1px h-6 bg-dota-border" />
-        <div className="text-xs text-dota-textMuted font-mono whitespace-nowrap">
+        {/* The patch label is the one part that gives way: it ellipsizes rather
+            than pushing the header past the 800 px minimum window width. */}
+        <div
+          className="min-w-0 truncate text-xs text-dota-textMuted font-mono whitespace-nowrap"
+          title={`Patch ${patchVersion || 'unset'}`}
+        >
           Patch {patchVersion || '—'}
         </div>
       </div>

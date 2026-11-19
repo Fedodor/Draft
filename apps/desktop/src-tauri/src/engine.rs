@@ -273,10 +273,16 @@ impl DraftEngine {
                 info!("Loaded {} heroes from database", self.hero_db.len());
                 return Ok(());
             }
+
+            // A database with no heroes is a fresh install, not a reason to
+            // invent data: scoring a placeholder hero would look like a real
+            // recommendation while the UI says the database needs seeding.
+            warn!("Database has no heroes; engine starts empty until it is seeded");
+            return Ok(());
         }
 
-        // Fallback: create minimal hero data for development
-        warn!("No heroes in database, using fallback data");
+        // Fallback: create minimal hero data for library use without a database
+        warn!("No database attached, using fallback hero data");
         self.hero_db = Self::fallback_heroes();
         Ok(())
     }
