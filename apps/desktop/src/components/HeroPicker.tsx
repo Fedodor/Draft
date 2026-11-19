@@ -81,6 +81,8 @@ export function HeroPicker() {
   const handleReset = () => runAction(() => api.resetDraft());
 
   const isCurrentTurn = draft.current_pick === selectedTeam;
+  const allyPicks = selectedTeam === 'radiant' ? draft.radiant_picks : draft.dire_picks;
+  const enemyPicks = selectedTeam === 'radiant' ? draft.dire_picks : draft.radiant_picks;
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -225,11 +227,11 @@ export function HeroPicker() {
         <div className="grid grid-cols-3 gap-4 text-center">
           <div>
             <div className="text-xs text-dota-textMuted">ALLY PICKS</div>
-            <div className="font-bold text-dota-text">{draft.radiant_picks.length}/5</div>
+            <div className="font-bold text-dota-text">{allyPicks.length}/5</div>
           </div>
           <div>
             <div className="text-xs text-dota-textMuted">ENEMY PICKS</div>
-            <div className="font-bold text-dota-text">{draft.dire_picks.length}/5</div>
+            <div className="font-bold text-dota-text">{enemyPicks.length}/5</div>
           </div>
           <div>
             <div className="text-xs text-dota-textMuted">BANS</div>

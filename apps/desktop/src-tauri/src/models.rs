@@ -635,6 +635,18 @@ impl AppConfig {
                 return Err("gsi_auth_token must be null or a non-empty string".to_string());
             }
         }
+        if !self.overlay_position.x.is_finite() || !self.overlay_position.y.is_finite() {
+            return Err("overlay_position must contain finite coordinates".to_string());
+        }
+        if !self.overlay_size.width.is_finite() || !self.overlay_size.height.is_finite() {
+            return Err("overlay_size must contain finite dimensions".to_string());
+        }
+        if self.overlay_size.width < 100.0 || self.overlay_size.height < 100.0 {
+            return Err(format!(
+                "overlay_size must be at least 100x100 (got {}x{})",
+                self.overlay_size.width, self.overlay_size.height
+            ));
+        }
         Ok(())
     }
 }
@@ -693,6 +705,26 @@ mod tests {
             ..AppConfig::default()
         };
         assert!(empty_token.validate().is_err());
+
+        // `parseInt('')` in the settings form yields NaN; accepting it would
+        // persist a geometry the window API cannot apply.
+        let nan_size = AppConfig {
+            overlay_size: Size {
+                width: f64::NAN,
+                height: 600.0,
+            },
+            ..AppConfig::default()
+        };
+        assert!(nan_size.validate().is_err());
+
+        let tiny_overlay = AppConfig {
+            overlay_size: Size {
+                width: 40.0,
+                height: 600.0,
+            },
+            ..AppConfig::default()
+        };
+        assert!(tiny_overlay.validate().is_err());
     }
 
     #[test]

@@ -212,17 +212,29 @@ pub fn run() {
             // ml::load_model locates onnxruntime.dll itself (next to the model,
             // in resources/, or via ORT_DYLIB_PATH) before touching ort.
             // If either resource is absent the engine stays in neutral mode.
-            let configured_model = std::path::PathBuf::from(&config.ml_model_path);
-            let model_path = if configured_model.is_file() {
-                Some(configured_model)
-            } else {
-                app_handle
-                    .path()
-                    .resolve(
-                        "draft_model_xgboost_full.onnx",
-                        tauri::path::BaseDirectory::Resource,
-                    )
-                    .ok()
+            let bundled_model = app_handle
+                .path()
+                .resolve(
+                    "draft_model_xgboost_full.onnx",
+                    tauri::path::BaseDirectory::Resource,
+                )
+                .ok();
+            // Apply the same allow-list as the `load_ml_model` command. The
+            // persisted path comes from the settings database, so it must not
+            // be able to pull an ONNX file (and an adjacent runtime DLL) from
+            // an arbitrary directory.
+            let model_path = match commands::canonical_model_path(&app_handle, &config.ml_model_path)
+            {
+                Ok(path) => Some(path),
+                Err(error) => {
+                    if bundled_model.is_some() {
+                        tracing::warn!(
+                            "Configured model path rejected ({}); using the bundled model",
+                            error
+                        );
+                    }
+                    bundled_model
+                }
             };
             if let Some(model_path) = model_path {
                 info!("Loading ONNX model from: {}", model_path.display());
@@ -268,6 +280,45 @@ pub fn run() {
 #[cfg(test)]
 mod tests {
     use super::rotate_log_if_needed;
+
+    fn csp_directive<'a>(csp: &'a str, name: &str) -> Option<&'a str> {
+        csp.split(';').map(str::trim).find(|directive| {
+            directive
+                .split_whitespace()
+                .next()
+                .is_some_and(|first| first == name)
+        })
+    }
+
+    /// The UI loads hero portraits from the Steam CDN and the web fonts from
+    /// Google Fonts. A strict CSP that omits either silently blocks them at
+    /// runtime, which type-checks and builds cleanly, so pin the contract.
+    #[test]
+    fn test_csp_allows_assets_the_ui_loads() {
+        let config: serde_json::Value =
+            serde_json::from_str(include_str!("../tauri.conf.json")).expect("valid tauri config");
+        let csp = config["app"]["security"]["csp"]
+            .as_str()
+            .expect("explicit CSP is configured");
+
+        let img_src = csp_directive(csp, "img-src").expect("img-src directive");
+        assert!(
+            img_src.contains("https://cdn.cloudflare.steamstatic.com"),
+            "hero portraits use the Steam CDN, so img-src must allow it: {img_src}"
+        );
+
+        let style_src = csp_directive(csp, "style-src").expect("style-src directive");
+        assert!(
+            style_src.contains("https://fonts.googleapis.com"),
+            "index.html loads the Google Fonts stylesheet: {style_src}"
+        );
+
+        let font_src = csp_directive(csp, "font-src").expect("font-src directive");
+        assert!(
+            font_src.contains("https://fonts.gstatic.com"),
+            "Google Fonts files are served from gstatic: {font_src}"
+        );
+    }
 
     #[test]
     fn test_rotate_log_keeps_one_backup_after_size_limit() {

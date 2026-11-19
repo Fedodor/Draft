@@ -203,6 +203,7 @@ pub async fn get_hero_details(
 
 #[command(rename_all = "snake_case")]
 pub async fn set_config(
+    app: AppHandle,
     db: State<'_, Arc<Database>>,
     gsi: State<'_, GsiServer>,
     engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
@@ -211,6 +212,36 @@ pub async fn set_config(
     config
         .validate()
         .map_err(|message| CommandError::Internal { message })?;
+
+    // A changed model path takes effect immediately. Validate and load it
+    // before persisting, so "Save" cannot report success for a path the app
+    // will never load. With no stored config yet, the default path is skipped
+    // because startup already attempted it.
+    let previous = db.get_app_config().ok().flatten();
+    let model_path_changed = match previous.as_ref() {
+        Some(previous) => previous.ml_model_path != config.ml_model_path,
+        // No stored config yet: only an explicit departure from the default
+        // path needs loading, so a first save of unrelated settings cannot be
+        // blocked by a model that startup already handled.
+        None => config.ml_model_path != AppConfig::default().ml_model_path,
+    };
+    if model_path_changed {
+        let canonical = canonical_model_path(&app, &config.ml_model_path)?;
+        let model_path = canonical.to_string_lossy().to_string();
+        tauri::async_runtime::spawn_blocking(move || {
+            get_ml_engine()
+                .write()
+                .load_model(&model_path)
+                .map_err(|e| CommandError::ModelError {
+                    message: e.to_string(),
+                })
+        })
+        .await
+        .map_err(|e| CommandError::Internal {
+            message: e.to_string(),
+        })??;
+    }
+
     db.set_app_config(&config)?;
     // Apply the GSI port/token to the server for the next start. A running
     // listener keeps its current binding until `restart_gsi` is called.
@@ -416,12 +447,12 @@ pub fn load_ml_model(app: AppHandle, model_path: String) -> Result<(), CommandEr
 /// Resolve a user-supplied model path and reject anything outside the roots the
 /// app owns. This prevents loading an arbitrary ONNX file (and, with it, an
 /// `onnxruntime.dll` sitting next to it) from an untrusted directory.
-fn canonical_model_path(
+pub(crate) fn canonical_model_path(
     app: &AppHandle,
     requested: &str,
 ) -> Result<std::path::PathBuf, CommandError> {
     let path = std::path::Path::new(requested);
-    if !path.exists() {
+    if !path.is_file() {
         return Err(CommandError::MissingModelFile {
             path: requested.to_string(),
         });
@@ -444,12 +475,12 @@ fn canonical_model_path(
     // Development fallback for `cargo tauri dev` from the repository root.
     roots.push(std::path::Path::new(env!("CARGO_MANIFEST_DIR")).join("../../../ml/models"));
 
-    let allowed = roots
+    let canonical_roots: Vec<std::path::PathBuf> = roots
         .iter()
         .filter_map(|root| root.canonicalize().ok())
-        .any(|root| canonical.starts_with(&root));
+        .collect();
 
-    if !allowed {
+    if !path_is_within_roots(&canonical, &canonical_roots) {
         return Err(CommandError::Internal {
             message: format!(
                 "Model path is outside the allowed model directories: {}",
@@ -466,4 +497,31 @@ pub fn get_ml_status() -> Result<crate::ml::MLStatus, CommandError> {
     let ml_engine = get_ml_engine();
     let status = ml_engine.read().status();
     Ok(status)
+}
+
+/// Whether a canonical path lives under at least one allowed root.
+///
+/// Both sides are already canonicalized, so a symlink that points outside an
+/// allowed directory fails the `starts_with` test instead of matching its
+/// lexical parent.
+fn path_is_within_roots(canonical: &std::path::Path, roots: &[std::path::PathBuf]) -> bool {
+    roots.iter().any(|root| canonical.starts_with(root))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::path_is_within_roots;
+
+    #[test]
+    fn test_model_path_must_live_under_an_allowed_root() {
+        let root = std::env::temp_dir().join("sda-model-root-test");
+        let inside = root.join("models").join("draft.onnx");
+        let outside = std::env::temp_dir()
+            .join("sda-other-root-test")
+            .join("draft.onnx");
+        let roots = vec![root];
+
+        assert!(path_is_within_roots(&inside, &roots));
+        assert!(!path_is_within_roots(&outside, &roots));
+    }
 }

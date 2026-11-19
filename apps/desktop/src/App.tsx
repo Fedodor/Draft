@@ -15,14 +15,7 @@ import { Toaster } from './components/Toaster';
 function App() {
   const { setHeroes, setDraft, setRecommendations, setProcessing } = useEngineStore();
   const { setConfig } = useConfigStore();
-  const {
-    selectedTeam,
-    activeTab,
-    setActiveTab,
-    isOverlayVisible,
-    setOverlayVisible,
-    setSelectedTeam,
-  } = useUIStore();
+  const { selectedTeam, activeTab, setActiveTab, setSelectedTeam } = useUIStore();
 
   // Keep the latest selected team available to the long-lived feed listener
   // without re-subscribing (and restarting the feed) on every team change.
@@ -95,19 +88,9 @@ function App() {
     };
   }, [setSelectedTeam]);
 
-  if (!isOverlayVisible) {
-    return (
-      <div className="fixed inset-0 flex items-center justify-center bg-dota-bg">
-        <button
-          onClick={() => setOverlayVisible(true)}
-          className="dota-btn-primary"
-        >
-          Show Overlay
-        </button>
-      </div>
-    );
-  }
-
+  // The main window is not the overlay window. Hiding or disabling the
+  // separate overlay must never replace this dashboard with a recovery
+  // button, or the user cannot reach Settings to enable it again.
   return (
     <div className="fixed inset-0 flex flex-col h-screen w-screen bg-dota-bg overflow-hidden">
       <Header

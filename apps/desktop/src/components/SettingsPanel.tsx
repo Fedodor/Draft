@@ -18,6 +18,18 @@ function validateConfig(config: AppConfig): string | null {
   if (config.gsi_auth_token !== null && !config.gsi_auth_token.trim()) {
     return 'Auth token must be empty (disabled) or a non-empty string';
   }
+  const geometry = [
+    config.overlay_position.x,
+    config.overlay_position.y,
+    config.overlay_size.width,
+    config.overlay_size.height,
+  ];
+  if (!geometry.every(Number.isFinite)) {
+    return 'Overlay position and size must be finite numbers';
+  }
+  if (config.overlay_size.width < 100 || config.overlay_size.height < 100) {
+    return 'Overlay size must be at least 100x100';
+  }
   return null;
 }
 
@@ -97,6 +109,9 @@ export function SettingsPanel() {
         }
       }
 
+      // A changed model path is loaded by `set_config`; refresh the status so
+      // the panel does not keep showing the previous artifact.
+      api.getMlStatus().then(setMlStatus).catch(() => {});
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {
@@ -118,6 +133,7 @@ export function SettingsPanel() {
       const defaults = useConfigStore.getState().config;
       await api.setConfig(defaults);
       savedConfigRef.current = defaults;
+      api.getMlStatus().then(setMlStatus).catch(() => {});
       setSaveStatus('success');
       setTimeout(() => setSaveStatus('idle'), 2000);
     } catch (error) {

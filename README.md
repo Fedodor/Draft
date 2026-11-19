@@ -103,11 +103,11 @@ contract/quality-gate tests, and the remaining Python suite. Current baseline:
 
 | Check | Result |
 | --- | --- |
-| Rust library tests | 69 passed, 1 ignored (benchmark) |
+| Rust library tests | 71 passed, 1 ignored (benchmark) |
 | Rust seeders | 1 passed |
 | Frontend tests | 19 passed (3 files) |
 | Python contract + gate tests | 14 passed |
-| Remaining Python suite | 49 passed |
+| Remaining Python suite | 149 passed |
 | Full gate | 13/13 steps |
 
 `pwsh` is not installed in the verified environment; use Windows PowerShell as
@@ -184,6 +184,8 @@ Start with the live status, not the older design notes:
 
 - [Roadmap and live status](docs/ROADMAP.md): what is verified, what is open,
   measurements, decisions, and next tasks.
+- [Runtime-contract audit (2026-11-19)](docs/AUDIT_2026-11-19.md): CSP, model
+  path loading, overlay dead-end, and other findings from a fresh pass.
 - [Audit (2026-10-27)](docs/AUDIT_2026-10-27.md): severity-ranked findings with
   remediation status; original evidence preserved.
 - [ML training and quality](docs/ML_TRAINING.md): bundled metrics, gate policy,

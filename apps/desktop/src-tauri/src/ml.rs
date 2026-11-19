@@ -3,9 +3,10 @@
 //! ONNX Runtime integration for fast local model inference.
 //!
 //! The trained XGBoost model is exported to ONNX alongside a `_features.json`
-//! file describing the ordered input feature names (896 features in the full
-//! pipeline). We reconstruct that feature vector at runtime from the live
-//! draft state using the same logic as `ml/feature-engineering/processor.py`.
+//! file describing the ordered input feature names (887 in the bundled
+//! contract; the schema file is authoritative). We reconstruct that feature
+//! vector at runtime from the live draft state using the same logic as
+//! `ml/feature-engineering/processor.py`.
 //!
 //! ML is strictly an enhancement layer: if the model is missing, unreadable,
 //! or inference fails, every prediction falls back to a neutral 0.5 and the
