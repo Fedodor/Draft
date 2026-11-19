@@ -133,6 +133,78 @@ function Save-Screenshot {
     [IO.File]::WriteAllBytes($Path, [Convert]::FromBase64String($response.result.data))
 }
 
+# --- Launch diagnostics -----------------------------------------------------
+
+# Written when the app never opens a CDP port, so an environment failure (no
+# WebView2 runtime, no interactive desktop, instant crash) is diagnosable from
+# the uploaded artifacts instead of just "targets: 0".
+function Write-AppDiagnostics {
+    param($AppProcess, [string]$Reason)
+
+    $lines = New-Object System.Collections.Generic.List[string]
+    $lines.Add("reason: $Reason")
+    if ($AppProcess) {
+        $exited = $AppProcess.HasExited
+        $lines.Add("app pid: $($AppProcess.Id), exited: $exited")
+        if ($exited) { $lines.Add("app exit code: $($AppProcess.ExitCode)") }
+        $children = @(Get-CimInstance Win32_Process -Filter "ParentProcessId=$($AppProcess.Id)" -ErrorAction SilentlyContinue)
+        $lines.Add("child processes: " + (($children | ForEach-Object { "$($_.Name)($($_.ProcessId))" }) -join ', '))
+        $webviews = @(Get-Process -Name msedgewebview2 -ErrorAction SilentlyContinue)
+        $lines.Add("msedgewebview2 processes: $($webviews.Count)")
+    }
+    $lines.Add("cdp port ${cdpPort} listening: $(Test-PortInUse -Port $cdpPort)")
+    $lines.Add("gsi port ${gsiPort} listening: $(Test-PortInUse -Port $gsiPort)")
+    $profileDir = Join-Path $env:LOCALAPPDATA "com.smartdraftassistant.app\EBWebView"
+    $lines.Add("webview user data dir exists: $(Test-Path -LiteralPath $profileDir) ($profileDir)")
+
+    $runtime = $null
+    foreach ($key in @(
+        "HKLM:\SOFTWARE\WOW6432Node\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}",
+        "HKLM:\SOFTWARE\Microsoft\EdgeUpdate\Clients\{F3017226-FE2A-4295-8BDF-00C3A9A7E4C5}"
+    )) {
+        try {
+            $pv = (Get-ItemProperty -Path $key -Name pv -ErrorAction Stop).pv
+            if ($pv) { $runtime = $pv; break }
+        } catch { }
+    }
+    $lines.Add("WebView2 runtime version: $(if ($runtime) { $runtime } else { 'not found in registry' })")
+    $lines.Add("user interactive: $([Environment]::UserInteractive)")
+
+    if ($AppProcess) {
+        try {
+            $windows = @(Get-AppWindows -ProcessId $AppProcess.Id)
+            $lines.Add("app windows: " + (($windows | ForEach-Object { "'$($_.Title)'(visible=$($_.Visible))" }) -join ', '))
+        } catch { $lines.Add("app windows: enumeration failed: $($_.Exception.Message)") }
+    }
+
+    try {
+        $crashes = @(Get-WinEvent -FilterHashtable @{ LogName = 'Application'; StartTime = (Get-Date).AddMinutes(-20) } `
+                -ErrorAction Stop | Where-Object {
+                $_.LevelDisplayName -eq 'Error' -and ($_.Message -like '*smart-draft-assistant*' -or $_.ProviderName -like '*Application Error*')
+            } | Select-Object -First 3)
+        if ($crashes.Count -eq 0) {
+            $lines.Add("recent app crash events: none")
+        } else {
+            foreach ($crash in $crashes) {
+                $firstLine = ($crash.Message -split "`n" | Select-Object -First 2) -join ' / '
+                $lines.Add("crash event $($crash.Id) $($crash.ProviderName): $firstLine")
+            }
+        }
+    } catch { $lines.Add("recent app crash events: query failed: $($_.Exception.Message)") }
+
+    $debugLog = Join-Path $profileDir "chrome_debug.log"
+    if (Test-Path -LiteralPath $debugLog) {
+        $lines.Add("--- chrome_debug.log (last 20 lines) ---")
+        $lines.AddRange([string[]](Get-Content -LiteralPath $debugLog -Tail 20))
+    } else {
+        $lines.Add("chrome_debug.log: not present")
+    }
+
+    $text = $lines -join [Environment]::NewLine
+    Set-Content -LiteralPath (Join-Path $ArtifactsDir "app-diagnostics.txt") -Value $text -Encoding UTF8
+    Write-Host $text
+}
+
 # --- Win32 window probe -----------------------------------------------------
 
 Add-Type -TypeDefinition @"
@@ -328,10 +400,18 @@ try {
             $targets = @(Get-CdpTargets -Port $cdpPort | Where-Object { $_.type -eq "page" })
             if ($targets.Count -ge 2) { break }
         } catch { }
+        # A process that already exited will never open a port; stop waiting.
+        if ($appProcess.HasExited) { break }
         Start-Sleep -Milliseconds 500
     }
     Check "WebView2 exposes both windows over CDP" ($targets.Count -ge 2) "targets: $($targets.Count)"
-    if ($targets.Count -lt 2) { throw "CDP targets missing" }
+    if ($targets.Count -lt 2) {
+        if ($appProcess.HasExited) {
+            Check "app process stayed alive" $false "exit code $($appProcess.ExitCode)"
+        }
+        Write-AppDiagnostics -AppProcess $appProcess -Reason "CDP targets missing"
+        throw "CDP targets missing"
+    }
 
     $mainTarget = $null
     $overlayTarget = $null
@@ -480,6 +560,7 @@ catch {
     Write-Host ""
     Write-Host "GUI smoke test aborted: $($_.Exception.Message)" -ForegroundColor Red
     $script:Failures.Add("harness: $($_.Exception.Message)")
+    try { Write-AppDiagnostics -AppProcess $appProcess -Reason "aborted: $($_.Exception.Message)" } catch { }
 }
 finally {
     if ($appProcess -and -not $appProcess.HasExited) {
