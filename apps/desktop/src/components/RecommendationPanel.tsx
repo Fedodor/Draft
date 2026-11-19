@@ -43,7 +43,9 @@ function RecommendationCategory({
         {icon}
         {title}
       </h4>
-      <div className="grid grid-cols-2 gap-2 px-2">
+      {/* One card per row: at the 384px sidebar width a two-column grid left
+          ~114px per card, which crushed the header (badges over the score). */}
+      <div className="space-y-2 px-2">
         {recommendations.map((rec, index) => (
           <motion.div
             key={`${rec.hero_id}-${rec.category}`}

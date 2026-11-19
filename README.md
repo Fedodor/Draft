@@ -22,7 +22,7 @@ ONNX model.
 | Patch meta | Working | Patch-scoped meta snapshot from seeded data |
 | ML scoring | **Experimental, opt-in** | 887-input ONNX model; fails the promotion gate |
 | Live GSI replay | Not verified | Payload-level tests exist; no captured real session was replayed in CI |
-| Tauri runtime smoke test | Not verified | CSP/capabilities and overlay behaviour are type-checked, not launched in CI |
+| Tauri runtime smoke test | Verified manually (2026-11-19) | Dev build driven over WebView2 CDP: CSP assets, tabs, overlay toggle, GSI→UI, manual pick/undo. Still not a CI step |
 
 ## Quick start
 
@@ -222,8 +222,8 @@ of truth. `ROADMAP.md` and the current code win.
 - GSI is covered by fixture-driven lifecycle tests, but not by a replayed live
   session. The HTTP status mapping and Tauri event emission are type-checked,
   not exercised end-to-end in CI.
-- The app has not been launched with the new CSP and split window capabilities
-  in this environment.
+- The runtime smoke test is manual and uses the dev build: no packaged bundle,
+  no real Dota 2 stream, and no overlay drag/DPI verification yet.
 - `confidence` currently equals the score, `lane_balance` is a placeholder, and
   risk levels are score thresholds; treat UI certainty as indicative.
 - The processed dataset is ~1.9 GB across many loose files and is not
