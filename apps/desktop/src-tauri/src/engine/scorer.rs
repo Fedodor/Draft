@@ -33,6 +33,15 @@ fn canonical_roles(roles: &[String]) -> Vec<String> {
     result
 }
 
+/// Resolve a hero display name, falling back to the numeric id for heroes the
+/// database did not provide.
+fn hero_display_name(hero_names: &HashMap<HeroId, String>, hero_id: &HeroId) -> String {
+    hero_names
+        .get(hero_id)
+        .cloned()
+        .unwrap_or_else(|| hero_id.0.to_string())
+}
+
 /// Component weights for the recommendation score. All scorer outputs are in
 /// [0, 1] with 0.5 as neutral, and the weights sum to 1.0 so the total score
 /// stays in [0, 1] without saturating at the clamp.
@@ -53,17 +62,27 @@ pub trait Scorer: Send + Sync {
 #[derive(Clone)]
 pub struct MatchupScorer {
     matchup_data: HashMap<HeroId, Vec<crate::models::HeroMatchup>>,
+    hero_names: HashMap<HeroId, String>,
 }
 
 impl MatchupScorer {
     pub fn new() -> Self {
         Self {
             matchup_data: HashMap::new(),
+            hero_names: HashMap::new(),
         }
     }
 
     pub fn with_data(matchup_data: HashMap<HeroId, Vec<crate::models::HeroMatchup>>) -> Self {
-        Self { matchup_data }
+        Self {
+            matchup_data,
+            hero_names: HashMap::new(),
+        }
+    }
+
+    pub fn with_hero_names(mut self, hero_names: HashMap<HeroId, String>) -> Self {
+        self.hero_names = hero_names;
+        self
     }
 
     pub fn hero_count(&self) -> usize {
@@ -128,13 +147,13 @@ impl Scorer for MatchupScorer {
                     if matchup.advantage > 0.15 {
                         explanations.push(format!(
                             "Strong vs {} ({:.0}% winrate)",
-                            enemy_id.0,
+                            hero_display_name(&self.hero_names, &enemy_id),
                             matchup.winrate * 100.0
                         ));
                     } else if matchup.advantage < -0.15 {
                         explanations.push(format!(
                             "Weak vs {} ({:.0}% winrate)",
-                            enemy_id.0,
+                            hero_display_name(&self.hero_names, &enemy_id),
                             matchup.winrate * 100.0
                         ));
                     }
@@ -150,17 +169,27 @@ impl Scorer for MatchupScorer {
 #[derive(Clone)]
 pub struct SynergyScorer {
     synergy_data: HashMap<HeroId, Vec<crate::models::HeroSynergy>>,
+    hero_names: HashMap<HeroId, String>,
 }
 
 impl SynergyScorer {
     pub fn new() -> Self {
         Self {
             synergy_data: HashMap::new(),
+            hero_names: HashMap::new(),
         }
     }
 
     pub fn with_data(synergy_data: HashMap<HeroId, Vec<crate::models::HeroSynergy>>) -> Self {
-        Self { synergy_data }
+        Self {
+            synergy_data,
+            hero_names: HashMap::new(),
+        }
+    }
+
+    pub fn with_hero_names(mut self, hero_names: HashMap<HeroId, String>) -> Self {
+        self.hero_names = hero_names;
+        self
     }
 
     pub fn hero_count(&self) -> usize {
@@ -226,7 +255,7 @@ impl Scorer for SynergyScorer {
                     if synergy.synergy > 0.15 {
                         explanations.push(format!(
                             "Synergizes with {} ({:.0}% winrate)",
-                            ally_id.0,
+                            hero_display_name(&self.hero_names, &ally_id),
                             synergy.winrate * 100.0
                         ));
                     }
@@ -493,29 +522,38 @@ mod tests {
 
     #[test]
     fn test_matchup_scorer_uses_loaded_data() {
-        let data = [(
+        let data: HashMap<HeroId, Vec<HeroMatchup>> = [(
             HeroId(1),
             vec![crate::models::HeroMatchup {
                 hero_id: HeroId(1),
                 vs_hero_id: HeroId(2),
-                advantage: 0.1,
+                advantage: 0.2,
                 winrate: 0.6,
                 games: 100,
             }],
         )]
         .into_iter()
         .collect();
-        let scorer = MatchupScorer::with_data(data);
+        let hero_names = [(HeroId(2), "Axe".to_string())].into_iter().collect();
+        let scorer = MatchupScorer::with_data(data.clone()).with_hero_names(hero_names);
 
         let mut state = DraftState::default();
         state.dire_picks.push(pick(2, TeamSide::Dire));
 
         let score = scorer.score(&hero(1, &[]), &state, TeamSide::Radiant);
-        assert!((score - 0.55).abs() < 1e-5, "got {score}");
+        assert!((score - 0.6).abs() < 1e-5, "got {score}");
         assert_eq!(scorer.score(&hero(99, &[]), &state, TeamSide::Radiant), 0.5);
         assert_eq!(
             MatchupScorer::new().score(&hero(1, &[]), &state, TeamSide::Radiant),
             0.5
+        );
+        assert_eq!(
+            scorer.explain(&hero(1, &[]), &state, TeamSide::Radiant),
+            vec!["Strong vs Axe (60% winrate)".to_string()]
+        );
+        assert_eq!(
+            MatchupScorer::with_data(data).explain(&hero(1, &[]), &state, TeamSide::Radiant),
+            vec!["Strong vs 2 (60% winrate)".to_string()]
         );
 
         let updated = [(
@@ -523,7 +561,7 @@ mod tests {
             vec![crate::models::HeroMatchup {
                 hero_id: HeroId(1),
                 vs_hero_id: HeroId(2),
-                advantage: -0.1,
+                advantage: -0.2,
                 winrate: 0.4,
                 games: 100,
             }],
@@ -532,13 +570,13 @@ mod tests {
         .collect();
         let updated_score =
             MatchupScorer::with_data(updated).score(&hero(1, &[]), &state, TeamSide::Radiant);
-        assert!((updated_score - 0.45).abs() < 1e-5, "got {updated_score}");
+        assert!((updated_score - 0.4).abs() < 1e-5, "got {updated_score}");
         assert!((updated_score - score).abs() > 1e-5);
     }
 
     #[test]
     fn test_synergy_scorer_uses_loaded_data() {
-        let data = [(
+        let data: HashMap<HeroId, Vec<crate::models::HeroSynergy>> = [(
             HeroId(1),
             vec![crate::models::HeroSynergy {
                 hero_id: HeroId(1),
@@ -550,7 +588,10 @@ mod tests {
         )]
         .into_iter()
         .collect();
-        let scorer = SynergyScorer::with_data(data);
+        let hero_names = [(HeroId(2), "Crystal Maiden".to_string())]
+            .into_iter()
+            .collect();
+        let scorer = SynergyScorer::with_data(data.clone()).with_hero_names(hero_names);
 
         let mut state = DraftState::default();
         state.radiant_picks.push(pick(2, TeamSide::Radiant));
@@ -561,6 +602,14 @@ mod tests {
         assert_eq!(
             SynergyScorer::new().score(&hero(1, &[]), &state, TeamSide::Radiant),
             0.5
+        );
+        assert_eq!(
+            scorer.explain(&hero(1, &[]), &state, TeamSide::Radiant),
+            vec!["Synergizes with Crystal Maiden (60% winrate)".to_string()]
+        );
+        assert_eq!(
+            SynergyScorer::with_data(data).explain(&hero(1, &[]), &state, TeamSide::Radiant),
+            vec!["Synergizes with 2 (60% winrate)".to_string()]
         );
     }
 }

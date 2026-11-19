@@ -114,9 +114,11 @@ impl DraftScorer {
         &mut self,
         matchup_data: HashMap<HeroId, Vec<HeroMatchup>>,
         synergy_data: HashMap<HeroId, Vec<HeroSynergy>>,
+        hero_names: HashMap<HeroId, String>,
     ) {
-        self.matchup_scorer = MatchupScorer::with_data(matchup_data);
-        self.synergy_scorer = SynergyScorer::with_data(synergy_data);
+        self.matchup_scorer =
+            MatchupScorer::with_data(matchup_data).with_hero_names(hero_names.clone());
+        self.synergy_scorer = SynergyScorer::with_data(synergy_data).with_hero_names(hero_names);
     }
 
     pub fn matchup_hero_count(&self) -> usize {
@@ -199,8 +201,16 @@ impl DraftEngine {
         // Wire the loaded matchup/synergy matrices into the scorers. These
         // fields were previously loaded but never used, leaving both scorers
         // permanently neutral.
-        self.scorer
-            .set_data(self.matchup_data.clone(), self.synergy_data.clone());
+        let hero_names: HashMap<HeroId, String> = self
+            .hero_db
+            .iter()
+            .map(|h| (h.id.clone(), h.localized_name.clone()))
+            .collect();
+        self.scorer.set_data(
+            self.matchup_data.clone(),
+            self.synergy_data.clone(),
+            hero_names,
+        );
         info!(
             "Wired scorers with matchup data for {} heroes and synergy data for {} heroes",
             self.scorer.matchup_hero_count(),
@@ -1016,7 +1026,7 @@ mod tests {
         .collect();
 
         let mut scorer = DraftScorer::default();
-        scorer.set_data(matchup_data, synergy_data);
+        scorer.set_data(matchup_data, synergy_data, HashMap::new());
 
         assert_eq!(scorer.matchup_hero_count(), 1);
         assert_eq!(scorer.synergy_hero_count(), 1);
@@ -1050,6 +1060,7 @@ mod tests {
             )]
             .into_iter()
             .collect(),
+            HashMap::new(),
             HashMap::new(),
         );
 
