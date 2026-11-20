@@ -226,6 +226,11 @@ struct BanPhase {
     engine_eval: Agreement,
     prior_global_eval: Agreement,
     prior_per_patch_eval: Agreement,
+    /// Ranking by the shipped `hero_ban_stats` table (full-patch counts).
+    shipped_eval: Agreement,
+    /// Patches in the sample that had shipped counts; events on other patches
+    /// are not ranked instead of borrowing another patch's table.
+    shipped_patches: usize,
 }
 
 #[derive(Debug, Serialize)]
@@ -647,6 +652,41 @@ fn copy_database(source: &Path, destination_dir: &Path) -> Result<PathBuf, Strin
     Ok(target)
 }
 
+/// Read the shipped per-patch ban counts out of the copied database.
+///
+/// This is the exact table `commands::get_ban_suggestions` serves. Only the ban
+/// counts are kept: `games` is constant within a patch, so ordering by bans is
+/// ordering by the rate the app ranks on. A patch with no rows is left out
+/// rather than substituted, so the report shows coverage instead of hiding a gap.
+fn load_shipped_ban_counts(
+    database: &Database,
+    drafts: &[DraftRecord],
+) -> Result<HashMap<String, HashMap<i32, u64>>, String> {
+    let mut patches: Vec<&str> = drafts
+        .iter()
+        .filter_map(|draft| draft.patch.as_deref())
+        .collect();
+    patches.sort_unstable();
+    patches.dedup();
+
+    let mut counts = HashMap::new();
+    for patch in patches {
+        let rows = database
+            .get_ban_stats(patch)
+            .map_err(|error| format!("hero_ban_stats for {patch}: {error}"))?;
+        if rows.is_empty() {
+            continue;
+        }
+        counts.insert(
+            patch.to_string(),
+            rows.into_iter()
+                .map(|row| (row.hero_id.0, row.bans.max(0) as u64))
+                .collect(),
+        );
+    }
+    Ok(counts)
+}
+
 fn load_drafts(path: &Path) -> Result<Vec<DraftRecord>, String> {
     let text = fs::read_to_string(path).map_err(|error| format!("{}: {error}", path.display()))?;
     let mut drafts = Vec::new();
@@ -729,6 +769,14 @@ fn main() -> Result<(), String> {
     let copied = copy_database(&db_path, &temp_dir)?;
 
     let database = Arc::new(Database::new(temp_dir.clone()).map_err(|error| error.to_string())?);
+    let shipped_ban_counts = load_shipped_ban_counts(&database, &drafts)?;
+    if shipped_ban_counts.is_empty() {
+        eprintln!(
+            "warning: {} has no hero_ban_stats rows; the shipped ban ranking is skipped \
+             (run seed_matchups to seed it)",
+            db_path.display()
+        );
+    }
     let mut engine = DraftEngine::new();
     engine.set_database(database);
     engine.initialize().map_err(|error| error.to_string())?;
@@ -813,6 +861,7 @@ fn main() -> Result<(), String> {
     let mut ban_engine_eval = Counts::default();
     let mut ban_prior_global_eval = Counts::default();
     let mut ban_prior_patch_eval = Counts::default();
+    let mut ban_shipped_eval = Counts::default();
     let mut gate_counts: HashMap<usize, Counts> = HashMap::new();
     let mut only_gate = 0_u64;
     let mut only_prior = 0_u64;
@@ -844,6 +893,7 @@ fn main() -> Result<(), String> {
             &popularity,
             PATCH_PRIOR_MIN_PICKS,
         );
+        let shipped_bans = shipped_ban_counts.get(&patch_key);
         let ban_global = &ban_popularity;
         let ban_patch = prior_for_draft(
             PriorMode::PerPatch,
@@ -1077,6 +1127,14 @@ fn main() -> Result<(), String> {
                             {
                                 ban_prior_patch_eval.record(prior_rank, available);
                             }
+                            if let Some(shipped) = shipped_bans {
+                                let shipped_ranked = prior_ranking(ids.iter().copied(), shipped);
+                                if let Some(shipped_rank) =
+                                    position_of_counts(&shipped_ranked, action.hero_id)
+                                {
+                                    ban_shipped_eval.record(shipped_rank, available);
+                                }
+                            }
                         }
                         if rank == 1 {
                             bans_overall.removes_top1 += 1;
@@ -1245,6 +1303,8 @@ fn main() -> Result<(), String> {
             engine_eval: ban_engine_eval.agreement(),
             prior_global_eval: ban_prior_global_eval.agreement(),
             prior_per_patch_eval: ban_prior_patch_eval.agreement(),
+            shipped_eval: ban_shipped_eval.agreement(),
+            shipped_patches: shipped_ban_counts.len(),
         },
         blend_top1_discordance: BlendDiscordance {
             weight: f64::from(best_weight) / 100.0,

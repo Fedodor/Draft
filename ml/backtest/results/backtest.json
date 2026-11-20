@@ -1,7 +1,7 @@
 {
-  "generated_at": "2026-11-20T12:25:26.465195600+00:00",
+  "generated_at": "2026-11-20T13:28:16.226877100+00:00",
   "db": {
-    "path": "C:\\Users\\fsoko\\AppData\\Roaming/com.smartdraftassistant.app/smart_draft.db",
+    "path": "ml/backtest/data/seed_copy.db",
     "heroes": 126,
     "matchups": 120,
     "synergies": 122,
@@ -1152,7 +1152,17 @@
       "random_top1": 0.008592664965382982,
       "mean_rank": 34.871156161823116,
       "mean_percentile": 0.7081003693831955
-    }
+    },
+    "shipped_eval": {
+      "events": 111282,
+      "top1": 0.04777951510576733,
+      "top3": 0.12720835355223667,
+      "top5": 0.17917542819144155,
+      "random_top1": 0.008592664965382982,
+      "mean_rank": 33.736048956704586,
+      "mean_percentile": 0.7177856768748101
+    },
+    "shipped_patches": 12
   },
   "verify": {
     "checked": 200,

@@ -16,8 +16,9 @@ top-1.
 The ban phase used to show no suggestions at all: the same pick cards stayed on
 screen and named the banned hero 1.28% of the time. The app now ships a
 per-patch ban-prevalence list for that phase (see [Ban phase](#ban-phase-what-the-app-shows-during-bans)),
-measured at 4.41% top-1. That is agreement with what teams ban, not evidence
-that the suggested bans are good.
+measured at 4.41% top-1 with a rolling prior and 4.78% with the shipped
+full-patch table. That is agreement with what teams ban, not evidence that the
+suggested bans are good.
 Gating the engine behind a fresh prior's shortlist ties that prior rather than
 beating it (3.41% vs 3.38%, McNemar z = 0.4).
 
@@ -195,6 +196,7 @@ the banned hero 1.28% of the time. Evaluation slice, 111,282 ban actions:
 | pick list (previous behaviour) | 1.28% | 3.6% | 7.7% | 0.553 |
 | ban prevalence, global warm-up | 3.28% | 8.5% | 10.3% | 0.622 |
 | ban prevalence, rolling per-patch | 4.41% | 11.6% | 17.1% | 0.708 |
+| shipped table (`hero_ban_stats`, full-patch) | 4.78% | 12.7% | 17.9% | 0.718 |
 
 The 1.47% in the table above is the same engine measure over all 20,000 drafts;
 restricted to the evaluation slice it is 1.28%, which is the row to compare here.
@@ -207,12 +209,15 @@ Bans concentrate harder than picks: 4.41% top-1 and 17.1% top-5 for the per-patc
 ban table, against 3.38% and 13.8% for the pick prior — a 3.4x gap in top-1 and
 better than 2x in top-5, the largest difference measured anywhere in this report.
 
-The shipped seed is **not** the rolling estimate: it scores each patch on its
-full ban counts, so for the patch being replayed the 4.41% is an in-sample upper
-bound (the counts include the ban events being predicted). The rolling row is
-the honest estimate of what a user gets at the start of a patch, and it is the
-number to quote. Even in-sample, the list only predicts *which* heroes get
-banned; nothing here shows that following it improves a draft.</think>
+The last row is the harness reading `hero_ban_stats` from a seeded database —
+the exact table `get_ban_suggestions` serves, ranked the way the engine ranks it
+— so 4.78% / 12.7% / 17.9% is what the shipped ranking achieves on this slice.
+It scores above the rolling row because the shipped counts cover the whole
+patch, including the bans being predicted; the 0.37 pp gap between 4.78% and
+4.41% is that in-sample advantage, not a better method. The rolling 4.41% stays
+the honest estimate for a patch in progress. Either way the list only predicts
+*which* heroes get banned; nothing here shows that following it improves a
+draft.</think>
 
 ## Component ablation
 
@@ -436,9 +441,9 @@ data is not the explanation.
   against it), matching how the app ships.
 - The shipped ban list is a prevalence table, not a quality model: it predicts
   *which* bans happen, not whether a suggested ban is good. Judging ban quality
-  needs a counterfactual the corpus cannot provide. Its counts are full-patch
-  (in-sample for the replayed patch), so quote the rolling 4.41% rather than the
-  shipped table's fit.
+  needs a counterfactual the corpus cannot provide. Its counts are full-patch,
+  so its score is in-sample for the replayed patch; the rolling figure is the
+  honest estimate.
 - ML is disabled by default in the shipped config (`default_ml_enabled()`
   returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
   The ML-on path was measured on a 3,000-draft matched sample rather than the
@@ -489,8 +494,11 @@ since that is where the bundled runtime sits; the harness fails instead of
 silently scoring a neutral 0.5 if the model does not load.
 `ml/backtest/results/backtest.json` holds the committed summary (including
 `blend_sweep`, `blend_halves`, `blend_top1_discordance`, `gate_sweep`,
-`gate_top1_discordance` and `ban_phase`), and
-`ml/backtest/data/drafts_cm_manifest.json` (committed) pins the dataset hash
-above. The exported drafts themselves, the per-pick CSV and run logs are
+`gate_top1_discordance` and `ban_phase`). Within `ban_phase`, `shipped_eval`
+ranks bans by the `hero_ban_stats` rows of the seeded database (the table the
+app serves) and `shipped_patches` reports how many patches had counts; run
+`seed_matchups` first or that ranking is skipped with a warning. The same
+directory holds `ml/backtest/data/drafts_cm_manifest.json` (committed), which
+pins the dataset hash above. The exported drafts themselves, the per-pick CSV and run logs are
 gitignored; re-running the exporter reproduces the same sha256 for the same raw
 corpus.
