@@ -245,7 +245,26 @@ pub fn run() {
                     .write()
                     .load_model(&model_path.to_string_lossy());
             } else {
-                info!("ONNX model resource path not resolved");
+                info!(
+                    "ONNX model resource path not resolved (resource_dir={:?})",
+                    app_handle.path().resource_dir().ok()
+                );
+                for relative in [
+                    "resources/draft_model_xgboost_full.onnx",
+                    "draft_model_xgboost_full.onnx",
+                ] {
+                    match app_handle
+                        .path()
+                        .resolve(relative, tauri::path::BaseDirectory::Resource)
+                    {
+                        Ok(candidate) => info!(
+                            "model candidate {relative} -> {} (is_file={})",
+                            candidate.display(),
+                            candidate.is_file()
+                        ),
+                        Err(error) => info!("model candidate {relative} -> {error}"),
+                    }
+                }
             }
 
             // Log ML engine status

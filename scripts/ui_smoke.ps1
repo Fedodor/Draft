@@ -511,6 +511,9 @@ try {
 
     Write-Host "==> Launching the app"
     $policyName = Split-Path -Leaf $exePath
+    $modelCopies = @(Get-ChildItem -LiteralPath (Split-Path -Parent $exePath) -Recurse -Filter "draft_model_xgboost_full.onnx" -ErrorAction SilentlyContinue |
+            Select-Object -First 5 | ForEach-Object { $_.FullName })
+    Write-Host "    model copies beside the binary: $(if ($modelCopies) { $modelCopies -join ', ' } else { 'none' })"
 
     # Set the HKLM policy when we have the rights, and restore it afterwards.
     if ($isElevated) {
@@ -560,7 +563,13 @@ try {
     $overlayTarget = $null
     for ($i = 0; $i -lt 40; $i++) {
         foreach ($target in $targets) {
-            $isOverlay = Invoke-Eval -WebSocketUrl $target.webSocketDebuggerUrl -Expression "document.body.classList.contains('overlay-mode')"
+            try {
+                $isOverlay = Invoke-Eval -WebSocketUrl $target.webSocketDebuggerUrl -Expression "document.body.classList.contains('overlay-mode')"
+            } catch {
+                # A renderer that is still starting rejects the evaluation;
+                # retry on the next poll instead of treating it as "main".
+                continue
+            }
             if ($isOverlay) { $overlayTarget = $target } else { $mainTarget = $target }
         }
         if ($mainTarget -and $overlayTarget) { break }
