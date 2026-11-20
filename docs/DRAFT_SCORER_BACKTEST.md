@@ -6,10 +6,12 @@ false`) on every Captains Mode draft with a usable pick/ban order in
 changed to produce these numbers.
 
 The short version: **the deterministic scorer does not beat chance at predicting
-human picks, and a plain popularity baseline is ~2.3x better at top-1.** Its
-ordering is dominated by the seeded per-hero meta score; ranked on their own,
-composition and matchup+synergy carry only a barely detectable ordering signal
-and matchup+synergy is worse than chance at top-1.
+human picks.** A plain popularity baseline is already ~2.3x better at top-1 with
+a single prior fitted on the warm-up window, and ~3.6x better with the prior
+refreshed per patch. The scorer's ordering is dominated by the seeded per-hero
+meta score; ranked on their own, composition and matchup+synergy carry only a
+barely detectable ordering signal and matchup+synergy is worse than chance at
+top-1.
 
 Refreshing the popularity prior is the lever that actually moves the numbers:
 recomputing it per patch as the replay advances lifts popularity alone from
@@ -75,17 +77,24 @@ held-out result. The numbers below are low despite that, not because of it.
 
 ## Agreement with human picks (evaluation slice)
 
-| metric | engine | popularity baseline | random |
-| --- | --- | --- | --- |
-| top-1 | 0.94% | 2.21% | 0.90% (measured) |
-| top-3 | 3.2% | 6.0% | 2.70% |
-| top-5 | 6.0% | 9.8% | 4.50% |
-| mean rank of pick | 53.2 | 40.2 | 56.2 |
-| mean percentile of pick | 0.527 | 0.644 | 0.500 |
+| metric | engine | popularity (global warm-up) | popularity (rolling per-patch) | random |
+| --- | --- | --- | --- | --- |
+| top-1 | 0.94% | 2.21% | 3.38% | 0.90% (measured) |
+| top-3 | 3.2% | 6.0% | 9.0% | 2.70% |
+| top-5 | 6.0% | 9.8% | 13.8% | 4.50% |
+| mean rank of pick | 53.2 | 40.2 | 34.5 | 56.2 |
+| mean percentile of pick | 0.527 | 0.644 | 0.695 | 0.500 |
+
+The rolling per-patch prior is defined and measured in
+[Blending the popularity prior](#blending-the-popularity-prior-into-the-ranking);
+its column is the same evaluation slice and events as the other two. Every later
+table that uses popularity says which prior it used — the ablation and ML
+sections were run before the per-patch prior existed, so they quote the global
+one.
 
 Whole sample (all 20,000 drafts) is the same story: top-1 0.96%, top-3 3.0%,
 top-5 5.5%, mean percentile 0.520. The engine's top-1 lift over random is
-+0.06 percentage points; popularity's is +1.31.
++0.06 percentage points; the global popularity prior's is +1.31.
 
 ## By draft phase
 
@@ -100,15 +109,16 @@ final = 9–10):
 | late | 39,887 | 0.66% | 2.2% | 4.1% | 0.534 |
 | final | 39,866 | 0.72% | 2.2% | 3.8% | 0.518 |
 
-Popularity baseline, evaluation slice:
+Popularity baseline, evaluation slice. Top-1 is given for both priors; the
+remaining columns use the rolling per-patch prior, which is the stronger one:
 
-| phase | events | top-1 | top-3 | top-5 | mean pct |
-| --- | --- | --- | --- | --- | --- |
-| opening | 15,969 | 4.31% | 8.4% | 13.6% | 0.667 |
-| early | 15,967 | 3.19% | 9.3% | 15.2% | 0.668 |
-| mid | 15,929 | 1.80% | 5.8% | 9.6% | 0.660 |
-| late | 15,949 | 0.88% | 3.5% | 5.8% | 0.630 |
-| final | 15,950 | 0.85% | 2.9% | 4.6% | 0.595 |
+| phase | events | top-1 (global) | top-1 (per-patch) | top-3 | top-5 | mean pct |
+| --- | --- | --- | --- | --- | --- | --- |
+| opening | 15,969 | 4.31% | 6.20% | 14.3% | 21.1% | 0.750 |
+| early | 15,967 | 3.19% | 4.79% | 11.7% | 17.4% | 0.724 |
+| mid | 15,929 | 1.80% | 3.01% | 8.8% | 13.6% | 0.696 |
+| late | 15,949 | 0.88% | 1.76% | 6.3% | 9.9% | 0.672 |
+| final | 15,950 | 0.85% | 1.12% | 4.2% | 6.9% | 0.633 |
 
 The engine is strongest in the opening (where the popularity prior is also
 strongest) and decays as the draft fills in. In the final phase the two converge
@@ -164,8 +174,13 @@ components, `meta_only` by the seeded meta score.
 | meta only | 1.16% | 4.7% | 7.9% | 0.513 |
 | composition only | 0.65% | 2.6% | 4.4% | 0.525 |
 | matchup+synergy only | 0.53% | 1.9% | 3.5% | 0.513 |
-| popularity baseline | 2.21% | 6.0% | 9.8% | 0.644 |
+| popularity (global warm-up) | 2.21% | 6.0% | 9.8% | 0.644 |
+| popularity (rolling per-patch) | 3.38% | 9.0% | 13.8% | 0.695 |
 | random | 0.90% | 2.70% | 4.50% | 0.500 |
+
+The two popularity rows are the same evaluation events; the ablation itself only
+re-ranks the engine's components, so the prior does not affect its rows, but both
+baselines are shown so the gap is not understated.
 
 With 79,764 events the standard error is ~0.03 pp on top-1 and ~0.001 on mean
 percentile, so the percentile differences of 0.013–0.027 are real but tiny.
@@ -278,13 +293,17 @@ events), run twice: once deterministic, once with the bundled
 `ml/models/draft_model_xgboost_full.onnx` (887 features) loaded and
 `ml_enabled = true`, so the ML component carries its 25% weight.
 
-| eval metric | ML off | ML on | popularity |
-| --- | --- | --- | --- |
-| top-1 | 0.77% | 0.81% | 2.36% |
-| top-3 | 3.3% | 3.2% | 6.5% |
-| top-5 | 6.0% | 5.6% | 10.4% |
-| mean rank of pick | 53.3 | 53.3 | 39.9 |
-| mean percentile of pick | 0.526 | 0.526 | 0.646 |
+| eval metric | ML off | ML on | popularity (global) | popularity (per-patch) |
+| --- | --- | --- | --- | --- |
+| top-1 | 0.77% | 0.81% | 2.36% | 3.37% |
+| top-3 | 3.3% | 3.2% | 6.5% | 9.0% |
+| top-5 | 6.0% | 5.6% | 10.4% | 13.7% |
+| mean rank of pick | 53.3 | 53.3 | 39.9 | 35.3 |
+| mean percentile of pick | 0.526 | 0.526 | 0.646 | 0.687 |
+
+The per-patch column is a separate deterministic run on the same 3,000 drafts
+(`backtest_perpatch_3000.json`); the ML rows do not use the prior, so they are
+unchanged by it.
 
 Outcome proxy on the same pair:
 
@@ -300,8 +319,9 @@ Outcome proxy on the same pair:
 ML moves top-1 by +0.04 pp (SE ≈ 0.08 pp at this sample size) and the AUC by
 +0.005 (SE ≈ 0.01 over 2,736 matches): both indistinguishable from zero. Per
 phase, ML-on top-1 is 1.65% opening, 1.13% early, 0.89% mid, 0.65% late, 0.55%
-final — the same decay as the deterministic path. Agreement stays at chance and
-the popularity prior remains ~3x ahead with ML on.
+final — the same decay as the deterministic path. Agreement stays at chance, and
+the popularity prior remains ~3x ahead of ML-on with the global prior (2.36% vs
+0.81%) and ~4x ahead with the per-patch one (3.37% vs 0.81%).
 
 That is consistent with the model's own quality: `default_ml_enabled()`'s
 comment records it at ~0.539 test ROC-AUC, near the 0.5 baseline, which is why
