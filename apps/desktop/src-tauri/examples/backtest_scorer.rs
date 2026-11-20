@@ -202,6 +202,19 @@ struct PickRow {
 }
 
 #[derive(Debug, Serialize)]
+struct Discordant {
+    blend_only: u64,
+    baseline_only: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct BlendDiscordance {
+    weight: f64,
+    vs_engine: Discordant,
+    vs_popularity: Discordant,
+}
+
+#[derive(Debug, Serialize)]
 struct MlModelInfo {
     path: String,
     features: usize,
@@ -245,6 +258,12 @@ struct Report {
     matches_for_auc: u64,
     /// Same event stream and availability, ranked by single components.
     ablations: Vec<(String, Agreement)>,
+    /// Engine/popularity percentile blend, keyed by the popularity weight.
+    blend_sweep: Vec<(f64, Agreement)>,
+    /// Paired top-1 discordance for the best blend weight (McNemar inputs).
+    blend_top1_discordance: BlendDiscordance,
+    /// The same sweep on each evaluation half, in case the weight is overfit.
+    blend_halves: Vec<(f64, Agreement, Agreement)>,
     verify: VerifySummary,
 }
 
@@ -409,6 +428,61 @@ fn ranked_in(pool: &[(i32, ScoreBreakdown)], ranking: Ranking) -> Vec<(i32, f32)
         .collect();
     scored.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
     scored
+}
+
+/// Blend weights as percentages, so the sweep is exact and hashable.
+/// 0 reproduces the engine ranking, 100 reproduces the popularity ranking.
+const BLEND_WEIGHTS: [i32; 11] = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
+
+/// Rank heroes by `(1 - weight) * engine_percentile + weight * popularity_percentile`,
+/// both percentiles taken within the current available pool so the blend is
+/// scale-free. The popularity prior itself is fitted on the warm-up drafts only.
+fn blend_ranking(
+    pool: &[(i32, ScoreBreakdown)],
+    popularity: &HashMap<i32, u64>,
+    weight: f64,
+) -> Vec<(i32, f32)> {
+    let count = pool.len();
+    let percentile = |rank: usize| {
+        if count > 1 {
+            1.0 - rank as f64 / (count - 1) as f64
+        } else {
+            0.5
+        }
+    };
+
+    let mut engine_order: Vec<(i32, f32)> = pool
+        .iter()
+        .map(|(id, breakdown)| (*id, breakdown.total))
+        .collect();
+    engine_order.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
+    let engine_percentile: HashMap<i32, f64> = engine_order
+        .iter()
+        .enumerate()
+        .map(|(rank, (id, _))| (*id, percentile(rank)))
+        .collect();
+
+    let mut freq_order: Vec<(i32, u64)> = pool
+        .iter()
+        .map(|(id, _)| (*id, popularity.get(id).copied().unwrap_or(0)))
+        .collect();
+    freq_order.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    let freq_percentile: HashMap<i32, f64> = freq_order
+        .iter()
+        .enumerate()
+        .map(|(rank, (id, _))| (*id, percentile(rank)))
+        .collect();
+
+    let mut blended: Vec<(i32, f32)> = pool
+        .iter()
+        .map(|(id, _)| {
+            let engine = engine_percentile.get(id).copied().unwrap_or(0.5);
+            let freq = freq_percentile.get(id).copied().unwrap_or(0.5);
+            (*id, ((1.0 - weight) * engine + weight * freq) as f32)
+        })
+        .collect();
+    blended.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
+    blended
 }
 
 fn rank_of(scored: &[(i32, f32)], hero_id: i32) -> Option<(usize, f32)> {
@@ -614,6 +688,20 @@ fn main() -> Result<(), String> {
     let mut verify_mismatches = 0_usize;
     let mut ablation_counts: HashMap<Ranking, Counts> = HashMap::new();
     let ablation_modes = [Ranking::Composition, Ranking::MatchupSynergy, Ranking::Meta];
+    let mut blend_counts: HashMap<i32, Counts> = HashMap::new();
+    // Same sweep split into two evaluation halves, so a weight can be chosen on
+    // one half and checked on the other instead of picked in-sample.
+    let eval_half_split = warmup_matches + (drafts.len() - warmup_matches) / 2;
+    let mut blend_halves: [HashMap<i32, Counts>; 2] = std::array::from_fn(|_| HashMap::new());
+    // Paired top-1 comparisons for the best blend weight, counted on the same
+    // events: discordant counts feed a McNemar test, not two independent rates.
+    // Equal weight is the defensible a-priori choice; the sweep below shows how
+    // sensitive the result is to it.
+    let best_weight = 50_i32;
+    let mut only_blend_vs_engine = 0_u64;
+    let mut only_engine = 0_u64;
+    let mut only_blend_vs_popularity = 0_u64;
+    let mut only_popularity = 0_u64;
 
     for (index, draft) in drafts.iter().enumerate() {
         let is_eval = index >= warmup_matches;
@@ -633,6 +721,8 @@ fn main() -> Result<(), String> {
             let pool = score_pool(&engine, team);
             let scored = ranked_in(&pool, Ranking::Engine);
             let available = scored.len();
+            // Set while sweeping the blend weights, read by the popularity block.
+            let mut blend_top1: Option<bool> = None;
 
             if action.pick {
                 pick_ordinal += 1;
@@ -672,6 +762,29 @@ fn main() -> Result<(), String> {
                                         .entry(mode)
                                         .or_default()
                                         .record(mode_rank, available);
+                                }
+                            }
+                            for weight in BLEND_WEIGHTS {
+                                let ranked =
+                                    blend_ranking(&pool, &popularity, f64::from(weight) / 100.0);
+                                if let Some((blend_rank, _)) = rank_of(&ranked, action.hero_id) {
+                                    blend_counts
+                                        .entry(weight)
+                                        .or_default()
+                                        .record(blend_rank, available);
+                                    let half = usize::from(index >= eval_half_split);
+                                    blend_halves[half]
+                                        .entry(weight)
+                                        .or_default()
+                                        .record(blend_rank, available);
+                                    if weight == best_weight {
+                                        blend_top1 = Some(blend_rank == 1);
+                                        if blend_rank == 1 && rank != 1 {
+                                            only_blend_vs_engine += 1;
+                                        } else if blend_rank != 1 && rank == 1 {
+                                            only_engine += 1;
+                                        }
+                                    }
                                 }
                             }
                         }
@@ -716,6 +829,14 @@ fn main() -> Result<(), String> {
                             if let Some(freq_rank) =
                                 freq.iter().position(|(id, _)| *id == action.hero_id)
                             {
+                                if let Some(blend_hit) = blend_top1 {
+                                    let freq_hit = freq_rank == 0;
+                                    if blend_hit && !freq_hit {
+                                        only_blend_vs_popularity += 1;
+                                    } else if !blend_hit && freq_hit {
+                                        only_popularity += 1;
+                                    }
+                                }
                                 freq_eval.record(freq_rank + 1, available);
                                 freq_by_phase
                                     .entry(Phase::of(pick_ordinal))
@@ -894,6 +1015,38 @@ fn main() -> Result<(), String> {
             first_start_time: drafts.first().and_then(|draft| draft.start_time),
             last_start_time: drafts.last().and_then(|draft| draft.start_time),
             patches,
+        },
+        blend_halves: BLEND_WEIGHTS
+            .iter()
+            .map(|weight| {
+                let half = |index: usize| {
+                    blend_halves[index]
+                        .get(weight)
+                        .cloned()
+                        .unwrap_or_default()
+                        .agreement()
+                };
+                (f64::from(*weight) / 100.0, half(0), half(1))
+            })
+            .collect(),
+        blend_top1_discordance: BlendDiscordance {
+            weight: f64::from(best_weight) / 100.0,
+            vs_engine: Discordant {
+                blend_only: only_blend_vs_engine,
+                baseline_only: only_engine,
+            },
+            vs_popularity: Discordant {
+                blend_only: only_blend_vs_popularity,
+                baseline_only: only_popularity,
+            },
+        },
+        blend_sweep: {
+            let mut rows: Vec<(f64, Agreement)> = blend_counts
+                .iter()
+                .map(|(weight, counts)| (f64::from(*weight) / 100.0, counts.agreement()))
+                .collect();
+            rows.sort_by(|a, b| a.0.total_cmp(&b.0));
+            rows
         },
         engine_agreement: engine_counts.agreement(),
         engine_agreement_eval: engine_eval_counts.agreement(),

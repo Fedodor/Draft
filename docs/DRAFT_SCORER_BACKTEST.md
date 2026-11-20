@@ -11,6 +11,11 @@ ordering is dominated by the seeded per-hero meta score; ranked on their own,
 composition and matchup+synergy carry only a barely detectable ordering signal
 and matchup+synergy is worse than chance at top-1.
 
+Blending the popularity prior into the ranking is the one change that helps:
+top-1 0.94% → 2.53% over the scorer, and a small, era-dependent edge over
+popularity alone (2.48% at the a-priori equal weight, paired p ≈ 6e-5, but only
++0.11 pp on the later evaluation half). It is measured here, not shipped.
+
 The app ships with `ml_enabled = false` by default (`default_ml_enabled()` in
 `models.rs`), so this is the path users actually get out of the box. The ML-on
 path was measured too, on a matched sample, and is statistically
@@ -182,6 +187,58 @@ What the ablation shows:
   components are not redundant — the mixture is marginally better ordered than
   any single one, while still far behind a plain popularity prior.
 
+## Blending the popularity prior into the ranking
+
+Offline experiment, no product change: rank heroes by
+`(1 - w) * engine_percentile + w * popularity_percentile`, both percentiles
+taken inside the current available pool so the blend is scale-free. The prior is
+the same warm-up-fitted popularity used above; `w = 0` reproduces the engine
+exactly and `w = 1` reproduces popularity exactly (verified against the
+standalone rows). Evaluation slice, 79,764 pick events:
+
+| w (popularity weight) | top-1 | top-3 | top-5 | mean pct |
+| --- | --- | --- | --- | --- |
+| 0.0 (engine) | 0.94% | 3.2% | 6.0% | 0.527 |
+| 0.1 | 1.82% | 4.8% | 7.8% | 0.541 |
+| 0.2 | 2.02% | 5.3% | 9.0% | 0.558 |
+| 0.3 | 2.23% | 6.1% | 9.4% | 0.578 |
+| 0.4 | 2.39% | 6.6% | 9.6% | 0.601 |
+| 0.5 | 2.48% | 6.9% | 10.0% | 0.623 |
+| 0.6 | 2.49% | 7.1% | 10.3% | 0.637 |
+| 0.7 | 2.53% | 7.3% | 10.8% | 0.644 |
+| 0.8 | 2.47% | 7.3% | 10.7% | 0.647 |
+| 0.9 | 2.42% | 7.1% | 10.4% | 0.647 |
+| 1.0 (popularity) | 2.21% | 6.0% | 9.8% | 0.644 |
+
+Paired McNemar on the same events at the a-priori equal weight `w = 0.5`
+(chosen before looking at the sweep peak):
+
+| comparison | blend top-1 only | baseline top-1 only | z |
+| --- | --- | --- | --- |
+| vs engine | 1,893 | 661 | 24.4 |
+| vs popularity | 1,677 | 1,454 | 4.0 |
+
+What this means:
+
+- **Against the scorer, the blend wins decisively.** Top-1 goes 0.94% → 2.48%,
+  top-3 3.2% → 6.9%, top-5 6.0% → 10.0% (z = 24.4 paired, p ≈ 1e-130).
+- **Against popularity, the win is real but small at top-1** (+0.27 pp, paired
+  z = 4.0, p ≈ 6e-5) and vanishes at mean percentile: 0.623 vs 0.644, because the
+  prior dominates the ordering and the engine mostly reshuffles the head.
+- **It is not a stable margin.** Splitting the evaluation slice in halves and
+  keeping `w = 0.5` fixed: half A blend 2.40% vs popularity 1.95% (+0.45 pp),
+  half B blend 2.57% vs 2.46% (+0.11 pp, inside noise at n ≈ 39,900). The tuned
+  peak (`w = 0.7`) reaches 2.71% on half B, but that weight was picked on the same
+  data that produced the peak, so it is not out-of-sample evidence.
+- The blend is best understood as *popularity ordering with the engine breaking
+  near-ties at the top*: it keeps the prior's hit rate while adding a little
+  head precision, and it never improves overall ordering (mean percentile).
+
+Verdict: blending is a clear improvement over shipping the scorer alone and a
+marginal, era-dependent improvement over a plain popularity prior. Shipping it
+would be a product and threshold change, which this backtest deliberately does
+not make; the numbers are here to justify or reject that decision.
+
 ## ML enabled vs disabled
 
 Same sampler and the same 3,000 drafts (1,200 evaluation drafts, 11,969 pick
@@ -257,6 +314,9 @@ data is not the explanation.
   aggregates. Agreement rates are therefore computed only over rankable picks.
 - The outcome proxy is a side win rate conditional on the engine's rank, not a
   causal estimate of picks the scorer would have won.
+- The blend sweep picks its peak on the evaluation slice, so `w = 0.7` is an
+  in-sample number. The equal weight `w = 0.5` and the eval-half split are the
+  out-of-sample checks, and they are what the verdict rests on.
 
 ## Reproduce
 
@@ -278,7 +338,8 @@ add `--ml 1` (default model `ml/models/draft_model_xgboost_full.onnx`) and point
 `ORT_DYLIB_PATH` at `apps/desktop/src-tauri/target/release/resources/onnxruntime.dll`,
 since that is where the bundled runtime sits; the harness fails instead of
 silently scoring a neutral 0.5 if the model does not load.
-`ml/backtest/results/backtest.json` holds the committed summary, and
+`ml/backtest/results/backtest.json` holds the committed summary (including
+`blend_sweep`, `blend_halves` and the `blend_top1_discordance` inputs), and
 `ml/backtest/data/drafts_cm_manifest.json` (committed) pins the dataset hash
 above. The exported drafts themselves, the per-pick CSV and run logs are
 gitignored; re-running the exporter reproduces the same sha256 for the same raw
