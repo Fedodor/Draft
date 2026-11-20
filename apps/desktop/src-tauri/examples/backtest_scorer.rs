@@ -215,6 +215,20 @@ struct BlendDiscordance {
 }
 
 #[derive(Debug, Serialize)]
+struct GateDiscordance {
+    k: usize,
+    gate_only: u64,
+    prior_only: u64,
+}
+
+#[derive(Debug, Serialize)]
+struct BanPhase {
+    engine_eval: Agreement,
+    prior_global_eval: Agreement,
+    prior_per_patch_eval: Agreement,
+}
+
+#[derive(Debug, Serialize)]
 struct MlModelInfo {
     path: String,
     features: usize,
@@ -266,6 +280,12 @@ struct Report {
     blend_top1_discordance: BlendDiscordance,
     /// The same sweep on each evaluation half, in case the weight is overfit.
     blend_halves: Vec<(f64, Agreement, Agreement)>,
+    /// Prior top-K then engine order, keyed by K.
+    gate_sweep: Vec<(usize, Agreement)>,
+    /// Paired top-1 discordance for the gating size above (McNemar inputs).
+    gate_top1_discordance: GateDiscordance,
+    /// How the ban phase scores under the engine and under ban prevalence.
+    ban_phase: BanPhase,
     verify: VerifySummary,
 }
 
@@ -453,22 +473,64 @@ impl PriorMode {
 
 /// A patch needs this many replayed picks before its own counts are used.
 const PATCH_PRIOR_MIN_PICKS: u64 = 200;
+/// A patch needs this many replayed bans before its own ban counts are used.
+const PATCH_BAN_PRIOR_MIN_BANS: u64 = 200;
 
 fn prior_for_draft(
     mode: PriorMode,
     patch: &str,
     per_patch: &HashMap<String, HashMap<i32, u64>>,
     global: &HashMap<i32, u64>,
+    min_total: u64,
 ) -> HashMap<i32, u64> {
     match mode {
         PriorMode::Global => global.clone(),
         PriorMode::PerPatch => per_patch
             .get(patch)
-            .filter(|counts| counts.values().sum::<u64>() >= PATCH_PRIOR_MIN_PICKS)
+            .filter(|counts| counts.values().sum::<u64>() >= min_total)
             .cloned()
             .unwrap_or_else(|| global.clone()),
     }
 }
+
+/// Heroes ordered by a count table (bans use the same shape as picks).
+fn prior_ranking(ids: impl Iterator<Item = i32>, counts: &HashMap<i32, u64>) -> Vec<(i32, u64)> {
+    let mut ranked: Vec<(i32, u64)> = ids
+        .map(|id| (id, counts.get(&id).copied().unwrap_or(0)))
+        .collect();
+    ranked.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+    ranked
+}
+
+/// Prior top-K candidates in engine order, then everything else in engine order.
+/// The front of the list is what a gated recommendation would show.
+fn gated_ranking(
+    engine_order: &[(i32, f32)],
+    prior_order: &[(i32, u64)],
+    k: usize,
+) -> Vec<(i32, f32)> {
+    let allowed: std::collections::HashSet<i32> =
+        prior_order.iter().take(k).map(|(id, _)| *id).collect();
+    let mut out: Vec<(i32, f32)> = Vec::with_capacity(engine_order.len());
+    out.extend(
+        engine_order
+            .iter()
+            .filter(|(id, _)| allowed.contains(id))
+            .copied(),
+    );
+    out.extend(
+        engine_order
+            .iter()
+            .filter(|(id, _)| !allowed.contains(id))
+            .copied(),
+    );
+    out
+}
+
+/// Prior sizes tried by the gating test.
+const GATE_KS: [usize; 5] = [5, 10, 20, 40, 80];
+/// Gating size used for the paired top-1 comparison against the plain prior.
+const GATE_DISCORDANCE_K: usize = 5;
 
 /// Blend weights as percentages, so the sweep is exact and hashable.
 /// 0 reproduces the engine ranking, 100 reproduces the popularity ranking.
@@ -523,6 +585,13 @@ fn blend_ranking(
         .collect();
     blended.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
     blended
+}
+
+fn position_of_counts(ranked: &[(i32, u64)], hero_id: i32) -> Option<usize> {
+    ranked
+        .iter()
+        .position(|(id, _)| *id == hero_id)
+        .map(|index| index + 1)
 }
 
 fn rank_of(scored: &[(i32, f32)], hero_id: i32) -> Option<(usize, f32)> {
@@ -733,6 +802,20 @@ fn main() -> Result<(), String> {
     let mut ablation_counts: HashMap<Ranking, Counts> = HashMap::new();
     let ablation_modes = [Ranking::Composition, Ranking::MatchupSynergy, Ranking::Meta];
     let mut per_patch_prior: HashMap<String, HashMap<i32, u64>> = HashMap::new();
+    let mut per_patch_bans: HashMap<String, HashMap<i32, u64>> = HashMap::new();
+    // Ban prevalence fitted on the same warm-up window, plus per-patch counts.
+    let mut ban_popularity: HashMap<i32, u64> = HashMap::new();
+    for draft in drafts.iter().take(warmup_matches) {
+        for action in draft.actions.iter().filter(|action| !action.pick) {
+            *ban_popularity.entry(action.hero_id).or_default() += 1;
+        }
+    }
+    let mut ban_engine_eval = Counts::default();
+    let mut ban_prior_global_eval = Counts::default();
+    let mut ban_prior_patch_eval = Counts::default();
+    let mut gate_counts: HashMap<usize, Counts> = HashMap::new();
+    let mut only_gate = 0_u64;
+    let mut only_prior = 0_u64;
     let mut blend_counts: HashMap<i32, Counts> = HashMap::new();
     // Same sweep split into two evaluation halves, so a weight can be chosen on
     // one half and checked on the other instead of picked in-sample.
@@ -754,7 +837,21 @@ fn main() -> Result<(), String> {
         // Prior for this draft: strictly earlier drafts of the same patch when
         // asked for, otherwise the global warm-up window. Never the future.
         let patch_key = draft.patch.clone().unwrap_or_default();
-        let prior_counts = prior_for_draft(prior_mode, &patch_key, &per_patch_prior, &popularity);
+        let prior_counts = prior_for_draft(
+            prior_mode,
+            &patch_key,
+            &per_patch_prior,
+            &popularity,
+            PATCH_PRIOR_MIN_PICKS,
+        );
+        let ban_global = &ban_popularity;
+        let ban_patch = prior_for_draft(
+            PriorMode::PerPatch,
+            &patch_key,
+            &per_patch_bans,
+            ban_global,
+            PATCH_BAN_PRIOR_MIN_BANS,
+        );
         let mut pick_ordinal = 0_i32;
         let mut picks_before_ban = 0_i32;
         let mut side_scores: HashMap<TeamSide, f64> = HashMap::new();
@@ -875,9 +972,31 @@ fn main() -> Result<(), String> {
                                 .map(|(id, _)| (*id, prior_counts.get(id).copied().unwrap_or(0)))
                                 .collect();
                             freq.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
+                            // Gating: the prior's top-K first, engine order inside.
+                            let mut gate_top1: Option<bool> = None;
+                            for k in GATE_KS {
+                                let gated = gated_ranking(&scored, &freq, k);
+                                if let Some((gate_rank, _)) = rank_of(&gated, action.hero_id) {
+                                    gate_counts
+                                        .entry(k)
+                                        .or_default()
+                                        .record(gate_rank, available);
+                                    if k == GATE_DISCORDANCE_K {
+                                        gate_top1 = Some(gate_rank == 1);
+                                    }
+                                }
+                            }
                             if let Some(freq_rank) =
                                 freq.iter().position(|(id, _)| *id == action.hero_id)
                             {
+                                if let Some(gate_hit) = gate_top1 {
+                                    let prior_hit = freq_rank == 0;
+                                    if gate_hit && !prior_hit {
+                                        only_gate += 1;
+                                    } else if !gate_hit && prior_hit {
+                                        only_prior += 1;
+                                    }
+                                }
                                 if let Some(blend_hit) = blend_top1 {
                                     let freq_hit = freq_rank == 0;
                                     if blend_hit && !freq_hit {
@@ -943,6 +1062,22 @@ fn main() -> Result<(), String> {
                 match rank_of(&scored, action.hero_id) {
                     Some((rank, _)) => {
                         bans_overall.bans += 1;
+                        if is_eval {
+                            ban_engine_eval.record(rank, available);
+                            let ids: Vec<i32> = scored.iter().map(|(id, _)| *id).collect();
+                            let global_ranked = prior_ranking(ids.iter().copied(), ban_global);
+                            if let Some(prior_rank) =
+                                position_of_counts(&global_ranked, action.hero_id)
+                            {
+                                ban_prior_global_eval.record(prior_rank, available);
+                            }
+                            let patch_ranked = prior_ranking(ids.iter().copied(), &ban_patch);
+                            if let Some(prior_rank) =
+                                position_of_counts(&patch_ranked, action.hero_id)
+                            {
+                                ban_prior_patch_eval.record(prior_rank, available);
+                            }
+                        }
                         if rank == 1 {
                             bans_overall.removes_top1 += 1;
                         }
@@ -984,6 +1119,12 @@ fn main() -> Result<(), String> {
         let patch_counts = per_patch_prior.entry(patch_key).or_default();
         for action in draft.actions.iter().filter(|action| action.pick) {
             *patch_counts.entry(action.hero_id).or_default() += 1;
+        }
+        let patch_ban_counts = per_patch_bans
+            .entry(draft.patch.clone().unwrap_or_default())
+            .or_default();
+        for action in draft.actions.iter().filter(|action| !action.pick) {
+            *patch_ban_counts.entry(action.hero_id).or_default() += 1;
         }
 
         if usable {
@@ -1087,6 +1228,24 @@ fn main() -> Result<(), String> {
                 (f64::from(*weight) / 100.0, half(0), half(1))
             })
             .collect(),
+        gate_sweep: {
+            let mut rows: Vec<(usize, Agreement)> = gate_counts
+                .iter()
+                .map(|(k, counts)| (*k, counts.agreement()))
+                .collect();
+            rows.sort_by_key(|(k, _)| *k);
+            rows
+        },
+        gate_top1_discordance: GateDiscordance {
+            k: GATE_DISCORDANCE_K,
+            gate_only: only_gate,
+            prior_only: only_prior,
+        },
+        ban_phase: BanPhase {
+            engine_eval: ban_engine_eval.agreement(),
+            prior_global_eval: ban_prior_global_eval.agreement(),
+            prior_per_patch_eval: ban_prior_patch_eval.agreement(),
+        },
         blend_top1_discordance: BlendDiscordance {
             weight: f64::from(best_weight) / 100.0,
             vs_engine: Discordant {

@@ -13,6 +13,11 @@ meta score; ranked on their own, composition and matchup+synergy carry only a
 barely detectable ordering signal and matchup+synergy is worse than chance at
 top-1.
 
+The ban phase is the worst of it: the engine's top ban is the hero the team
+bans 1.28% of the time, against 4.41% for a per-patch ban-prevalence table.
+Gating the engine behind a fresh prior's shortlist ties that prior rather than
+beating it (3.41% vs 3.38%, McNemar z = 0.4).
+
 Refreshing the popularity prior is the lever that actually moves the numbers:
 recomputing it per patch as the replay advances lifts popularity alone from
 2.21% to 3.38% top-1, more than any blend of it with the scorer. Blending helps
@@ -161,6 +166,31 @@ With ~120 heroes available, chance is ~0.8% for rank-1. Opening bans are ~2.5x
 chance, later bans are at chance. So teams do occasionally ban what the scorer
 likes, but no more than that: the scorer is not tracking the ban phase.
 
+## Ban phase: what the app would suggest while banning
+
+The proxy above asks whether bans remove heroes the engine likes. This asks the
+product question: with heroes still available when a team bans, how often is the
+hero they ban the engine's (or a prior's) top suggestion? Evaluation slice,
+111,282 ban actions:
+
+| ranking | top-1 | top-3 | top-5 | mean pct |
+| --- | --- | --- | --- | --- |
+| engine (shipped) | 1.28% | 3.6% | 7.7% | 0.553 |
+| ban prevalence, global warm-up | 3.28% | 8.5% | 10.3% | 0.622 |
+| ban prevalence, rolling per-patch | 4.41% | 11.6% | 17.1% | 0.708 |
+
+The 1.47% in the table above is the same engine measure over all 20,000 drafts;
+restricted to the evaluation slice it is 1.28%, which is the row to compare here.
+"Ban prevalence" is a plain frequency table with no engine involvement: how often
+each hero was banned, from the warm-up window or, in the per-patch variant, from
+the drafts already replayed in this patch (falling back to the global table until
+a patch has 200 replayed bans).
+
+Bans concentrate harder than picks: 4.41% top-1 and 17.1% top-5 for the per-patch
+ban table, against 3.38% and 13.8% for the pick prior. Ban guidance is currently
+the engine's, so this is a 3.4x gap in top-1 and better than 2x in top-5 — the
+largest measured gap in this report.
+
 ## Component ablation
 
 Same evaluation events, identical available pools, only the number used for the
@@ -286,6 +316,36 @@ So the honest reading is: if the product wants better first suggestions, refresh
 and version the popularity prior per patch; adding the heuristic scorer on top of
 a fresh prior does not reliably improve it.
 
+## Prior-gated re-ranking
+
+Blending scores diluted the prior. Gating is the other way to combine them: take
+the prior's top-K candidates, let the engine order *those*, and keep everything
+else in engine order, so the first suggestion is the engine's favourite inside
+the prior's shortlist. Evaluation slice, ranked by the rolling per-patch prior:
+
+| ranking | top-1 | top-3 | top-5 | mean pct |
+| --- | --- | --- | --- | --- |
+| prior only (reference) | 3.38% | 9.0% | 13.8% | 0.695 |
+| gate K=5 | 3.41% | 9.1% | 13.8% | 0.562 |
+| gate K=10 | 2.83% | 8.6% | 14.0% | 0.588 |
+| gate K=20 | 2.48% | 7.8% | 12.4% | 0.624 |
+| gate K=40 | 2.15% | 6.1% | 10.4% | 0.648 |
+| gate K=80 | 1.46% | 4.4% | 7.7% | 0.627 |
+| engine only (reference) | 0.94% | 3.2% | 6.0% | 0.527 |
+
+McNemar at K=5 against the plain prior on the same events: 1,625 gate-only
+versus 1,601 prior-only, **z = 0.4** — a tie, not a win. Every larger K loses
+top-1, and mean percentile drops everywhere (0.562 at K=5 against 0.695 for the
+prior), because the shortlist discards the prior's ordering below the cut.
+
+With the stale global prior the same gate does help: 2.39% at K=5 (McNemar
+z = 2.7 against 2.21% popularity) and 2.45% at K=10. That is consistent with
+everything above — the engine's ranking carries a little information that the
+stale prior lacks, and adds nothing once the prior is fresh.
+
+Verdict: gating does not beat the 3.38% per-patch baseline. Its best setting ties
+it (3.41% top-1, z = 0.4) while ordering the rest of the list much worse.
+
 ## ML enabled vs disabled
 
 Same sampler and the same 3,000 drafts (1,200 evaluation drafts, 11,969 pick
@@ -351,6 +411,9 @@ data is not the explanation.
   are optimistic. Removing the leakage could only lower them.
 - One database snapshot was evaluated (patch 7.41, all other patches replayed
   against it), matching how the app ships.
+- Ban guidance is measured only as "is the banned hero our top suggestion". It
+  does not check whether a suggested ban would have been a *good* ban, which
+  would need a counterfactual the corpus cannot provide.
 - ML is disabled by default in the shipped config (`default_ml_enabled()`
   returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
   The ML-on path was measured on a 3,000-draft matched sample rather than the
@@ -369,10 +432,14 @@ data is not the explanation.
 - The blend sweep picks its peak on the evaluation slice, so `w = 0.7` is an
   in-sample number. The equal weight `w = 0.5` and the eval-half split are the
   out-of-sample checks, and they are what the verdict rests on.
-- The per-patch prior is an expanding window with a 200-pick warm-up per patch;
-  early patches with little history fall back to the global table, so the boost
-  is concentrated in the well-populated late patches. A different window or
-  decay would change the magnitude, though not the direction of the result.
+- The per-patch prior is an expanding window with a 200-pick warm-up per patch
+  (200 replayed bans for the ban table); early patches with little history fall
+  back to the global tables, so the boost is concentrated in the well-populated
+  late patches. A different window or decay would change the magnitude, though
+  not the direction of the result.
+- The gate sweep, like the blend weights, picks its size on the evaluation
+  slice. The K=5 comparison against the prior is paired, but five K values were
+  tried, so 3.41% is an upper bound on what gating buys.
 
 ## Reproduce
 
@@ -396,7 +463,8 @@ add `--ml 1` (default model `ml/models/draft_model_xgboost_full.onnx`) and point
 since that is where the bundled runtime sits; the harness fails instead of
 silently scoring a neutral 0.5 if the model does not load.
 `ml/backtest/results/backtest.json` holds the committed summary (including
-`blend_sweep`, `blend_halves` and the `blend_top1_discordance` inputs), and
+`blend_sweep`, `blend_halves`, `blend_top1_discordance`, `gate_sweep`,
+`gate_top1_discordance` and `ban_phase`), and
 `ml/backtest/data/drafts_cm_manifest.json` (committed) pins the dataset hash
 above. The exported drafts themselves, the per-pick CSV and run logs are
 gitignored; re-running the exporter reproduces the same sha256 for the same raw
