@@ -709,6 +709,9 @@ try {
         "labels=$($header.labels | ConvertTo-Json -Compress)"
     Save-Screenshot -WebSocketUrl $main -Path (Join-Path $ArtifactsDir "main-800.png")
 
+    $mlStatusPath = Join-Path $ArtifactsDir "ml-status.json"
+    $ml | ConvertTo-Json -Depth 5 | Set-Content -LiteralPath $mlStatusPath -Encoding UTF8
+
     Write-Host "==> Overlay window"
     $overlayText = Invoke-Eval -WebSocketUrl $overlay -Expression "document.body.innerText"
     Check "overlay renders draft content" ($overlayText -like "*DRAFT OVERLAY*") "overlay body missing heading"
@@ -767,6 +770,15 @@ finally {
             }
         } catch { }
     }
+    # Always archive the app's own log: model/DLL resolution failures are
+    # non-fatal, so they never reach app-diagnostics.txt and cannot be
+    # diagnosed from a red check alone.
+    try {
+        $appLog = Join-Path $env:LOCALAPPDATA "com.smartdraftassistant.app\logs\app-diagnostics.log"
+        if (Test-Path -LiteralPath $appLog) {
+            Copy-Item -LiteralPath $appLog -Destination (Join-Path $ArtifactsDir "app-log.txt") -Force -ErrorAction Stop
+        }
+    } catch { }
     if ($Bundle -and $installDir -and (Test-Path -LiteralPath $installDir)) {
         # Registered per-user by NSIS, so run the uninstaller before deleting the
         # directory; otherwise every run leaves an entry in Apps & features.
