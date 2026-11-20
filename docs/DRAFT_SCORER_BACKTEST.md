@@ -217,7 +217,17 @@ patch, including the bans being predicted; the 0.37 pp gap between 4.78% and
 4.41% is that in-sample advantage, not a better method. The rolling 4.41% stays
 the honest estimate for a patch in progress. Either way the list only predicts
 *which* heroes get banned; nothing here shows that following it improves a
-draft.</think>
+draft.
+
+How much of that depends on having the current patch's counts? Restricting to
+patch 7.41 (4,175 drafts, 57,925 ban actions) and ranking with 7.41's table
+gives 4.40% top-1 / 9.8% top-3 / 15.7% top-5. Ranking the same events with the
+previous patch's table (7.40, which contains no 7.41 drafts) — the one-patch-lag
+case, and what the app falls back to when the active patch has no rows — drops
+to **1.80% / 4.6% / 10.1%**, below the rolling prior on that slice (4.02% /
+10.2% / 15.5%). The shipped list therefore depends on counts for the patch being
+played, which only exist once that patch has accumulated drafts; a stale table
+is worse than a fresh rolling prior, not merely equal to it.</think>
 
 ## Component ablation
 
@@ -443,7 +453,8 @@ data is not the explanation.
   *which* bans happen, not whether a suggested ban is good. Judging ban quality
   needs a counterfactual the corpus cannot provide. Its counts are full-patch,
   so its score is in-sample for the replayed patch; the rolling figure is the
-  honest estimate.
+  honest estimate, and a one-patch-stale table scores below it (1.80% vs 4.02%
+  top-1 on 7.41).
 - ML is disabled by default in the shipped config (`default_ml_enabled()`
   returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
   The ML-on path was measured on a 3,000-draft matched sample rather than the
@@ -485,14 +496,19 @@ cargo run --release --example backtest_scorer \
   --out ml/backtest/results/backtest.json
 ```
 
-`--patch 7.39` restricts to one patch, `--limit N` truncates chronologically,
+`--patch 7.39` restricts to one patch, `--ban-counts-patch 7.40` ranks every
+event with that patch's shipped counts instead of each draft's own (with
+`--patch 7.41` this is the one-patch-lag, out-of-sample case), `--limit N`
+truncates chronologically,
 `--warmup-fraction` changes the popularity warm-up split, and `--prior per-patch`
 switches the baseline and blend to the rolling per-patch prior. For the ML path
 add `--ml 1` (default model `ml/models/draft_model_xgboost_full.onnx`) and point
 `ORT_DYLIB_PATH` at `apps/desktop/src-tauri/target/release/resources/onnxruntime.dll`,
 since that is where the bundled runtime sits; the harness fails instead of
 silently scoring a neutral 0.5 if the model does not load.
-`ml/backtest/results/backtest.json` holds the committed summary (including
+The 7.41 comparison in the ban section comes from the same command with
+`--patch 7.41 --warmup-fraction 0`, plus `--ban-counts-patch 7.40` for the lagged
+run. `ml/backtest/results/backtest.json` holds the committed summary (including
 `blend_sweep`, `blend_halves`, `blend_top1_discordance`, `gate_sweep`,
 `gate_top1_discordance` and `ban_phase`). Within `ban_phase`, `shipped_eval`
 ranks bans by the `hero_ban_stats` rows of the seeded database (the table the

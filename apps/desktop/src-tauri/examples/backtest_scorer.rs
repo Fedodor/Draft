@@ -660,15 +660,8 @@ fn copy_database(source: &Path, destination_dir: &Path) -> Result<PathBuf, Strin
 /// rather than substituted, so the report shows coverage instead of hiding a gap.
 fn load_shipped_ban_counts(
     database: &Database,
-    drafts: &[DraftRecord],
+    patches: &[&str],
 ) -> Result<HashMap<String, HashMap<i32, u64>>, String> {
-    let mut patches: Vec<&str> = drafts
-        .iter()
-        .filter_map(|draft| draft.patch.as_deref())
-        .collect();
-    patches.sort_unstable();
-    patches.dedup();
-
     let mut counts = HashMap::new();
     for patch in patches {
         let rows = database
@@ -730,6 +723,10 @@ fn main() -> Result<(), String> {
         .get("model")
         .cloned()
         .unwrap_or_else(|| "ml/models/draft_model_xgboost_full.onnx".to_string());
+    // Rank every event with one patch's shipped counts instead of its own.
+    // `--ban-counts-patch 7.40` on patch 7.41 is the one-patch-lag case: the
+    // table holds no 7.41 drafts, so the score is out of sample.
+    let ban_counts_patch = args.get("ban-counts-patch").cloned();
     let prior_mode = match args.get("prior").map(String::as_str) {
         Some("per-patch") | Some("per_patch") => PriorMode::PerPatch,
         _ => PriorMode::Global,
@@ -769,13 +766,25 @@ fn main() -> Result<(), String> {
     let copied = copy_database(&db_path, &temp_dir)?;
 
     let database = Arc::new(Database::new(temp_dir.clone()).map_err(|error| error.to_string())?);
-    let shipped_ban_counts = load_shipped_ban_counts(&database, &drafts)?;
+    let mut ban_patches: Vec<&str> = match &ban_counts_patch {
+        Some(patch) => vec![patch.as_str()],
+        None => drafts
+            .iter()
+            .filter_map(|draft| draft.patch.as_deref())
+            .collect(),
+    };
+    ban_patches.sort_unstable();
+    ban_patches.dedup();
+    let shipped_ban_counts = load_shipped_ban_counts(&database, &ban_patches)?;
     if shipped_ban_counts.is_empty() {
-        eprintln!(
-            "warning: {} has no hero_ban_stats rows; the shipped ban ranking is skipped \
-             (run seed_matchups to seed it)",
-            db_path.display()
-        );
+        match &ban_counts_patch {
+            Some(patch) => eprintln!("warning: no hero_ban_stats rows for patch {patch}"),
+            None => eprintln!(
+                "warning: {} has no hero_ban_stats rows; the shipped ban ranking is skipped \
+                 (run seed_matchups to seed it)",
+                db_path.display()
+            ),
+        }
     }
     let mut engine = DraftEngine::new();
     engine.set_database(database);
@@ -893,7 +902,8 @@ fn main() -> Result<(), String> {
             &popularity,
             PATCH_PRIOR_MIN_PICKS,
         );
-        let shipped_bans = shipped_ban_counts.get(&patch_key);
+        let shipped_bans =
+            shipped_ban_counts.get(ban_counts_patch.as_deref().unwrap_or(patch_key.as_str()));
         let ban_global = &ban_popularity;
         let ban_patch = prior_for_draft(
             PriorMode::PerPatch,
