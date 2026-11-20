@@ -46,6 +46,12 @@ AGENTS.md
 # GUI smoke test artifacts (scripts/ui_smoke.ps1)
 .ui-smoke/
 
+# Scorer backtest: exported drafts and the per-pick dump are regenerated on demand;
+# ml/backtest/results/backtest.json is the committed summary.
+ml/backtest/data/
+ml/backtest/results/picks.csv
+ml/backtest/results/*.log
+
 # Local OS and editor files
 .DS_Store
 Thumbs.db
