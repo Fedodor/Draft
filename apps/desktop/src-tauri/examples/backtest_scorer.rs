@@ -240,6 +240,8 @@ struct Report {
     generated_at: String,
     db: DbInfo,
     ml_enabled: bool,
+    /// Which popularity prior the baseline and the blend used.
+    prior: String,
     /// `None` when the run used the deterministic path only.
     ml_model: Option<MlModelInfo>,
     dataset: DatasetInfo,
@@ -430,6 +432,44 @@ fn ranked_in(pool: &[(i32, ScoreBreakdown)], ranking: Ranking) -> Vec<(i32, f32)
     scored
 }
 
+/// Where the popularity prior comes from.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+enum PriorMode {
+    /// One prior fitted on the chronological warm-up window, used everywhere.
+    Global,
+    /// Expanding counts per patch from the drafts already replayed, falling back
+    /// to the global warm-up prior until a patch has enough history.
+    PerPatch,
+}
+
+impl PriorMode {
+    fn label(&self) -> &'static str {
+        match self {
+            PriorMode::Global => "global_warmup",
+            PriorMode::PerPatch => "per_patch_rolling",
+        }
+    }
+}
+
+/// A patch needs this many replayed picks before its own counts are used.
+const PATCH_PRIOR_MIN_PICKS: u64 = 200;
+
+fn prior_for_draft(
+    mode: PriorMode,
+    patch: &str,
+    per_patch: &HashMap<String, HashMap<i32, u64>>,
+    global: &HashMap<i32, u64>,
+) -> HashMap<i32, u64> {
+    match mode {
+        PriorMode::Global => global.clone(),
+        PriorMode::PerPatch => per_patch
+            .get(patch)
+            .filter(|counts| counts.values().sum::<u64>() >= PATCH_PRIOR_MIN_PICKS)
+            .cloned()
+            .unwrap_or_else(|| global.clone()),
+    }
+}
+
 /// Blend weights as percentages, so the sweep is exact and hashable.
 /// 0 reproduces the engine ranking, 100 reproduces the popularity ranking.
 const BLEND_WEIGHTS: [i32; 11] = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100];
@@ -581,6 +621,10 @@ fn main() -> Result<(), String> {
         .get("model")
         .cloned()
         .unwrap_or_else(|| "ml/models/draft_model_xgboost_full.onnx".to_string());
+    let prior_mode = match args.get("prior").map(String::as_str) {
+        Some("per-patch") | Some("per_patch") => PriorMode::PerPatch,
+        _ => PriorMode::Global,
+    };
 
     let mut drafts = load_drafts(&drafts_path)?;
     drafts.sort_by_key(|draft| (draft.start_time.unwrap_or(0), draft.match_id));
@@ -688,6 +732,7 @@ fn main() -> Result<(), String> {
     let mut verify_mismatches = 0_usize;
     let mut ablation_counts: HashMap<Ranking, Counts> = HashMap::new();
     let ablation_modes = [Ranking::Composition, Ranking::MatchupSynergy, Ranking::Meta];
+    let mut per_patch_prior: HashMap<String, HashMap<i32, u64>> = HashMap::new();
     let mut blend_counts: HashMap<i32, Counts> = HashMap::new();
     // Same sweep split into two evaluation halves, so a weight can be chosen on
     // one half and checked on the other instead of picked in-sample.
@@ -706,6 +751,10 @@ fn main() -> Result<(), String> {
     for (index, draft) in drafts.iter().enumerate() {
         let is_eval = index >= warmup_matches;
         engine.reset();
+        // Prior for this draft: strictly earlier drafts of the same patch when
+        // asked for, otherwise the global warm-up window. Never the future.
+        let patch_key = draft.patch.clone().unwrap_or_default();
+        let prior_counts = prior_for_draft(prior_mode, &patch_key, &per_patch_prior, &popularity);
         let mut pick_ordinal = 0_i32;
         let mut picks_before_ban = 0_i32;
         let mut side_scores: HashMap<TeamSide, f64> = HashMap::new();
@@ -766,7 +815,7 @@ fn main() -> Result<(), String> {
                             }
                             for weight in BLEND_WEIGHTS {
                                 let ranked =
-                                    blend_ranking(&pool, &popularity, f64::from(weight) / 100.0);
+                                    blend_ranking(&pool, &prior_counts, f64::from(weight) / 100.0);
                                 if let Some((blend_rank, _)) = rank_of(&ranked, action.hero_id) {
                                     blend_counts
                                         .entry(weight)
@@ -823,7 +872,7 @@ fn main() -> Result<(), String> {
                         if is_eval {
                             let mut freq: Vec<(i32, u64)> = scored
                                 .iter()
-                                .map(|(id, _)| (*id, popularity.get(id).copied().unwrap_or(0)))
+                                .map(|(id, _)| (*id, prior_counts.get(id).copied().unwrap_or(0)))
                                 .collect();
                             freq.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
                             if let Some(freq_rank) =
@@ -852,7 +901,9 @@ fn main() -> Result<(), String> {
                             let human_freq_rank = {
                                 let mut freq: Vec<(i32, u64)> = scored
                                     .iter()
-                                    .map(|(id, _)| (*id, popularity.get(id).copied().unwrap_or(0)))
+                                    .map(|(id, _)| {
+                                        (*id, prior_counts.get(id).copied().unwrap_or(0))
+                                    })
                                     .collect();
                                 freq.sort_by(|a, b| b.1.cmp(&a.1).then(a.0.cmp(&b.0)));
                                 freq.iter().position(|(id, _)| *id == action.hero_id)
@@ -927,6 +978,12 @@ fn main() -> Result<(), String> {
                     team,
                 });
             }
+        }
+
+        // This draft becomes history for later drafts of the same patch.
+        let patch_counts = per_patch_prior.entry(patch_key).or_default();
+        for action in draft.actions.iter().filter(|action| action.pick) {
+            *patch_counts.entry(action.hero_id).or_default() += 1;
         }
 
         if usable {
@@ -1004,6 +1061,7 @@ fn main() -> Result<(), String> {
         generated_at: chrono::Utc::now().to_rfc3339(),
         db: db_info,
         ml_enabled: engine.ml_enabled,
+        prior: prior_mode.label().to_string(),
         ml_model,
         dataset: DatasetInfo {
             drafts: drafts_path.display().to_string(),

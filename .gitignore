@@ -51,7 +51,7 @@ AGENTS.md
 # Exported drafts are large and regenerated; the manifest that pins their hash ships.
 ml/backtest/data/*
 !ml/backtest/data/drafts_cm_manifest.json
-ml/backtest/results/picks.csv
+ml/backtest/results/picks*.csv
 ml/backtest/results/*.log
 
 # Local OS and editor files

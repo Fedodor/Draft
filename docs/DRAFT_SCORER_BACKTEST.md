@@ -11,10 +11,11 @@ ordering is dominated by the seeded per-hero meta score; ranked on their own,
 composition and matchup+synergy carry only a barely detectable ordering signal
 and matchup+synergy is worse than chance at top-1.
 
-Blending the popularity prior into the ranking is the one change that helps:
-top-1 0.94% → 2.53% over the scorer, and a small, era-dependent edge over
-popularity alone (2.48% at the a-priori equal weight, paired p ≈ 6e-5, but only
-+0.11 pp on the later evaluation half). It is measured here, not shipped.
+Refreshing the popularity prior is the lever that actually moves the numbers:
+recomputing it per patch as the replay advances lifts popularity alone from
+2.21% to 3.38% top-1, more than any blend of it with the scorer. Blending helps
+against the scorer (0.94% → 2.53%) but its edge over popularity does not survive
+a fresh prior. Nothing here is shipped.
 
 The app ships with `ml_enabled = false` by default (`default_ml_enabled()` in
 `models.rs`), so this is the path users actually get out of the box. The ML-on
@@ -239,6 +240,37 @@ marginal, era-dependent improvement over a plain popularity prior. Shipping it
 would be a product and threshold change, which this backtest deliberately does
 not make; the numbers are here to justify or reject that decision.
 
+### With a rolling per-patch prior
+
+The prior above is one global table fitted on the 12,000 warm-up drafts, so by
+the last patch it is stale. Rerunning with `--prior per-patch` recomputes it from
+the drafts already replayed *within the same patch* (expanding window, strictly
+earlier drafts, falling back to the global warm-up table until a patch has 200
+replayed picks). The evaluation events and engine ranking are identical, so only
+the baseline and the blend change:
+
+| prior | engine top-1 | popularity top-1 / top-3 / top-5 / pct | blend w=0.5 | blend w=0.7 |
+| --- | --- | --- | --- | --- |
+| global warm-up | 0.94% | 2.21% / 6.0% / 9.8% / 0.644 | 2.48% | 2.53% |
+| rolling per-patch | 0.94% | 3.38% / 9.0% / 13.8% / 0.695 | 3.07% | 3.53% |
+
+The blend's edge does **not** hold up:
+
+- At the a-priori equal weight it is now *significantly worse* than popularity:
+  3.07% vs 3.38% top-1, paired McNemar z = −4.0, and worse on both evaluation
+  halves (3.15% vs 3.34% on A, 3.00% vs 3.42% on B).
+- The tuned peak (`w = 0.7`) still edges popularity on top-1 (3.53% vs 3.38%, and
+  3.60% vs 3.42% on the later half), but loses on every other metric: top-3 8.4%
+  vs 9.0%, top-5 13.3% vs 13.8%, mean percentile 0.687 vs 0.695. A tuned weight
+  that wins one metric by ~0.15 pp while losing the rest is not an edge.
+- The size of the prior gain (+1.17 pp top-1 from freshness alone) dwarfs anything
+  the blend contributed (+0.27 pp at best, on the stale prior). The ranking
+  problem here is stale meta data, not missing engine signal at the top.
+
+So the honest reading is: if the product wants better first suggestions, refresh
+and version the popularity prior per patch; adding the heuristic scorer on top of
+a fresh prior does not reliably improve it.
+
 ## ML enabled vs disabled
 
 Same sampler and the same 3,000 drafts (1,200 evaluation drafts, 11,969 pick
@@ -317,6 +349,10 @@ data is not the explanation.
 - The blend sweep picks its peak on the evaluation slice, so `w = 0.7` is an
   in-sample number. The equal weight `w = 0.5` and the eval-half split are the
   out-of-sample checks, and they are what the verdict rests on.
+- The per-patch prior is an expanding window with a 200-pick warm-up per patch;
+  early patches with little history fall back to the global table, so the boost
+  is concentrated in the well-populated late patches. A different window or
+  decay would change the magnitude, though not the direction of the result.
 
 ## Reproduce
 
@@ -333,7 +369,8 @@ cargo run --release --example backtest_scorer \
 ```
 
 `--patch 7.39` restricts to one patch, `--limit N` truncates chronologically,
-and `--warmup-fraction` changes the popularity warm-up split. For the ML path
+`--warmup-fraction` changes the popularity warm-up split, and `--prior per-patch`
+switches the baseline and blend to the rolling per-patch prior. For the ML path
 add `--ml 1` (default model `ml/models/draft_model_xgboost_full.onnx`) and point
 `ORT_DYLIB_PATH` at `apps/desktop/src-tauri/target/release/resources/onnxruntime.dll`,
 since that is where the bundled runtime sits; the harness fails instead of
