@@ -12,9 +12,9 @@ composition and matchup+synergy carry only a barely detectable ordering signal
 and matchup+synergy is worse than chance at top-1.
 
 The app ships with `ml_enabled = false` by default (`default_ml_enabled()` in
-`models.rs`), so this is the path users actually get out of the box. Users who
-turn ML on get the ONNX model with its own 25% weight, which this backtest does
-not measure.
+`models.rs`), so this is the path users actually get out of the box. The ML-on
+path was measured too, on a matched sample, and is statistically
+indistinguishable from it (see [ML enabled vs disabled](#ml-enabled-vs-disabled)).
 
 ## Dataset
 
@@ -174,6 +174,42 @@ What the ablation shows:
   components are not redundant — the mixture is marginally better ordered than
   any single one, while still far behind a plain popularity prior.
 
+## ML enabled vs disabled
+
+Same sampler and the same 3,000 drafts (1,200 evaluation drafts, 11,969 pick
+events), run twice: once deterministic, once with the bundled
+`ml/models/draft_model_xgboost_full.onnx` (887 features) loaded and
+`ml_enabled = true`, so the ML component carries its 25% weight.
+
+| eval metric | ML off | ML on | popularity |
+| --- | --- | --- | --- |
+| top-1 | 0.77% | 0.81% | 2.36% |
+| top-3 | 3.3% | 3.2% | 6.5% |
+| top-5 | 6.0% | 5.6% | 10.4% |
+| mean rank of pick | 53.3 | 53.3 | 39.9 |
+| mean percentile of pick | 0.526 | 0.526 | 0.646 |
+
+Outcome proxy on the same pair:
+
+| bucket | ML off | ML on |
+| --- | --- | --- |
+| rank 1 | 48.9% [43.2–54.7], n=282 | 50.7% [45.0–56.4], n=292 |
+| rank 2–3 | 51.3%, n=639 | 51.5%, n=647 |
+| rank 4–10 | 49.7%, n=2,384 | 50.6%, n=2,379 |
+| rank > 10 | 50.0%, n=26,620 | 49.9%, n=26,607 |
+| AUC (score sum) | 0.524 | 0.529 |
+| AUC (percentile sum) | 0.525 | 0.527 |
+
+ML moves top-1 by +0.04 pp (SE ≈ 0.08 pp at this sample size) and the AUC by
++0.005 (SE ≈ 0.01 over 2,736 matches): both indistinguishable from zero. Per
+phase, ML-on top-1 is 1.65% opening, 1.13% early, 0.89% mid, 0.65% late, 0.55%
+final — the same decay as the deterministic path. Agreement stays at chance and
+the popularity prior remains ~3x ahead with ML on.
+
+That is consistent with the model's own quality: `default_ml_enabled()`'s
+comment records it at ~0.539 test ROC-AUC, near the 0.5 baseline, which is why
+its weight is opt-in.
+
 ## Why: the ordering is mostly the meta score
 
 The seeded meta score is not aligned with Captains Mode preference either:
@@ -198,10 +234,11 @@ data is not the explanation.
   are optimistic. Removing the leakage could only lower them.
 - One database snapshot was evaluated (patch 7.41, all other patches replayed
   against it), matching how the app ships.
-- ML was disabled throughout, which is the shipped default
-  (`default_ml_enabled()` returns `false`, because the bundled model is near the
-  0.5 ROC-AUC baseline). The ML-enabled path — user opt-in, 25% weight — was not
-  measured and is a different product surface.
+- ML is disabled by default in the shipped config (`default_ml_enabled()`
+  returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
+  The ML-on path was measured on a 3,000-draft matched sample rather than the
+  full 20,000, because inference makes a run ~17x slower (≈28 min vs ≈1.6 min);
+  its differences from ML-off are inside the sampling error.
 - `player_profile` is `None` in this harness, so the comfort component is
   constant 0.5. A real user's comfort data would change ordering, but it is
   per-player and not part of the shipped default experience.
@@ -226,7 +263,11 @@ cargo run --release --example backtest_scorer \
 ```
 
 `--patch 7.39` restricts to one patch, `--limit N` truncates chronologically,
-and `--warmup-fraction` changes the popularity warm-up split.
+and `--warmup-fraction` changes the popularity warm-up split. For the ML path
+add `--ml 1` (default model `ml/models/draft_model_xgboost_full.onnx`) and point
+`ORT_DYLIB_PATH` at `apps/desktop/src-tauri/target/release/resources/onnxruntime.dll`,
+since that is where the bundled runtime sits; the harness fails instead of
+silently scoring a neutral 0.5 if the model does not load.
 `ml/backtest/results/backtest.json` holds the committed summary, and
 `ml/backtest/data/drafts_cm_manifest.json` (committed) pins the dataset hash
 above. The exported drafts themselves, the per-pick CSV and run logs are

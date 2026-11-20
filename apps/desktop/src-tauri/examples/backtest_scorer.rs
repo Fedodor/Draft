@@ -202,6 +202,12 @@ struct PickRow {
 }
 
 #[derive(Debug, Serialize)]
+struct MlModelInfo {
+    path: String,
+    features: usize,
+}
+
+#[derive(Debug, Serialize)]
 struct VerifySummary {
     checked: usize,
     top5_mismatches: usize,
@@ -221,6 +227,8 @@ struct Report {
     generated_at: String,
     db: DbInfo,
     ml_enabled: bool,
+    /// `None` when the run used the deterministic path only.
+    ml_model: Option<MlModelInfo>,
     dataset: DatasetInfo,
     engine_agreement: Agreement,
     engine_agreement_eval: Agreement,
@@ -491,6 +499,14 @@ fn main() -> Result<(), String> {
         .get("verify")
         .and_then(|value| value.parse().ok())
         .unwrap_or(0);
+    let ml_on = args
+        .get("ml")
+        .map(|value| matches!(value.as_str(), "1" | "true" | "yes" | "on"))
+        .unwrap_or(false);
+    let model_path = args
+        .get("model")
+        .cloned()
+        .unwrap_or_else(|| "ml/models/draft_model_xgboost_full.onnx".to_string());
 
     let mut drafts = load_drafts(&drafts_path)?;
     drafts.sort_by_key(|draft| (draft.start_time.unwrap_or(0), draft.match_id));
@@ -529,7 +545,26 @@ fn main() -> Result<(), String> {
     let mut engine = DraftEngine::new();
     engine.set_database(database);
     engine.initialize().map_err(|error| error.to_string())?;
-    engine.set_ml_enabled(false);
+
+    // ML is an enhancement layer: load the real bundled model when asked for the
+    // ML path, and fail loudly rather than silently scoring a neutral 0.5.
+    let ml_model = if ml_on {
+        let shared = smart_draft_assistant::ml::get_ml_engine();
+        let mut guard = shared.write();
+        guard
+            .load_model(&model_path)
+            .map_err(|error| format!("ML model load failed ({model_path}): {error}"))?;
+        if !guard.is_loaded() {
+            return Err(format!("ML model at {model_path} did not load"));
+        }
+        Some(MlModelInfo {
+            path: model_path.clone(),
+            features: guard.feature_count(),
+        })
+    } else {
+        None
+    };
+    engine.set_ml_enabled(ml_on);
 
     let state = engine.get_state();
     if state.available_heroes.is_empty() || engine.scorer.matchup_hero_count() == 0 {
@@ -848,6 +883,7 @@ fn main() -> Result<(), String> {
         generated_at: chrono::Utc::now().to_rfc3339(),
         db: db_info,
         ml_enabled: engine.ml_enabled,
+        ml_model,
         dataset: DatasetInfo {
             drafts: drafts_path.display().to_string(),
             matches_total: drafts.len(),
