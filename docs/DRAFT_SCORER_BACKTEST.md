@@ -7,8 +7,14 @@ changed to produce these numbers.
 
 The short version: **the deterministic scorer does not beat chance at predicting
 human picks, and a plain popularity baseline is ~2.3x better at top-1.** Its
-ordering is reproduced almost exactly by the seeded per-hero meta score alone,
-so matchup, synergy and composition contribute no measurable agreement signal.
+ordering is dominated by the seeded per-hero meta score; ranked on their own,
+composition and matchup+synergy carry only a barely detectable ordering signal
+and matchup+synergy is worse than chance at top-1.
+
+The app ships with `ml_enabled = false` by default (`default_ml_enabled()` in
+`models.rs`), so this is the path users actually get out of the box. Users who
+turn ML on get the ONNX model with its own 25% weight, which this backtest does
+not measure.
 
 ## Dataset
 
@@ -131,12 +137,44 @@ With ~120 heroes available, chance is ~0.8% for rank-1. Opening bans are ~2.5x
 chance, later bans are at chance. So teams do occasionally ban what the scorer
 likes, but no more than that: the scorer is not tracking the ban phase.
 
-## Why: the ordering is the meta score
+## Component ablation
 
-Ranking the same available pools by `meta_data.hero_meta_scores` alone, with no
-engine, gives top-1 1.28% (whole sample) / 1.16% (evaluation), mean percentile
-0.507 / 0.513 — statistically indistinguishable from the full engine, and
-slightly better. Combination with the other components does not help.
+Same evaluation events, identical available pools, only the number used for the
+ordering changes. `composition_only` ranks by the composition component,
+`matchup_synergy_only` by the equal-weight mean of the matchup and synergy
+components, `meta_only` by the seeded meta score.
+
+| ranking | top-1 | top-3 | top-5 | mean pct |
+| --- | --- | --- | --- | --- |
+| engine total (shipped) | 0.94% | 3.2% | 6.0% | 0.527 |
+| meta only | 1.16% | 4.7% | 7.9% | 0.513 |
+| composition only | 0.65% | 2.6% | 4.4% | 0.525 |
+| matchup+synergy only | 0.53% | 1.9% | 3.5% | 0.513 |
+| popularity baseline | 2.21% | 6.0% | 9.8% | 0.644 |
+| random | 0.90% | ~2.7% | ~4.5% | 0.500 |
+
+With 79,764 events the standard error is ~0.03 pp on top-1 and ~0.001 on mean
+percentile, so the percentile differences of 0.013–0.027 are real but tiny.
+
+What the ablation shows:
+
+- **matchup+synergy is worse than chance at top-1.** Ranked by those two
+  components alone, the human pick is the engine's first suggestion 0.53% of the
+  time against 0.90% for a random pick — a significant deficit, not noise. Their
+  mean percentile (0.513) shows a weak positive ordering signal, so they rank the
+  human pick slightly better than random *on average* while putting the wrong
+  hero first more often than chance. Treat them as noise-level for
+  recommendation quality, not as evidence in either direction for the first slot.
+- **composition carries a slightly stronger ordering signal** (mean percentile
+  0.525) but also loses to chance at top-1 (0.65%).
+- **meta is the only component that beats chance at top-1** (1.16%), which is
+  consistent with the shipped total's behavior: the engine's ranking is mostly
+  meta, diluted by the interaction components.
+- The combination does beat every component on mean percentile (0.527), so the
+  components are not redundant — the mixture is marginally better ordered than
+  any single one, while still far behind a plain popularity prior.
+
+## Why: the ordering is mostly the meta score
 
 The seeded meta score is not aligned with Captains Mode preference either:
 across the 126 heroes, Pearson correlation between the seeded 7.41 winrate and
@@ -160,8 +198,10 @@ data is not the explanation.
   are optimistic. Removing the leakage could only lower them.
 - One database snapshot was evaluated (patch 7.41, all other patches replayed
   against it), matching how the app ships.
-- ML was disabled throughout; `ml_enabled = true` was not measured and is a
-  different product surface.
+- ML was disabled throughout, which is the shipped default
+  (`default_ml_enabled()` returns `false`, because the bundled model is near the
+  0.5 ROC-AUC baseline). The ML-enabled path — user opt-in, 25% weight — was not
+  measured and is a different product surface.
 - `player_profile` is `None` in this harness, so the comfort component is
   constant 0.5. A real user's comfort data would change ordering, but it is
   per-player and not part of the shipped default experience.
@@ -187,5 +227,8 @@ cargo run --release --example backtest_scorer \
 
 `--patch 7.39` restricts to one patch, `--limit N` truncates chronologically,
 and `--warmup-fraction` changes the popularity warm-up split.
-`ml/backtest/results/backtest.json` holds the committed summary; the exported
-drafts, the per-pick CSV and run logs are gitignored.
+`ml/backtest/results/backtest.json` holds the committed summary, and
+`ml/backtest/data/drafts_cm_manifest.json` (committed) pins the dataset hash
+above. The exported drafts themselves, the per-pick CSV and run logs are
+gitignored; re-running the exporter reproduces the same sha256 for the same raw
+corpus.

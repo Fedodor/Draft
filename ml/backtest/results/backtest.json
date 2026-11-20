@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T10:47:36.791552100+00:00",
+  "generated_at": "2026-11-20T10:55:45.146120+00:00",
   "db": {
     "path": "C:\\Users\\fsoko\\AppData\\Roaming/com.smartdraftassistant.app/smart_draft.db",
     "heroes": 126,
@@ -640,6 +640,44 @@
   "team_score_auc": 0.5277500453102084,
   "team_percentile_auc": 0.5221305132057013,
   "matches_for_auc": 18083,
+  "ablations": [
+    [
+      "composition_only",
+      {
+        "events": 79764,
+        "top1": 0.006456546813098641,
+        "top3": 0.025738428363672836,
+        "top5": 0.044167794995235946,
+        "random_top1": 0.008995992277512984,
+        "mean_rank": 53.58081339952861,
+        "mean_percentile": 0.5246752512580104
+      }
+    ],
+    [
+      "matchup_synergy_only",
+      {
+        "events": 79764,
+        "top1": 0.005252996339200642,
+        "top3": 0.019281881550574195,
+        "top5": 0.03504087056817612,
+        "random_top1": 0.008995992277512984,
+        "mean_rank": 54.79276365277569,
+        "mean_percentile": 0.5128404786446087
+      }
+    ],
+    [
+      "meta_only",
+      {
+        "events": 79764,
+        "top1": 0.011584173311268242,
+        "top3": 0.04657489594303194,
+        "top5": 0.07858181635825685,
+        "random_top1": 0.008995992277512984,
+        "mean_rank": 54.75126623539441,
+        "mean_percentile": 0.512529616764786
+      }
+    ]
+  ],
   "verify": {
     "checked": 200,
     "top5_mismatches": 0

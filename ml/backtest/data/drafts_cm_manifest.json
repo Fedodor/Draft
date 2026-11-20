@@ -1,0 +1,27 @@
+{
+  "actions": 2159778,
+  "generated_by": "ml/backtest/export_drafts.py",
+  "matches": 90020,
+  "output": "C:\\Users\\fsoko\\Dev\\Draft\\ml\\backtest\\data\\drafts_cm.jsonl",
+  "parquet": "ml/datasets/processed_v2/draft_features.parquet",
+  "patch_counts": {
+    "7.30": 146,
+    "7.31": 650,
+    "7.32": 1362,
+    "7.33": 581,
+    "7.34": 1390,
+    "7.35": 3626,
+    "7.36": 1641,
+    "7.37": 19513,
+    "7.38": 16958,
+    "7.39": 28956,
+    "7.40": 11022,
+    "7.41": 4175
+  },
+  "scanned_files": 111947,
+  "sha256": "571fd7274f49c9fac6a35f685c485949c5960d7283dd03450c528df88af4bb3d",
+  "source": "ml/datasets/raw\\*.json",
+  "start_time_max": 1787903076,
+  "start_time_min": 1639600130,
+  "unknown_hero_ids": {}
+}

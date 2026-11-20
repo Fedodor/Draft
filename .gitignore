@@ -48,7 +48,9 @@ AGENTS.md
 
 # Scorer backtest: exported drafts and the per-pick dump are regenerated on demand;
 # ml/backtest/results/backtest.json is the committed summary.
-ml/backtest/data/
+# Exported drafts are large and regenerated; the manifest that pins their hash ships.
+ml/backtest/data/*
+!ml/backtest/data/drafts_cm_manifest.json
 ml/backtest/results/picks.csv
 ml/backtest/results/*.log
 

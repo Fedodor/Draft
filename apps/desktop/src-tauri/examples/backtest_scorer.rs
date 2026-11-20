@@ -34,7 +34,9 @@ use std::sync::Arc;
 use serde::{Deserialize, Serialize};
 use smart_draft_assistant::database::Database;
 use smart_draft_assistant::engine::DraftEngine;
-use smart_draft_assistant::models::{DraftBan, DraftPick, HeroId, PlayerId, TeamSide};
+use smart_draft_assistant::models::{
+    DraftBan, DraftPick, HeroId, PlayerId, ScoreBreakdown, TeamSide,
+};
 
 #[derive(Debug, Deserialize, Clone)]
 struct DraftRecord {
@@ -233,6 +235,8 @@ struct Report {
     team_score_auc: Option<f64>,
     team_percentile_auc: Option<f64>,
     matches_for_auc: u64,
+    /// Same event stream and availability, ranked by single components.
+    ablations: Vec<(String, Agreement)>,
     verify: VerifySummary,
 }
 
@@ -343,16 +347,57 @@ fn auc(scores: &[(f64, bool)]) -> Option<f64> {
     Some((rank_sum - positives * (positives + 1.0) / 2.0) / (positives * negatives))
 }
 
-/// Every available hero scored for `team`, best first.
-fn ranked_scores(engine: &DraftEngine, team: TeamSide) -> Vec<(i32, f32)> {
+/// Which number the ablation ranks heroes by.
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
+enum Ranking {
+    /// The shipped heuristic total (what the app sorts by).
+    Engine,
+    /// Composition scorer alone.
+    Composition,
+    /// The two draft-interaction components, equally weighted.
+    MatchupSynergy,
+    /// Seeded meta score alone.
+    Meta,
+}
+
+impl Ranking {
+    fn key(&self, breakdown: &ScoreBreakdown) -> f32 {
+        match self {
+            Ranking::Engine => breakdown.total,
+            Ranking::Composition => breakdown.composition,
+            Ranking::MatchupSynergy => 0.5 * breakdown.matchup + 0.5 * breakdown.synergy,
+            Ranking::Meta => breakdown.meta,
+        }
+    }
+
+    fn label(&self) -> &'static str {
+        match self {
+            Ranking::Engine => "engine",
+            Ranking::Composition => "composition_only",
+            Ranking::MatchupSynergy => "matchup_synergy_only",
+            Ranking::Meta => "meta_only",
+        }
+    }
+}
+
+/// Every available hero scored once for `team`, with all components kept so the
+/// ablation can re-rank the same pool without re-scoring.
+fn score_pool(engine: &DraftEngine, team: TeamSide) -> Vec<(i32, ScoreBreakdown)> {
     let available = engine.get_state().available_heroes;
-    let mut scored: Vec<(i32, f32)> = available
+    available
         .iter()
         .filter_map(|hero| {
             engine
                 .score_breakdown(hero, team)
-                .map(|breakdown| (hero.0, breakdown.total))
+                .map(|breakdown| (hero.0, breakdown))
         })
+        .collect()
+}
+
+fn ranked_in(pool: &[(i32, ScoreBreakdown)], ranking: Ranking) -> Vec<(i32, f32)> {
+    let mut scored: Vec<(i32, f32)> = pool
+        .iter()
+        .map(|(id, breakdown)| (*id, ranking.key(breakdown)))
         .collect();
     scored.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0.cmp(&b.0)));
     scored
@@ -532,6 +577,8 @@ fn main() -> Result<(), String> {
     let mut auc_matches = 0_u64;
     let mut verified = 0_usize;
     let mut verify_mismatches = 0_usize;
+    let mut ablation_counts: HashMap<Ranking, Counts> = HashMap::new();
+    let ablation_modes = [Ranking::Composition, Ranking::MatchupSynergy, Ranking::Meta];
 
     for (index, draft) in drafts.iter().enumerate() {
         let is_eval = index >= warmup_matches;
@@ -548,7 +595,8 @@ fn main() -> Result<(), String> {
             } else {
                 TeamSide::Dire
             };
-            let scored = ranked_scores(&engine, team);
+            let pool = score_pool(&engine, team);
+            let scored = ranked_in(&pool, Ranking::Engine);
             let available = scored.len();
 
             if action.pick {
@@ -579,6 +627,18 @@ fn main() -> Result<(), String> {
                                 verify_mismatches += 1;
                             }
                             verified += 1;
+                        }
+
+                        if is_eval {
+                            for mode in ablation_modes {
+                                let ranked = ranked_in(&pool, mode);
+                                if let Some((mode_rank, _)) = rank_of(&ranked, action.hero_id) {
+                                    ablation_counts
+                                        .entry(mode)
+                                        .or_default()
+                                        .record(mode_rank, available);
+                                }
+                            }
                         }
 
                         engine_counts.record(rank, available);
@@ -823,6 +883,19 @@ fn main() -> Result<(), String> {
         team_score_auc: auc(&score_auc_rows),
         team_percentile_auc: auc(&percentile_auc_rows),
         matches_for_auc: auc_matches,
+        ablations: ablation_modes
+            .iter()
+            .map(|mode| {
+                (
+                    mode.label().to_string(),
+                    ablation_counts
+                        .get(mode)
+                        .cloned()
+                        .unwrap_or_default()
+                        .agreement(),
+                )
+            })
+            .collect(),
         verify: VerifySummary {
             checked: verified,
             top5_mismatches: verify_mismatches,
