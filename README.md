@@ -22,7 +22,7 @@ ONNX model.
 | Patch meta | Working | Patch-scoped meta snapshot from seeded data |
 | ML scoring | **Experimental, opt-in** | 887-input ONNX model; fails the promotion gate |
 | Live GSI replay | Not verified | Payload-level tests exist; no captured real session was replayed in CI |
-| Tauri runtime smoke test | Automated in CI | `scripts/ui_smoke.ps1` drives the dev build over WebView2 CDP in the `gui-smoke` job: CSP assets, four tabs, GSI→UI, card/header layout at 900 and 800 px, overlay toggle |
+| Tauri runtime smoke test | Automated in CI | `scripts/ui_smoke.ps1` drives the dev build (`gui-smoke`) and the installed NSIS bundle (`gui-smoke-bundle`) over WebView2 CDP: CSP assets, four tabs, GSI→UI, card/header layout at 900 and 800 px, overlay toggle, embedded-asset origin, and model/DLL resource resolution |
 | First-run state | Working | An unseeded database shows a notice with the seeder commands instead of an empty-looking draft |
 
 ## Quick start
@@ -138,9 +138,25 @@ powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ui_smoke.ps1
 
 It builds the debug binary, starts Vite, drives the WebView2 renderer over CDP,
 and fails on a blocked CSP asset, a missing tab, a broken overlay toggle, GSI
-payloads that never reach the UI, or card/header layout regressions at the
-default and minimum window widths. Screenshots of any failure land in
-`.ui-smoke/`. CI runs it in the `gui-smoke` job on `windows-latest`.
+payloads that never reach the UI, card/header layout regressions at the default
+and minimum window widths, or an ONNX model that does not load from the app's
+resources. Screenshots and logs land in `.ui-smoke/`. CI runs it twice:
+`gui-smoke` against the dev build and `gui-smoke-bundle` against the packaged
+release bundle, both on `windows-latest`.
+
+`-Bundle` builds the NSIS installer, installs it silently into a temporary
+directory, drives the installed executable with no dev server present, and
+uninstalls it afterwards. It additionally asserts that the UI is served from the
+app origin rather than Vite, that scripts and styles are embedded, and that the
+model, its sidecars and `onnxruntime.dll` loaded from the installed
+`resources/` directory:
+
+```bash
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts\ui_smoke.ps1 -Bundle
+```
+
+The bundle run needs a release build of the Tauri app (several minutes cold) and
+ports 3000 and 9333 free; port 1420 must stay unused, which the script asserts.
 
 ## Model quality
 

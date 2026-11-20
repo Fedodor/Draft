@@ -15,11 +15,16 @@
 #                  else <repo>\.ui-smoke)
 #   -SkipBuild     reuse apps/desktop/src-tauri/target/debug if it exists
 #   -NoSeed        do not seed a missing database
+#   -Bundle        build the release bundle (NSIS), install it into a temporary
+#                  directory, and drive the installed app. Nothing is served by
+#                  Vite in this mode: the UI must come from the packaged assets,
+#                  and the ONNX model must load from the installed resources.
 
 param(
     [string]$ArtifactsDir = "",
     [switch]$SkipBuild,
-    [switch]$NoSeed
+    [switch]$NoSeed,
+    [switch]$Bundle
 )
 
 $ErrorActionPreference = "Stop"
@@ -27,9 +32,35 @@ $ErrorActionPreference = "Stop"
 $repoRoot = Split-Path -Parent $PSScriptRoot
 $desktopDir = Join-Path $repoRoot "apps\desktop"
 $tauriDir = Join-Path $desktopDir "src-tauri"
-$exePath = Join-Path $tauriDir "target\debug\smart-draft-assistant.exe"
 $seedersDir = Join-Path $repoRoot "infrastructure\seeders"
 $dbPath = Join-Path $env:APPDATA "com.smartdraftassistant.app\smart_draft.db"
+$bundleDir = Join-Path $tauriDir "target\release\bundle\nsis"
+$npm = (Get-Command npm.cmd -ErrorAction Stop).Source
+
+if ($Bundle) {
+    # The installer is silent (`/S`) and NSIS takes the target directory from an
+    # unquoted `/D=` that must be the last argument, so the path cannot contain
+    # spaces. Fall back to the 8.3 short name when the temporary directory has
+    # one (e.g. a user profile named "John Doe").
+    $installDir = Join-Path ([IO.Path]::GetTempPath()) "sda-ui-smoke-install"
+    New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+    if ($installDir -match '\s') {
+        try {
+            $shortPath = (New-Object -ComObject Scripting.FileSystemObject).GetFolder($installDir).ShortPath
+        } catch {
+            throw "Install path contains spaces and has no 8.3 short name: $installDir"
+        }
+        if ($shortPath -match '\s') { throw "Install path still contains spaces: $shortPath" }
+        $installDir = $shortPath
+    }
+    # The installer keeps the Cargo binary name for the executable
+    # (`smart-draft-assistant.exe`), not the display product name, so find it
+    # after install instead of assuming a rename.
+    $exePath = $null
+} else {
+    $installDir = $null
+    $exePath = Join-Path $tauriDir "target\debug\smart-draft-assistant.exe"
+}
 
 $vitePort = 1420
 $cdpPort = 9333
@@ -41,7 +72,9 @@ $gsiPort = 3000
 $isElevated = ([Security.Principal.WindowsPrincipal][Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole(
     [Security.Principal.WindowsBuiltInRole]::Administrator)
 $policyKey = "HKLM:\Software\Policies\Microsoft\Edge\WebView2\AdditionalBrowserArguments"
-$policyName = "smart-draft-assistant.exe"
+# The policy is keyed by executable name; derive it from the binary actually
+# launched (set in the launch step, once the bundle is installed).
+$policyName = $null
 $policySet = $false
 $policyPrevious = $null
 
@@ -153,6 +186,8 @@ function Write-AppDiagnostics {
 
     $lines = New-Object System.Collections.Generic.List[string]
     $lines.Add("reason: $Reason")
+    $lines.Add("mode: $(if ($Bundle) { 'bundle' } else { 'dev' })")
+    if ($Bundle) { $lines.Add("install dir: $installDir (exe: $exePath)") }
     if ($AppProcess) {
         $exited = $AppProcess.HasExited
         $lines.Add("app pid: $($AppProcess.Id), exited: $exited")
@@ -174,6 +209,7 @@ function Write-AppDiagnostics {
     $lines.Add("host elevated: $isElevated")
     $policyValue = (Get-ItemProperty -Path $policyKey -Name $policyName -ErrorAction SilentlyContinue).$policyName
     $lines.Add("WebView2 HKLM policy: $(if ($policyValue) { $policyValue } else { 'not set' })")
+    $lines.Add("vite port ${vitePort} listening: $(Test-PortInUse -Port $vitePort)")
     $lines.Add("cdp port ${cdpPort} listening: $(Test-PortInUse -Port $cdpPort)")
     $lines.Add("gsi port ${gsiPort} listening: $(Test-PortInUse -Port $gsiPort)")
     $profileDir = Join-Path $env:LOCALAPPDATA "com.smartdraftassistant.app\EBWebView"
@@ -220,6 +256,14 @@ function Write-AppDiagnostics {
         $lines.AddRange([string[]](Get-Content -LiteralPath $debugLog -Tail 20))
     } else {
         $lines.Add("chrome_debug.log: not present")
+    }
+
+    $appLog = Join-Path $env:LOCALAPPDATA "com.smartdraftassistant.app\logs\app-diagnostics.log"
+    if (Test-Path -LiteralPath $appLog) {
+        $lines.Add("--- app-diagnostics.log (last 30 lines) ---")
+        $lines.AddRange([string[]](Get-Content -LiteralPath $appLog -Tail 30))
+    } else {
+        $lines.Add("app-diagnostics.log: not present")
     }
 
     $text = $lines -join [Environment]::NewLine
@@ -326,6 +370,8 @@ $jsAssets = @'
 (() => {
   const images = [...document.querySelectorAll('img')];
   return {
+    cards: document.querySelectorAll('.recommendation-card').length,
+    text: document.body.innerText.slice(0, 120).replace(/\s+/g, ' '),
     images: images.length,
     loaded: images.filter(i => i.complete && i.naturalWidth > 0).length,
     hosts: [...new Set(images.map(i => { try { return new URL(i.src).host; } catch (e) { return 'inline'; } }))],
@@ -365,6 +411,7 @@ try {
     Write-Host "==> GUI smoke test" -ForegroundColor Cyan
     Write-Host "    repo:      $repoRoot"
     Write-Host "    artifacts: $ArtifactsDir"
+    Write-Host "    mode:      $(if ($Bundle) { 'packaged release bundle' } else { 'dev build' })"
 
     foreach ($port in @($vitePort, $cdpPort, $gsiPort)) {
         if (Test-PortInUse -Port $port) {
@@ -384,29 +431,86 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "seed_matchups --synthetic failed" }
     }
 
-    if (-not $SkipBuild -or -not (Test-Path -LiteralPath $exePath)) {
-        Write-Host "==> Building the desktop binary (dev profile)"
-        cargo build --manifest-path (Join-Path $tauriDir "Cargo.toml") | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw "cargo build failed" }
+    if ($Bundle) {
+        $installers = @(Get-ChildItem -Path $bundleDir -Filter "*setup.exe" -ErrorAction SilentlyContinue |
+                Sort-Object LastWriteTime -Descending)
+        if (-not $SkipBuild -or $installers.Count -eq 0) {
+            Write-Host "==> Building the release bundle (NSIS)"
+            Push-Location $desktopDir
+            try {
+                & $npm run tauri build -- --bundles nsis | Out-Host
+            } finally {
+                Pop-Location
+            }
+            if ($LASTEXITCODE -ne 0) { throw "tauri build failed" }
+            $installers = @(Get-ChildItem -Path $bundleDir -Filter "*setup.exe" -ErrorAction SilentlyContinue |
+                    Sort-Object LastWriteTime -Descending)
+        }
+        if ($installers.Count -eq 0) { throw "no NSIS installer found in $bundleDir" }
+        $installerPath = $installers[0].FullName
+        Write-Host "    installer: $installerPath"
+
+        # A previous run can leave the bundle behind (or registered): clear it so
+        # the installer always runs from scratch.
+        if (@(Get-ChildItem -LiteralPath $installDir -ErrorAction SilentlyContinue).Count -gt 0) {
+            $staleUninstaller = Join-Path $installDir "uninstall.exe"
+            if (Test-Path -LiteralPath $staleUninstaller) {
+                Start-Process -FilePath $staleUninstaller -ArgumentList @("/S") -Wait -ErrorAction SilentlyContinue
+            }
+            Remove-Item -LiteralPath $installDir -Recurse -Force -ErrorAction SilentlyContinue
+            New-Item -ItemType Directory -Force -Path $installDir | Out-Null
+        }
+        Write-Host "==> Installing the bundle silently into $installDir"
+        $installer = Start-Process -FilePath $installerPath -ArgumentList @("/S", "/D=$installDir") -Wait -PassThru
+        Check "NSIS installer exited successfully" ($installer.ExitCode -eq 0) "exit=$($installer.ExitCode)"
+
+        $installedExes = @(Get-ChildItem -LiteralPath $installDir -Filter "*.exe" -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -ne "uninstall.exe" } | Sort-Object Length -Descending)
+        Check "installed bundle contains the app binary" ($installedExes.Count -ge 1) "exes=$($installedExes.Name -join ',')"
+        if ($installedExes.Count -eq 0) {
+            Write-AppDiagnostics -AppProcess $null -Reason "installed binary missing"
+            throw "installed binary missing"
+        }
+        $exePath = $installedExes[0].FullName
+        Write-Host "    installed exe: $exePath"
+
+        $installedFiles = @(Get-ChildItem -LiteralPath $installDir -Recurse -File -ErrorAction SilentlyContinue)
+        $wantedResources = @(
+            "draft_model_xgboost_full.onnx",
+            "draft_model_xgboost_full_features.json",
+            "draft_model_xgboost_full_schema.json",
+            "onnxruntime.dll"
+        )
+        $missingResources = @($wantedResources | Where-Object { $installedFiles.Name -notcontains $_ })
+        Check "installed bundle ships the model, sidecars and ONNX runtime" ($missingResources.Count -eq 0) `
+            "missing=$($missingResources -join ',') files=$($installedFiles.Count)"
+    } else {
+        if (-not $SkipBuild -or -not (Test-Path -LiteralPath $exePath)) {
+            Write-Host "==> Building the desktop binary (dev profile)"
+            cargo build --manifest-path (Join-Path $tauriDir "Cargo.toml") | Out-Host
+            if ($LASTEXITCODE -ne 0) { throw "cargo build failed" }
+        }
     }
 
-    Write-Host "==> Starting Vite"
-    $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
-    $viteProcess = Start-Process -FilePath $npm -ArgumentList @("run", "dev") -WorkingDirectory $desktopDir `
-        -PassThru -RedirectStandardOutput $viteOut -RedirectStandardError $viteErr -WindowStyle Hidden
+    if (-not $Bundle) {
+        Write-Host "==> Starting Vite"
+        $viteProcess = Start-Process -FilePath $npm -ArgumentList @("run", "dev") -WorkingDirectory $desktopDir `
+            -PassThru -RedirectStandardOutput $viteOut -RedirectStandardError $viteErr -WindowStyle Hidden
 
-    $viteReady = $false
-    for ($i = 0; $i -lt 120; $i++) {
-        try {
-            $response = Invoke-WebRequest -Uri "http://localhost:$vitePort/" -UseBasicParsing -TimeoutSec 2
-            if ($response.StatusCode -eq 200) { $viteReady = $true; break }
-        } catch { }
-        Start-Sleep -Milliseconds 500
+        $viteReady = $false
+        for ($i = 0; $i -lt 120; $i++) {
+            try {
+                $response = Invoke-WebRequest -Uri "http://localhost:$vitePort/" -UseBasicParsing -TimeoutSec 2
+                if ($response.StatusCode -eq 200) { $viteReady = $true; break }
+            } catch { }
+            Start-Sleep -Milliseconds 500
+        }
+        Check "vite dev server answers on :$vitePort" $viteReady
+        if (-not $viteReady) { throw "Vite did not start" }
     }
-    Check "vite dev server answers on :$vitePort" $viteReady
-    if (-not $viteReady) { throw "Vite did not start" }
 
     Write-Host "==> Launching the app"
+    $policyName = Split-Path -Leaf $exePath
 
     # Set the HKLM policy when we have the rights, and restore it afterwards.
     if ($isElevated) {
@@ -472,14 +576,42 @@ try {
     # Give React one render pass with data.
     Start-Sleep -Seconds 2
 
-    Write-Host "==> Assets and CSP"
-    $assets = Invoke-Eval -WebSocketUrl $main -Expression $jsAssets
-    Check "hero portraits render (no CSP block)" `
-        ($assets.images -ge 5 -and $assets.loaded -eq $assets.images) `
-        "images=$($assets.images) loaded=$($assets.loaded) hosts=$($assets.hosts -join ',')"
-    Check "portraits come from the Steam CDN" ($assets.hosts -contains "cdn.cloudflare.steamstatic.com") "hosts=$($assets.hosts -join ',')"
-    Check "web fonts loaded" ($assets.inter -and $assets.mono) "inter=$($assets.inter) mono=$($assets.mono)"
-    Check "styles applied" ($assets.bodyBackground -ne "rgba(0, 0, 0, 0)") "background=$($assets.bodyBackground)"
+    if ($Bundle) {
+        Write-Host "==> Packaged bundle"
+        $shell = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => ({
+  origin: location.origin,
+  href: location.href,
+  scripts: [...document.querySelectorAll('script[src]')].map(s => new URL(s.src).origin),
+  styles: [...document.querySelectorAll('link[rel=stylesheet]')].map(l => new URL(l.href).origin),
+  usesViteClient: [...document.scripts].some(s => s.src.includes('/@vite/client')),
+  bodyText: document.body.innerText.length
+}))()
+'@
+        Check "packaged UI does not use the Vite dev client" (-not $shell.usesViteClient) "href=$($shell.href)"
+        Check "UI is served from the app origin, not the dev server" `
+            ($shell.origin -notlike "*:$vitePort" -and $shell.href -notlike "*:$vitePort*") "origin=$($shell.origin) href=$($shell.href)"
+        # Everything the bundle ships must come from the app origin; the only
+        # remote stylesheet is the Google Fonts one the CSP allows.
+        $foreignAssets = @(@($shell.scripts) + @($shell.styles) |
+                Where-Object { $_ -ne $shell.origin -and $_ -ne "https://fonts.googleapis.com" })
+        Check "embedded script and style assets load from the app origin" `
+            ((@($shell.scripts).Count + @($shell.styles).Count) -gt 0 -and $foreignAssets.Count -eq 0) `
+            "scripts=$($shell.scripts -join ',') styles=$($shell.styles -join ',') foreign=$($foreignAssets -join ',')"
+        Check "dev server stays down while the bundle runs" (-not (Test-PortInUse -Port $vitePort)) "port $vitePort is listening"
+    }
+
+    # Resource resolution, checked in both modes: the installed bundle ships the
+    # model under its own `resources/` directory, while the dev build copies it
+    # into target/debug. A path that only works in one of them is a packaging bug.
+    $ml = Invoke-Eval -WebSocketUrl $main -Expression `
+        "(async () => await window.__TAURI_INTERNALS__.invoke('get_ml_status'))()"
+    Check "ONNX model loaded from the app's resources" ([bool]$ml.loaded) "loaded=$($ml.loaded) path=$($ml.model_path)"
+    Check "model features and schema sidecars loaded" ([int]$ml.feature_count -gt 0) "features=$($ml.feature_count)"
+    if ($Bundle) {
+        Check "model was loaded from the installed resources" ($ml.model_path -like "*$installDir*") `
+            "path=$($ml.model_path) installDir=$installDir"
+    }
 
     Write-Host "==> Tabs"
     $tabLabels = Invoke-Eval -WebSocketUrl $main -Expression "[...document.querySelectorAll('[role=tab]')].map(t => t.textContent.trim())"
@@ -533,6 +665,22 @@ try {
     $picks = Invoke-Eval -WebSocketUrl $main -Expression $jsPicks
     Check "draft reached the UI" ($picks.ally -eq "3" -and $picks.enemy -eq "3") "ally=$($picks.ally) enemy=$($picks.enemy)"
     Check "turn indicator followed the payload" ($picks.turn -like "Pick #7*") "turn=$($picks.turn)"
+
+    # Portraits only exist once recommendation cards render, so this runs after
+    # the draft arrives. It still fails on a CSP that blocks the Steam CDN, on
+    # fonts the CSP rejects, or on styles that never apply.
+    Write-Host "==> Assets and CSP"
+    $assets = Invoke-Eval -WebSocketUrl $main -Expression $jsAssets
+    for ($i = 0; $i -lt 20 -and ($assets.images -lt 5 -or $assets.loaded -ne $assets.images); $i++) {
+        Start-Sleep -Milliseconds 500
+        $assets = Invoke-Eval -WebSocketUrl $main -Expression $jsAssets
+    }
+    Check "hero portraits render (no CSP block)" `
+        ($assets.images -ge 5 -and $assets.loaded -eq $assets.images) `
+        "cards=$($assets.cards) images=$($assets.images) loaded=$($assets.loaded) hosts=$($assets.hosts -join ',') text='$($assets.text)'"
+    Check "portraits come from the Steam CDN" ($assets.hosts -contains "cdn.cloudflare.steamstatic.com") "hosts=$($assets.hosts -join ',')"
+    Check "web fonts loaded" ($assets.inter -and $assets.mono) "inter=$($assets.inter) mono=$($assets.mono)"
+    Check "styles applied" ($assets.bodyBackground -ne "rgba(0, 0, 0, 0)") "background=$($assets.bodyBackground)"
 
     Write-Host "==> Layout at 900x700"
     Start-Sleep -Seconds 1
@@ -603,7 +751,9 @@ catch {
 }
 finally {
     if ($appProcess -and -not $appProcess.HasExited) {
-        Stop-Process -Id $appProcess.Id -Force -ErrorAction SilentlyContinue
+        # Kill the tree: WebView2 children keep the install directory locked, so
+        # the uninstaller would fail on a lingering host process.
+        & taskkill /PID $appProcess.Id /T /F 2>&1 | Out-Null
     }
     if ($viteProcess -and -not $viteProcess.HasExited) {
         & taskkill /PID $viteProcess.Id /T /F 2>&1 | Out-Null
@@ -616,6 +766,15 @@ finally {
                 Remove-ItemProperty -Path $policyKey -Name $policyName -ErrorAction SilentlyContinue
             }
         } catch { }
+    }
+    if ($Bundle -and $installDir -and (Test-Path -LiteralPath $installDir)) {
+        # Registered per-user by NSIS, so run the uninstaller before deleting the
+        # directory; otherwise every run leaves an entry in Apps & features.
+        $uninstaller = Join-Path $installDir "uninstall.exe"
+        if (Test-Path -LiteralPath $uninstaller) {
+            try { Start-Process -FilePath $uninstaller -ArgumentList @("/S") -Wait -ErrorAction Stop } catch { }
+        }
+        Remove-Item -LiteralPath $installDir -Recurse -Force -ErrorAction SilentlyContinue
     }
 }
 
