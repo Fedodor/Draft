@@ -35,11 +35,11 @@ joins `ml/datasets/processed_v2/draft_features.parquet` for patch and start
 time. The parquet alone is not enough: it stores unordered presence flags, while
 the replay needs the exact sequence.
 
-Sampling: drafts are sorted by start time and every 5th one is replayed
-(20,000 drafts, 199,435 pick events). The first 60% of the sample (12,000
-drafts) is warm-up for the popularity baseline; the remaining 8,000 drafts
-(79,764 pick events) are the evaluation slice. Even spacing is used instead of a
-prefix so all patches are represented.
+Sampling: drafts are sorted by start time and 20,000 evenly spaced ones are
+replayed (stride 90,020 / 20,000 ≈ 4.5; 199,435 pick events). The first 60% of
+the sample (12,000 drafts) is warm-up for the popularity baseline; the remaining
+8,000 drafts (79,764 pick events) are the evaluation slice. Even spacing is used
+instead of a prefix so all patches are represented.
 
 ## Harness
 
@@ -47,7 +47,12 @@ prefix so all patches are represented.
 `DraftEngine::initialize`, `reset`, `add_pick`/`add_ban` over the historical
 order, and `score_breakdown(hero, team).total` for every hero still available.
 The database is copied (with `-wal`/`-shm`) to a temp directory first, because
-`Database::new` migrates and opens WAL, and the sample is discarded afterwards.
+`Database::new` migrates and opens WAL, and the copy is discarded afterwards.
+Close the desktop app before a run: a live writer can leave the copied WAL
+inconsistent with the main file.
+
+In the JSON, `db.matchups` and `db.synergies` are counts of *heroes* that have
+rows (120 and 122), not row counts; the row counts above come from the database.
 
 Correctness check: on 200 sampled pick events the harness's top-5 was compared
 with `DraftEngine::get_recommendations(team, 5).top_picks`, i.e. the list the app
@@ -67,9 +72,9 @@ held-out result. The numbers below are low despite that, not because of it.
 | metric | engine | popularity baseline | random |
 | --- | --- | --- | --- |
 | top-1 | 0.94% | 2.21% | 0.90% (measured) |
-| top-3 | 3.2% | 6.0% | ~2.7% |
-| top-5 | 6.0% | 9.8% | ~4.5% |
-| mean rank of pick | 53.2 | 40.2 | ~60 |
+| top-3 | 3.2% | 6.0% | 2.70% |
+| top-5 | 6.0% | 9.8% | 4.50% |
+| mean rank of pick | 53.2 | 40.2 | 56.2 |
 | mean percentile of pick | 0.527 | 0.644 | 0.500 |
 
 Whole sample (all 20,000 drafts) is the same story: top-1 0.96%, top-3 3.0%,
@@ -100,9 +105,10 @@ Popularity baseline, evaluation slice:
 | final | 15,950 | 0.85% | 2.9% | 4.6% | 0.595 |
 
 The engine is strongest in the opening (where the popularity prior is also
-strongest) and decays as the draft fills in. In the final phase the two
-converge, but both are close to the random floor by then because only ~50 heroes
-remain.
+strongest) and decays as the draft fills in. In the final phase the two converge
+and both sit below the random floor (0.72% and 0.85% against 0.97%), which is
+expected once only ~50 heroes remain and no ranking can beat listing every
+remaining hero.
 
 Per pick ordinal, engine top-1: 1.59, 1.57, 1.00, 1.06, 0.85, 0.77, 0.65, 0.66,
 0.74, 0.70 percent.
@@ -110,7 +116,9 @@ Per pick ordinal, engine top-1: 1.59, 1.57, 1.00, 1.06, 0.85, 0.77, 0.65, 0.66,
 ## Ban-aware outcome proxy
 
 Win rate of the side that made the pick, bucketed by the engine's rank for that
-pick (Wilson 95% CI):
+pick (Wilson 95% CI). These aggregates and the AUCs below cover all 20,000
+replayed drafts, not only the evaluation slice — nothing is fitted here, so
+including the warm-up era would not bias them:
 
 | bucket | picks | win rate | 95% CI |
 | --- | --- | --- | --- |
@@ -151,7 +159,7 @@ components, `meta_only` by the seeded meta score.
 | composition only | 0.65% | 2.6% | 4.4% | 0.525 |
 | matchup+synergy only | 0.53% | 1.9% | 3.5% | 0.513 |
 | popularity baseline | 2.21% | 6.0% | 9.8% | 0.644 |
-| random | 0.90% | ~2.7% | ~4.5% | 0.500 |
+| random | 0.90% | 2.70% | 4.50% | 0.500 |
 
 With 79,764 events the standard error is ~0.03 pp on top-1 and ~0.001 on mean
 percentile, so the percentile differences of 0.013–0.027 are real but tiny.
@@ -237,14 +245,16 @@ data is not the explanation.
 - ML is disabled by default in the shipped config (`default_ml_enabled()`
   returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
   The ML-on path was measured on a 3,000-draft matched sample rather than the
-  full 20,000, because inference makes a run ~17x slower (≈28 min vs ≈1.6 min);
-  its differences from ML-off are inside the sampling error.
+  full 20,000, because inference makes a run ~150x slower (≈28 min vs ≈11 s on
+  the same 3,000 drafts); its differences from ML-off are inside sampling error.
 - `player_profile` is `None` in this harness, so the comfort component is
   constant 0.5. A real user's comfort data would change ordering, but it is
   per-player and not part of the shipped default experience.
 - 1,917 sampled matches contained at least one hero missing from the 126-hero
-  database; those actions were scored as unavailable (565 picks, 1,352 bans
-  skipped) rather than dropped, so the denominators stay honest.
+  database. The replay continues through them, but those picks and bans cannot
+  be ranked, so 565 picks and 1,352 bans are omitted from the agreement
+  denominators and the affected matches are excluded from the AUC and rank-bucket
+  aggregates. Agreement rates are therefore computed only over rankable picks.
 - The outcome proxy is a side win rate conditional on the engine's rank, not a
   causal estimate of picks the scorer would have won.
 

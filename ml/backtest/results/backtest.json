@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-20T10:55:45.146120+00:00",
+  "generated_at": "2026-11-20T11:41:36.993766700+00:00",
   "db": {
     "path": "C:\\Users\\fsoko\\AppData\\Roaming/com.smartdraftassistant.app/smart_draft.db",
     "heroes": 126,
@@ -8,6 +8,7 @@
     "patch": "7.41"
   },
   "ml_enabled": false,
+  "ml_model": null,
   "dataset": {
     "drafts": "ml/backtest/data/drafts_cm.jsonl",
     "matches_total": 20000,
