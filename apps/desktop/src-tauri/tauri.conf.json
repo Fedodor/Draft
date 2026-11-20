@@ -54,12 +54,12 @@
       "icons/icon.icns",
       "icons/icon.ico"
     ],
-    "resources": [
-      "../../../ml/models/draft_model_xgboost_full.onnx",
-      "../../../ml/models/draft_model_xgboost_full_features.json",
-      "../../../ml/models/draft_model_xgboost_full_schema.json",
-      "resources/onnxruntime.dll"
-    ]
+    "resources": {
+      "../../../ml/models/draft_model_xgboost_full.onnx": "resources/draft_model_xgboost_full.onnx",
+      "../../../ml/models/draft_model_xgboost_full_features.json": "resources/draft_model_xgboost_full_features.json",
+      "../../../ml/models/draft_model_xgboost_full_schema.json": "resources/draft_model_xgboost_full_schema.json",
+      "resources/onnxruntime.dll": "resources/onnxruntime.dll"
+    }
   },
   "plugins": {}
 }

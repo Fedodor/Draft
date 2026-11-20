@@ -207,13 +207,21 @@ pub fn run() {
             // ml::load_model locates onnxruntime.dll itself (next to the model,
             // in resources/, or via ORT_DYLIB_PATH) before touching ort.
             // If either resource is absent the engine stays in neutral mode.
-            let bundled_model = app_handle
-                .path()
-                .resolve(
-                    "draft_model_xgboost_full.onnx",
-                    tauri::path::BaseDirectory::Resource,
-                )
-                .ok();
+            // `bundle.resources` maps every runtime file into `resources/`, so the
+            // installed app resolves them next to `onnxruntime.dll`. The bare
+            // filename covers older dev copies that flatten external resources.
+            let bundled_model = [
+                "resources/draft_model_xgboost_full.onnx",
+                "draft_model_xgboost_full.onnx",
+            ]
+            .iter()
+            .find_map(|relative| {
+                app_handle
+                    .path()
+                    .resolve(relative, tauri::path::BaseDirectory::Resource)
+                    .ok()
+                    .filter(|path| path.is_file())
+            });
             // Apply the same allow-list as the `load_ml_model` command. The
             // persisted path comes from the settings database, so it must not
             // be able to pull an ONNX file (and an adjacent runtime DLL) from
