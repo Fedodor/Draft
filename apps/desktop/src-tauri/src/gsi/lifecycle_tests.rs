@@ -1050,3 +1050,44 @@ fn lifecycle_invariants_hold_for_adversarial_payload_sequences() {
         }
     }
 }
+
+#[test]
+fn ban_turn_is_visible_before_the_first_ban_lands() {
+    let mut harness = Harness::new();
+    start_match(&mut harness);
+
+    // The game reports a ban turn with an empty draft: no ban has landed, but
+    // the UI must already be in the ban phase.
+    assert_eq!(
+        harness.send(
+            HERO_SELECTION,
+            Some(draft(
+                Some((2, false)),
+                slots(Some(2), &[], &[]),
+                slots(Some(3), &[], &[]),
+            )),
+        ),
+        GsiOutcome::DraftApplied { picks: 0, bans: 0 }
+    );
+    let state = harness.state();
+    // The UI derives the ban phase from these two: a set turn, no picking.
+    assert_eq!(state.current_pick, Some(TeamSide::Radiant));
+    assert!(!state.is_picking_phase);
+    assert!(state.bans.is_empty());
+    drop(state);
+
+    // A pick turn clears the ban flag.
+    assert_eq!(
+        harness.send(
+            HERO_SELECTION,
+            Some(draft(
+                Some((2, true)),
+                slots(Some(2), &[1], &[]),
+                slots(Some(3), &[], &[]),
+            )),
+        ),
+        GsiOutcome::DraftApplied { picks: 1, bans: 0 }
+    );
+    let state = harness.state();
+    assert!(state.is_picking_phase);
+}

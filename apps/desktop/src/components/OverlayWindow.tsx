@@ -1,17 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { listen } from '@tauri-apps/api/event';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { X, Crosshair, Shield, Sword, Sparkles } from 'lucide-react';
+import { X, Crosshair, Shield, Sword, Sparkles, Ban } from 'lucide-react';
 import type { DraftState, RecommendationSet, TeamSide } from '@shared';
 import { api } from '../services/api';
-import { useEngineStore } from '../stores';
+import { useEngineStore, useBanSuggestions } from '../stores';
 import { useRecommendationFeed } from '../hooks/useRecommendationFeed';
+import { useBanSuggestionsFeed } from '../hooks/useBanSuggestionsFeed';
 import { HeroPortrait } from './HeroPortrait';
 
 const appWindow = getCurrentWindow();
 
 export function OverlayWindow() {
   const { heroes, setHeroes, getHero } = useEngineStore();
+  const banSuggestions = useBanSuggestions();
   const [draft, setDraft] = useState<DraftState | null>(null);
   const [recommendations, setRecommendations] = useState<RecommendationSet | null>(null);
   // `null` means the optional model could not produce a value; the overlay must
@@ -82,6 +84,7 @@ export function OverlayWindow() {
     };
   }, []);
 
+  const banning = useBanSuggestionsFeed(draft, 3);
   const radiantPercent = radiantWinProb === null ? null : radiantWinProb * 100;
   const radiantPicks = draft?.radiant_picks ?? [];
   const direPicks = draft?.dire_picks ?? [];
@@ -150,12 +153,45 @@ export function OverlayWindow() {
         {/* Top recommendations */}
         <div className="px-3 pb-3">
           <div className="flex items-center gap-1.5 mb-1.5">
-            <Sparkles className="w-3.5 h-3.5 text-dota-accent" />
+            {banning ? (
+              <Ban className="w-3.5 h-3.5 text-orange-400" />
+            ) : (
+              <Sparkles className="w-3.5 h-3.5 text-dota-accent" />
+            )}
             <span className="text-xs font-semibold uppercase tracking-wider text-dota-textMuted">
-              Top Picks
+              {banning ? 'Ban Suggestions' : 'Top Picks'}
             </span>
           </div>
-          {topPicks.length === 0 ? (
+          {banning ? (
+            banSuggestions.length === 0 ? (
+              <div className="text-xs text-dota-textMuted text-center py-2">
+                No ban data for this patch
+              </div>
+            ) : (
+              <div className="space-y-1">
+                {banSuggestions.map((suggestion, i) => {
+                  const hero = getHero(suggestion.hero_id);
+                  return (
+                    <div
+                      key={suggestion.hero_id}
+                      className="flex items-center gap-2 px-2 py-1.5 rounded-lg bg-dota-bg/60 border border-dota-border/50"
+                    >
+                      <span className="text-xs font-bold text-orange-400 w-4">{i + 1}</span>
+                      <HeroPortrait heroId={suggestion.hero_id} size={28} />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-medium text-dota-text truncate">
+                          {hero?.localized_name ?? `Hero ${suggestion.hero_id}`}
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono text-dota-text">
+                        {Math.round(suggestion.ban_rate * 100)}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )
+          ) : topPicks.length === 0 ? (
             <div className="text-xs text-dota-textMuted text-center py-2">
               Waiting for draft…
             </div>

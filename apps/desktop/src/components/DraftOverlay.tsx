@@ -1,4 +1,5 @@
 import { useEngineStore, useUIStore } from '../stores';
+import { isBanPhase } from '../services/banPhase';
 import { HeroPortrait } from './HeroPortrait';
 import { motion, AnimatePresence } from 'framer-motion';
 
@@ -84,6 +85,7 @@ function DraftTeam({ title, picks, bans }: DraftTeamProps) {
 export function DraftOverlay() {
   const { draft, isProcessing } = useEngineStore();
   const selectedTeam = useUIStore((state) => state.selectedTeam);
+  const banning = isBanPhase(draft);
 
   // Orient the panel from the player's own side, not a fixed Radiant assumption.
   const allyIsRadiant = selectedTeam === 'radiant';
@@ -101,13 +103,13 @@ export function DraftOverlay() {
             <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
               draft.is_picking_phase
                 ? 'bg-dota-accent/20 text-dota-accent'
-                : draft.bans.length > 0
+                : banning
                   ? 'bg-orange-400/20 text-orange-300'
                   : 'bg-dota-border text-dota-textMuted'
             }`}>
               {draft.is_picking_phase
                 ? 'PICKING PHASE'
-                : draft.bans.length > 0
+                : banning
                   ? 'BANNING'
                   : 'WAITING'}
             </span>

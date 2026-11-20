@@ -182,9 +182,10 @@ heroes by ban rate on the active patch, falling back to the newest patch that
 has counts, and `RecommendationPanel` renders that list in place of the pick
 categories once a ban has been recorded; `DraftOverlay` badges the draft
 `BANNING`. With no counts or an empty roster the list is empty rather than
-invented. The overlay window still shows top picks — the panel is the ban
-surface, and before the first ban the panel still shows picks because
-`DraftState` has no explicit banning flag.
+invented. The overlay window shows the same list during bans, and both surfaces switch as
+soon as GSI reports a ban turn (`pick: false`, which keeps `current_pick` set
+while `is_picking_phase` is false), so the list is up before the first ban lands;
+picks return on the next pick turn.
 
 Before the list existed, the pick cards stayed on screen through bans and named
 the banned hero 1.28% of the time. Evaluation slice, 111,282 ban actions:

@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { motion } from 'framer-motion';
 import {
   useTopRecommendations,
@@ -10,8 +9,8 @@ import {
   useBanSuggestions,
   useEngineStore,
 } from '../stores';
-import { api } from '../services/api';
-import { formatBanRate, isBanPhase } from '../services/banPhase';
+import { formatBanRate } from '../services/banPhase';
+import { useBanSuggestionsFeed } from '../hooks/useBanSuggestionsFeed';
 import { RecommendationCard } from './RecommendationCard';
 
 interface RecommendationCategoryProps {
@@ -131,26 +130,7 @@ export function RecommendationPanel() {
   const antiMetaPicks = useAntiMetaRecommendations();
   const isProcessing = useIsProcessing();
   const draft = useEngineStore((state) => state.draft);
-  const setBanSuggestions = useEngineStore((state) => state.setBanSuggestions);
-
-  const banning = isBanPhase(draft);
-  // Recompute when the phase flips or another ban lands; the backend filters
-  // already-picked and already-banned heroes from the available set.
-  useEffect(() => {
-    if (!banning) return;
-    let cancelled = false;
-    api
-      .getBanSuggestions(10)
-      .then((suggestions) => {
-        if (!cancelled) setBanSuggestions(suggestions);
-      })
-      .catch(() => {
-        if (!cancelled) setBanSuggestions([]);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [banning, draft.bans.length, draft.patch_version, setBanSuggestions]);
+  const banning = useBanSuggestionsFeed(draft, 10);
 
   if (isProcessing) {
     return (
