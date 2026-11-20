@@ -213,6 +213,11 @@ pub fn run() {
             let bundled_model = [
                 "resources/draft_model_xgboost_full.onnx",
                 "draft_model_xgboost_full.onnx",
+                // tauri-build derives the dev copy destination from the build
+                // script's OUT_DIR; on some CI runners that resolves one level
+                // deeper, under `build/`. Only a fallback: packaged builds use
+                // the `resources/` entry above.
+                "build/resources/draft_model_xgboost_full.onnx",
             ]
             .iter()
             .find_map(|relative| {
@@ -252,6 +257,7 @@ pub fn run() {
                 for relative in [
                     "resources/draft_model_xgboost_full.onnx",
                     "draft_model_xgboost_full.onnx",
+                    "build/resources/draft_model_xgboost_full.onnx",
                 ] {
                     match app_handle
                         .path()
