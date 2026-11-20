@@ -11,7 +11,7 @@
 use anyhow::Result;
 use serde::Deserialize;
 use smart_draft_assistant::database::Database;
-use smart_draft_assistant::models::{Hero, HeroId, HeroMatchup, HeroSynergy, MetaData};
+use smart_draft_assistant::models::{BanStat, Hero, HeroId, HeroMatchup, HeroSynergy, MetaData};
 use smart_draft_assistant::paths::app_data_dir;
 use std::env;
 use std::path::Path;
@@ -19,6 +19,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use tracing::{info, warn};
 
 const SEED_PATH: &str = "infrastructure/seeders/scoring_seed.json";
+const BAN_SEED_PATH: &str = "infrastructure/seeders/ban_seed.json";
 
 /// One row of the exported meta section. `meta_score` is a percentile in
 /// [0, 1] where 0.5 is the median hero; `winrate`/`pickrate` are raw values
@@ -41,6 +42,20 @@ struct ScoringSeed {
     meta: Vec<MetaSeedRow>,
     matchups: Vec<HeroMatchup>,
     synergies: Vec<HeroSynergy>,
+}
+
+/// Ban counts exported by `ml/backtest/export_ban_prior.py`.
+#[derive(Debug, Deserialize)]
+struct BanSeedRow {
+    patch_version: String,
+    hero_id: i32,
+    bans: i32,
+    games: i32,
+}
+
+#[derive(Deserialize)]
+struct BanSeed {
+    rows: Vec<BanSeedRow>,
 }
 
 const SYNTHETIC_PATCH: &str = "synthetic";
@@ -136,7 +151,32 @@ fn seed_synthetic(db: &Database, heroes: &[Hero]) -> Result<()> {
     info!("Seeded {} synthetic synergies", synergies.len());
 
     seed_synthetic_meta(db, heroes)?;
+    seed_synthetic_bans(db, heroes)?;
 
+    Ok(())
+}
+
+/// Development-only ban counts so the ban-phase list can be seen without the
+/// real corpus. Never selected silently: `--synthetic` must be passed.
+fn seed_synthetic_bans(db: &Database, heroes: &[Hero]) -> Result<()> {
+    warn!(
+        "SYNTHETIC MODE: writing placeholder ban counts; do not use these \
+         values for production recommendations"
+    );
+    let games = 4000;
+    let rows: Vec<BanStat> = heroes
+        .iter()
+        .map(|hero| {
+            let hash = pair_hash(hero.id.0, 0x4241_4e53);
+            BanStat {
+                hero_id: hero.id.clone(),
+                bans: (50 + hash % 1800) as i32,
+                games,
+            }
+        })
+        .collect();
+    db.bulk_upsert_ban_stats(&rows, SYNTHETIC_PATCH)?;
+    info!("Seeded {} synthetic ban-count rows", rows.len());
     Ok(())
 }
 
@@ -257,11 +297,58 @@ fn seed_real(db: &Database) -> Result<()> {
     db.bulk_upsert_matchups(&payload.matchups, &patch)?;
     db.bulk_upsert_synergies(&payload.synergies, &patch)?;
     seed_meta(db, &patch, &payload.meta)?;
+    seed_bans(db)?;
     db.set_active_patch(&patch)?;
     info!(
         "Seeded {} matchups and {} synergies for patch {patch}",
         payload.matchups.len(),
         payload.synergies.len()
+    );
+    Ok(())
+}
+
+/// Load the per-patch ban counts the desktop app shows during bans.
+fn seed_bans(db: &Database) -> Result<()> {
+    let path = Path::new(BAN_SEED_PATH);
+    if !path.exists() {
+        anyhow::bail!(
+            "{BAN_SEED_PATH} not found. Run `python ml/backtest/export_ban_prior.py` \
+             (requires ml/backtest/data/drafts_cm.jsonl)"
+        );
+    }
+
+    let payload: BanSeed = serde_json::from_str(&std::fs::read_to_string(path)?)?;
+    let mut by_patch: std::collections::BTreeMap<&str, Vec<BanStat>> = Default::default();
+    for row in &payload.rows {
+        if row.games <= 0 || row.bans < 0 || row.bans > row.games {
+            anyhow::bail!(
+                "invalid ban-count row for hero {} on {}: bans={} games={}",
+                row.hero_id,
+                row.patch_version,
+                row.bans,
+                row.games
+            );
+        }
+        by_patch
+            .entry(row.patch_version.as_str())
+            .or_default()
+            .push(BanStat {
+                hero_id: HeroId(row.hero_id),
+                bans: row.bans,
+                games: row.games,
+            });
+    }
+
+    if by_patch.is_empty() {
+        anyhow::bail!("{BAN_SEED_PATH} contains no ban-count rows");
+    }
+    for (patch, rows) in &by_patch {
+        db.bulk_upsert_ban_stats(rows, patch)?;
+    }
+    info!(
+        "Seeded {} ban-count rows across {} patches",
+        payload.rows.len(),
+        by_patch.len()
     );
     Ok(())
 }
@@ -304,6 +391,23 @@ fn main() -> Result<()> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_ban_seed_file_parses() {
+        let path = Path::new(env!("CARGO_MANIFEST_DIR"))
+            .join("../../infrastructure/seeders/ban_seed.json");
+        let payload: BanSeed =
+            serde_json::from_str(&std::fs::read_to_string(path).unwrap()).unwrap();
+
+        assert!(payload.rows.len() > 500, "expected per-patch counts");
+        assert!(payload.rows.iter().any(|row| row.patch_version == "7.41"));
+        // A hero can be banned at most once per draft.
+        assert!(payload
+            .rows
+            .iter()
+            .all(|row| row.games > 0 && row.bans >= 0 && row.bans <= row.games));
+        assert!(payload.rows.iter().any(|row| row.bans > 0));
+    }
 
     #[test]
     fn test_real_seed_file_parses() {

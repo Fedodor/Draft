@@ -400,6 +400,25 @@ pub struct MetaData {
     pub updated_at: i64,
 }
 
+/// Ban prevalence for one hero on one patch: how many of the counted drafts
+/// banned it. Descriptive, not a judgement about which ban is correct.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BanStat {
+    pub hero_id: HeroId,
+    pub bans: i32,
+    pub games: i32,
+}
+
+/// A hero offered for banning because teams ban it often on the active patch.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BanSuggestion {
+    pub hero_id: HeroId,
+    pub bans: i32,
+    pub games: i32,
+    pub ban_rate: f32,
+    pub patch_version: String,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GSIPlayer {
     pub account_id: PlayerId,

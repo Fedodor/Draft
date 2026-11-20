@@ -123,6 +123,16 @@ export interface RecommendationSet {
   timestamp: number;
 }
 
+/** A hero offered during bans because teams ban it often on the patch. */
+export interface BanSuggestion {
+  hero_id: HeroId;
+  bans: number;
+  games: number;
+  /** bans / games on the counted patch; descriptive prevalence, not advice. */
+  ban_rate: number;
+  patch_version: string;
+}
+
 export interface TeamAnalysis {
   missing: string[];
   strong: string[];

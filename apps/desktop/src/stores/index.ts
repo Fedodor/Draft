@@ -7,18 +7,21 @@ import type {
   TeamSide,
   HeroId,
   AppConfig,
+  BanSuggestion,
 } from '@shared';
 
 // Engine state
 interface EngineState {
   draft: DraftState;
   recommendations: RecommendationSet | null;
+  banSuggestions: BanSuggestion[];
   isProcessing: boolean;
   lastUpdate: number;
   heroes: Hero[];
   heroMap: Map<HeroId, Hero>;
   setDraft: (draft: DraftState) => void;
   setRecommendations: (recs: RecommendationSet) => void;
+  setBanSuggestions: (suggestions: BanSuggestion[]) => void;
   clearDraftData: () => void;
   setProcessing: (processing: boolean) => void;
   setHeroes: (heroes: Hero[]) => void;
@@ -71,6 +74,7 @@ export const useEngineStore = create<EngineState>()(
     (set, get) => ({
       draft: initialDraftState,
       recommendations: null,
+      banSuggestions: [],
       isProcessing: false,
       lastUpdate: 0,
       heroes: [],
@@ -78,9 +82,10 @@ export const useEngineStore = create<EngineState>()(
       
       setDraft: (draft) => set({ draft, lastUpdate: Date.now() }),
       setRecommendations: (recommendations) => set({ recommendations, lastUpdate: Date.now() }),
+      setBanSuggestions: (banSuggestions) => set({ banSuggestions, lastUpdate: Date.now() }),
       // Used when the database holds no heroes: persisted draft/recommendation
       // state from an earlier session would otherwise contradict the UI.
-      clearDraftData: () => set({ draft: initialDraftState, recommendations: null, lastUpdate: Date.now() }),
+      clearDraftData: () => set({ draft: initialDraftState, recommendations: null, banSuggestions: [], lastUpdate: Date.now() }),
       setProcessing: (isProcessing) => set({ isProcessing }),
       setHeroes: (heroes) => {
         const heroMap = new Map(heroes.map(h => [h.id, h]));
@@ -145,6 +150,10 @@ export const useEnemyPicks = () => useEngineStore((state) =>
 
 export const useBans = () => useEngineStore((state) => 
   state.draft.bans
+);
+
+export const useBanSuggestions = () => useEngineStore((state) =>
+  state.banSuggestions
 );
 
 export const useTopRecommendations = () => useEngineStore((state) => 

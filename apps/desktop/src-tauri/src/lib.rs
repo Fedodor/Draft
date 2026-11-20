@@ -99,6 +99,7 @@ pub fn run() {
         .manage(gsi_server.clone())
         .invoke_handler(tauri::generate_handler![
             commands::get_recommendations,
+            commands::get_ban_suggestions,
             commands::get_score_breakdown,
             commands::get_search_recommendations,
             commands::get_draft_state,
@@ -125,22 +126,11 @@ pub fn run() {
             let engine = draft_engine.clone();
             let app_handle = app.handle().clone();
 
-            // Initialize database and engine
-            let data_dir = app_handle.path().app_data_dir()
-                .expect("Failed to get app data dir");
+            // Initialize database and engine. `paths::app_data_dir` is the one
+            // resolver the seeders share, so the app and the seeders cannot
+            // disagree about where the database lives.
+            let data_dir = crate::paths::app_data_dir().expect("Failed to get app data dir");
             info!("App data dir: {}", data_dir.display());
-
-            // The seeders resolve this path independently; warn if the Tauri
-            // identifier and `paths::APP_IDENTIFIER` ever drift apart.
-            if let Some(expected) = crate::paths::app_data_dir() {
-                if expected != data_dir {
-                    tracing::warn!(
-                        "App data dir mismatch: Tauri uses {} but seeders use {}",
-                        data_dir.display(),
-                        expected.display()
-                    );
-                }
-            }
 
             // Initialize database
             let database = Arc::new(database::Database::new(data_dir).expect("Failed to initialize database"));

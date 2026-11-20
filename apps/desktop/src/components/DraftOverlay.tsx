@@ -101,9 +101,15 @@ export function DraftOverlay() {
             <span className={`px-2 py-0.5 text-xs font-medium rounded-full ${
               draft.is_picking_phase
                 ? 'bg-dota-accent/20 text-dota-accent'
-                : 'bg-dota-border text-dota-textMuted'
+                : draft.bans.length > 0
+                  ? 'bg-orange-400/20 text-orange-300'
+                  : 'bg-dota-border text-dota-textMuted'
             }`}>
-              {draft.is_picking_phase ? 'PICKING PHASE' : 'WAITING'}
+              {draft.is_picking_phase
+                ? 'PICKING PHASE'
+                : draft.bans.length > 0
+                  ? 'BANNING'
+                  : 'WAITING'}
             </span>
             {draft.current_pick && (
               <span className="text-xs text-dota-textMuted">

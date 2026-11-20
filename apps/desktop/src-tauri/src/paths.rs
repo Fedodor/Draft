@@ -12,8 +12,16 @@ pub const APP_IDENTIFIER: &str = "com.smartdraftassistant.app";
 /// Database filename shared by the app and the seeders.
 pub const DB_FILENAME: &str = "smart_draft.db";
 
+/// Overrides the data directory so a scratch seeded database can be driven end
+/// to end without touching the installed one. Read here only, so the app and
+/// the seeders can never disagree about the path.
+pub const DATA_DIR_ENV: &str = "SMART_DRAFT_DATA_DIR";
+
 /// Resolve the application data directory without requiring a Tauri handle.
 pub fn app_data_dir() -> Option<PathBuf> {
+    if let Some(dir) = std::env::var_os(DATA_DIR_ENV).filter(|dir| !dir.is_empty()) {
+        return Some(PathBuf::from(dir));
+    }
     dirs::data_dir().map(|dir| dir.join(APP_IDENTIFIER))
 }
 

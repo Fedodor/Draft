@@ -7,7 +7,7 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use tracing::info;
 
-const DB_VERSION: u32 = 2;
+const DB_VERSION: u32 = 3;
 
 /// Key used to persist the patch the app is currently recommending for.
 pub const ACTIVE_PATCH_KEY: &str = "active_patch";
@@ -74,6 +74,27 @@ impl Database {
             self.migration_v2(conn)?;
             conn.execute("INSERT INTO schema_version (version) VALUES (2)", [])?;
         }
+        if from_version < 3 {
+            self.migration_v3(conn)?;
+            conn.execute("INSERT INTO schema_version (version) VALUES (3)", [])?;
+        }
+        Ok(())
+    }
+
+    /// Per-patch ban prevalence used by the ban-phase suggestion list.
+    fn migration_v3(&self, conn: &Connection) -> Result<()> {
+        info!("Running migration v3: hero_ban_stats");
+        conn.execute(
+            "CREATE TABLE IF NOT EXISTS hero_ban_stats (
+                patch_version TEXT NOT NULL,
+                hero_id INTEGER NOT NULL,
+                bans INTEGER NOT NULL,
+                games INTEGER NOT NULL,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                PRIMARY KEY (patch_version, hero_id)
+            )",
+            [],
+        )?;
         Ok(())
     }
 
@@ -938,6 +959,62 @@ impl Database {
         Ok(meta)
     }
 
+    // === Ban prevalence ===
+
+    /// Idempotent, transactional ban-count seed for one patch.
+    pub fn bulk_upsert_ban_stats(&self, rows: &[BanStat], patch: &str) -> Result<()> {
+        let mut conn = self.conn.lock().unwrap();
+        let tx = conn.transaction()?;
+        {
+            let mut stmt = tx.prepare(
+                "INSERT INTO hero_ban_stats (patch_version, hero_id, bans, games, updated_at)
+                VALUES (?, ?, ?, ?, CURRENT_TIMESTAMP)
+                ON CONFLICT(patch_version, hero_id) DO UPDATE SET
+                    bans=excluded.bans, games=excluded.games, updated_at=CURRENT_TIMESTAMP",
+            )?;
+            for row in rows {
+                stmt.execute(params![patch, row.hero_id.0, row.bans, row.games])?;
+            }
+        }
+        tx.commit()?;
+        Ok(())
+    }
+
+    /// Ban counts for one patch, most-banned first.
+    pub fn get_ban_stats(&self, patch: &str) -> Result<Vec<BanStat>> {
+        let conn = self.conn.lock().unwrap();
+        let mut stmt = conn.prepare(
+            "SELECT hero_id, bans, games FROM hero_ban_stats
+             WHERE patch_version = ?
+             ORDER BY bans DESC, hero_id",
+        )?;
+        let rows = stmt
+            .query_map(params![patch], |row| {
+                Ok(BanStat {
+                    hero_id: HeroId(row.get(0)?),
+                    bans: row.get(1)?,
+                    games: row.get(2)?,
+                })
+            })?
+            .collect::<SqliteResult<Vec<_>>>()?;
+        Ok(rows)
+    }
+
+    /// Newest patch that has ban counts, used when the active patch has none.
+    pub fn latest_ban_patch(&self) -> Result<Option<String>> {
+        let conn = self.conn.lock().unwrap();
+        let patch = conn
+            .query_row(
+                "SELECT patch_version FROM hero_ban_stats
+                 GROUP BY patch_version
+                 ORDER BY MAX(updated_at) DESC, patch_version DESC LIMIT 1",
+                [],
+                |row| row.get(0),
+            )
+            .optional()?;
+        Ok(patch)
+    }
+
     // === Player Profiles ===
 
     pub fn upsert_player_profile(&self, profile: &PlayerProfile) -> Result<()> {
@@ -1044,6 +1121,55 @@ mod tests {
         assert_eq!(loaded.hero_winrates.get(&HeroId(2)), Some(&0.47));
         assert_eq!(loaded.hero_pickrates.len(), 2);
         assert!(db.get_meta("7.40").unwrap().is_none());
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_ban_stats_round_trip_and_latest_patch() {
+        let (db, dir) = temp_database();
+
+        assert!(db.get_ban_stats("7.41").unwrap().is_empty());
+        assert!(db.latest_ban_patch().unwrap().is_none());
+
+        db.bulk_upsert_ban_stats(
+            &[
+                BanStat {
+                    hero_id: HeroId(80),
+                    bans: 1722,
+                    games: 4175,
+                },
+                BanStat {
+                    hero_id: HeroId(13),
+                    bans: 1563,
+                    games: 4175,
+                },
+            ],
+            "7.41",
+        )
+        .unwrap();
+
+        let rows = db.get_ban_stats("7.41").unwrap();
+        assert_eq!(rows.len(), 2);
+        // Ordered by ban count, not by hero id.
+        assert_eq!(rows[0].hero_id, HeroId(80));
+        assert_eq!(rows[0].bans, 1722);
+        assert_eq!(rows[1].hero_id, HeroId(13));
+        assert!(db.latest_ban_patch().unwrap().as_deref() == Some("7.41"));
+
+        // The seed is idempotent: re-running it updates instead of duplicating.
+        db.bulk_upsert_ban_stats(
+            &[BanStat {
+                hero_id: HeroId(80),
+                bans: 100,
+                games: 4175,
+            }],
+            "7.41",
+        )
+        .unwrap();
+        let rows = db.get_ban_stats("7.41").unwrap();
+        assert_eq!(rows.len(), 2);
+        assert_eq!(rows[1].bans, 100);
 
         let _ = std::fs::remove_dir_all(dir);
     }

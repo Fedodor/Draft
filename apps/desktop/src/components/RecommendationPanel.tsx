@@ -1,6 +1,18 @@
-import { useTopRecommendations, useSafeRecommendations, useAggressiveRecommendations, useComfortRecommendations, useAntiMetaRecommendations, useIsProcessing } from '../stores';
-import { RecommendationCard } from './RecommendationCard';
+import { useEffect } from 'react';
 import { motion } from 'framer-motion';
+import {
+  useTopRecommendations,
+  useSafeRecommendations,
+  useAggressiveRecommendations,
+  useComfortRecommendations,
+  useAntiMetaRecommendations,
+  useIsProcessing,
+  useBanSuggestions,
+  useEngineStore,
+} from '../stores';
+import { api } from '../services/api';
+import { formatBanRate, isBanPhase } from '../services/banPhase';
+import { RecommendationCard } from './RecommendationCard';
 
 interface RecommendationCategoryProps {
   title: string;
@@ -61,6 +73,56 @@ function RecommendationCategory({
   );
 }
 
+/**
+ * What the app shows during bans. The ranking is observed ban frequency on the
+ * active patch; it is not a model of which ban helps, and the copy says so.
+ */
+function BanSuggestionList() {
+  const suggestions = useBanSuggestions();
+  const getHero = useEngineStore((state) => state.getHero);
+
+  return (
+    <div className="py-2">
+      <h4 className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wider text-dota-textMuted mb-2 px-2">
+        <svg className="w-4 h-4 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+        </svg>
+        Ban Suggestions
+      </h4>
+      <p className="px-2 pb-2 text-xs text-dota-textMuted">
+        {suggestions[0]
+          ? `Heroes teams ban most on patch ${suggestions[0].patch_version}.`
+          : 'Heroes teams ban most on this patch.'}{' '}
+        Observed ban frequency, not a judgement about which ban is correct.
+      </p>
+      {suggestions.length === 0 ? (
+        <div className="text-center py-6 text-dota-textMuted text-sm">
+          No ban data for this patch yet
+        </div>
+      ) : (
+        <div className="space-y-2 px-2">
+          {suggestions.map((suggestion) => {
+            const hero = getHero(suggestion.hero_id);
+            return (
+              <div
+                key={suggestion.hero_id}
+                className="flex items-center justify-between gap-2 rounded bg-dota-panel/60 px-3 py-2"
+              >
+                <span className="truncate text-sm text-dota-text">
+                  {hero?.localized_name ?? `Hero ${suggestion.hero_id}`}
+                </span>
+                <span className="shrink-0 text-xs text-dota-textMuted">
+                  {formatBanRate(suggestion)}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 export function RecommendationPanel() {
   const topPicks = useTopRecommendations();
   const safePicks = useSafeRecommendations();
@@ -68,6 +130,27 @@ export function RecommendationPanel() {
   const comfortPicks = useComfortRecommendations();
   const antiMetaPicks = useAntiMetaRecommendations();
   const isProcessing = useIsProcessing();
+  const draft = useEngineStore((state) => state.draft);
+  const setBanSuggestions = useEngineStore((state) => state.setBanSuggestions);
+
+  const banning = isBanPhase(draft);
+  // Recompute when the phase flips or another ban lands; the backend filters
+  // already-picked and already-banned heroes from the available set.
+  useEffect(() => {
+    if (!banning) return;
+    let cancelled = false;
+    api
+      .getBanSuggestions(10)
+      .then((suggestions) => {
+        if (!cancelled) setBanSuggestions(suggestions);
+      })
+      .catch(() => {
+        if (!cancelled) setBanSuggestions([]);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [banning, draft.bans.length, draft.patch_version, setBanSuggestions]);
 
   if (isProcessing) {
     return (
@@ -76,6 +159,14 @@ export function RecommendationPanel() {
           <div className="w-8 h-8 border-3 border-dota-accent border-t-transparent rounded-full animate-spin mx-auto mb-3" />
           <p className="text-dota-textMuted">Analyzing draft...</p>
         </div>
+      </div>
+    );
+  }
+
+  if (banning) {
+    return (
+      <div className="flex-1 overflow-y-auto p-3">
+        <BanSuggestionList />
       </div>
     );
   }

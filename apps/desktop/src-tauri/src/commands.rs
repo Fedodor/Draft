@@ -54,6 +54,23 @@ pub async fn get_recommendations(
 }
 
 #[command(rename_all = "snake_case")]
+pub async fn get_ban_suggestions(
+    engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
+    limit: Option<usize>,
+) -> Result<Vec<BanSuggestion>, CommandError> {
+    let limit = limit.unwrap_or(10);
+    let engine = engine.inner().clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let engine_guard = engine.lock().unwrap();
+        Ok((*engine_guard).get_ban_suggestions(limit))
+    })
+    .await
+    .map_err(|e| CommandError::Internal {
+        message: e.to_string(),
+    })?
+}
+
+#[command(rename_all = "snake_case")]
 pub async fn get_score_breakdown(
     engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
     hero_id: i32,

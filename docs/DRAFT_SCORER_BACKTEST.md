@@ -13,9 +13,11 @@ meta score; ranked on their own, composition and matchup+synergy carry only a
 barely detectable ordering signal and matchup+synergy is worse than chance at
 top-1.
 
-The ban phase has no suggestions at all: during bans the app keeps showing the
-same pick cards, and that list names the banned hero 1.28% of the time, against
-4.41% for a per-patch ban-prevalence table.
+The ban phase used to show no suggestions at all: the same pick cards stayed on
+screen and named the banned hero 1.28% of the time. The app now ships a
+per-patch ban-prevalence list for that phase (see [Ban phase](#ban-phase-what-the-app-shows-during-bans)),
+measured at 4.41% top-1. That is agreement with what teams ban, not evidence
+that the suggested bans are good.
 Gating the engine behind a fresh prior's shortlist ties that prior rather than
 beating it (3.41% vs 3.38%, McNemar z = 0.4).
 
@@ -167,31 +169,29 @@ With ~120 heroes available, chance is ~0.8% for rank-1. Opening bans are ~2.5x
 chance, later bans are at chance. So teams do occasionally ban what the scorer
 likes, but no more than that: the scorer is not tracking the ban phase.
 
-## Ban phase: there are no ban suggestions, and the pick list scores badly
+## Ban phase: what the app shows during bans
 
 The proxy above asks whether bans remove heroes the engine likes. This section
-asks what a user would see while banning. **First, what the app actually does
-(traced through the code):**
+asks what a user sees while banning, and what that list is worth.
 
-- `commands.rs::get_recommendations` never looks at `is_picking_phase`; it
-  returns the same pick set for the selected team whatever the draft is doing.
-- `RecommendationPanel` renders "Top Picks", "Safe Picks", "High Impact",
-  "Comfort Picks" and "Anti-Meta" — there is no ban category, and the overlay's
-  list is `top_picks` under a "Top Picks" heading.
-- `DraftOverlay` badges the draft as "PICKING PHASE" or "WAITING"; there is no
-  banning state anywhere in the UI, and `TeamAnalysisPanel` only counts
-  completed bans. HeroPicker's "Ban" mode records a ban manually; it does not
-  suggest one.
-- The feed does refresh on ban events, so the list is current during bans with
-  banned heroes removed — it just stays a pick list.
+**Shipped behaviour (schema v3).** `hero_ban_stats` stores `bans`/`games` per
+patch, seeded from the same exported corpus with
+`ml/backtest/export_ban_prior.py` into `infrastructure/seeders/ban_seed.json`
+(1,487 rows, 12 patches). `commands.rs::get_ban_suggestions` ranks the available
+heroes by ban rate on the active patch, falling back to the newest patch that
+has counts, and `RecommendationPanel` renders that list in place of the pick
+categories once a ban has been recorded; `DraftOverlay` badges the draft
+`BANNING`. With no counts or an empty roster the list is empty rather than
+invented. The overlay window still shows top picks — the panel is the ban
+surface, and before the first ban the panel still shows picks because
+`DraftState` has no explicit banning flag.
 
-So there is no ban feature to measure. The number below is the closest thing to
-current behaviour: how often the pick list already on screen happens to name the
-hero the team bans. Evaluation slice, 111,282 ban actions:
+Before the list existed, the pick cards stayed on screen through bans and named
+the banned hero 1.28% of the time. Evaluation slice, 111,282 ban actions:
 
 | ranking | top-1 | top-3 | top-5 | mean pct |
 | --- | --- | --- | --- | --- |
-| engine pick list (what is on screen) | 1.28% | 3.6% | 7.7% | 0.553 |
+| pick list (previous behaviour) | 1.28% | 3.6% | 7.7% | 0.553 |
 | ban prevalence, global warm-up | 3.28% | 8.5% | 10.3% | 0.622 |
 | ban prevalence, rolling per-patch | 4.41% | 11.6% | 17.1% | 0.708 |
 
@@ -203,11 +203,15 @@ the drafts already replayed in this patch (falling back to the global table unti
 a patch has 200 replayed bans).
 
 Bans concentrate harder than picks: 4.41% top-1 and 17.1% top-5 for the per-patch
-ban table, against 3.38% and 13.8% for the pick prior. If the app added ban
-suggestions built on that table instead of leaving the pick cards on screen, the
-observable gap would be 3.4x in top-1 and better than 2x in top-5 — the largest
-difference measured anywhere in this report. It is a hypothetical improvement to
-be justified, not a comparison against a shipped ban feature.</think>
+ban table, against 3.38% and 13.8% for the pick prior — a 3.4x gap in top-1 and
+better than 2x in top-5, the largest difference measured anywhere in this report.
+
+The shipped seed is **not** the rolling estimate: it scores each patch on its
+full ban counts, so for the patch being replayed the 4.41% is an in-sample upper
+bound (the counts include the ban events being predicted). The rolling row is
+the honest estimate of what a user gets at the start of a patch, and it is the
+number to quote. Even in-sample, the list only predicts *which* heroes get
+banned; nothing here shows that following it improves a draft.</think>
 
 ## Component ablation
 
@@ -429,10 +433,11 @@ data is not the explanation.
   are optimistic. Removing the leakage could only lower them.
 - One database snapshot was evaluated (patch 7.41, all other patches replayed
   against it), matching how the app ships.
-- There is no ban-suggestion feature to evaluate, so the ban section measures
-  the pick list repurposed as one. Even if a prevalence table were added, it
-  would only predict *which* bans happen, not whether a suggested ban is a good
-  ban — that needs a counterfactual the corpus cannot provide.
+- The shipped ban list is a prevalence table, not a quality model: it predicts
+  *which* bans happen, not whether a suggested ban is good. Judging ban quality
+  needs a counterfactual the corpus cannot provide. Its counts are full-patch
+  (in-sample for the replayed patch), so quote the rolling 4.41% rather than the
+  shipped table's fit.
 - ML is disabled by default in the shipped config (`default_ml_enabled()`
   returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
   The ML-on path was measured on a 3,000-draft matched sample rather than the

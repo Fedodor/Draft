@@ -20,6 +20,46 @@ use scorer::{
     W_MATCHUP, W_META, W_ML, W_SYNERGY,
 };
 
+/// Rank available heroes by how often teams banned them on `patch`.
+///
+/// This is prevalence, not a model of ban quality: it answers "who do teams ban
+/// here", and the UI says exactly that.
+fn rank_ban_suggestions(
+    stats: &[BanStat],
+    available: &[HeroId],
+    patch: Option<&str>,
+    limit: usize,
+) -> Vec<BanSuggestion> {
+    let Some(patch) = patch else {
+        return Vec::new();
+    };
+    let available: std::collections::HashSet<&HeroId> = available.iter().collect();
+
+    let mut ranked: Vec<(f32, &BanStat)> = stats
+        .iter()
+        .filter(|row| available.contains(&row.hero_id) && row.bans > 0 && row.games > 0)
+        .map(|row| (row.bans as f32 / row.games as f32, row))
+        .collect();
+    ranked.sort_by(|a, b| {
+        b.0.partial_cmp(&a.0)
+            .unwrap_or(std::cmp::Ordering::Equal)
+            .then(b.1.bans.cmp(&a.1.bans))
+            .then(a.1.hero_id.0.cmp(&b.1.hero_id.0))
+    });
+
+    ranked
+        .into_iter()
+        .take(limit)
+        .map(|(rate, row)| BanSuggestion {
+            hero_id: row.hero_id.clone(),
+            bans: row.bans,
+            games: row.games,
+            ban_rate: rate,
+            patch_version: patch.to_string(),
+        })
+        .collect()
+}
+
 fn team_label(team: TeamSide) -> &'static str {
     match team {
         TeamSide::Radiant => "radiant",
@@ -70,6 +110,12 @@ pub struct DraftEngine {
     database: Option<Arc<Database>>,
     undo_stack: Arc<RwLock<Vec<DraftAction>>>,
     active_patch: Option<String>,
+    /// Per-patch ban prevalence, loaded once at initialization. Empty when the
+    /// database has no ban counts, in which case no ban suggestions are shown.
+    ban_stats: Vec<BanStat>,
+    /// Patch the loaded ban counts belong to; may lag `active_patch` when the
+    /// active patch has no counts yet.
+    ban_patch: Option<String>,
     /// Whether the ML component may contribute to the recommendation score.
     ///
     /// Wired from `AppConfig::ml_enabled`. It exists on the engine (not only in
@@ -156,6 +202,8 @@ impl DraftEngine {
             database: None,
             undo_stack: Arc::new(RwLock::new(Vec::new())),
             active_patch: None,
+            ban_stats: Vec::new(),
+            ban_patch: None,
             // Defaults to enabled for library/test callers. `lib.rs` overrides
             // this from persisted config before serving any command.
             ml_enabled: true,
@@ -197,6 +245,9 @@ impl DraftEngine {
 
         // Load meta data for the active patch
         self.load_meta_data()?;
+
+        // Load per-patch ban prevalence for the ban-phase suggestion list.
+        self.load_ban_data()?;
 
         // Wire the loaded matchup/synergy matrices into the scorers. These
         // fields were previously loaded but never used, leaving both scorers
@@ -420,6 +471,47 @@ impl DraftEngine {
             self.meta_data.patch_version = patch;
         }
         Ok(())
+    }
+
+    fn load_ban_data(&mut self) -> Result<()> {
+        let (Some(db), Some(patch)) = (&self.database, self.active_patch.clone()) else {
+            return Ok(());
+        };
+
+        let mut stats = db.get_ban_stats(&patch)?;
+        let mut resolved = patch.clone();
+        if stats.is_empty() {
+            if let Some(fallback) = db.latest_ban_patch()? {
+                warn!("No ban counts for patch {patch}; using {fallback}");
+                stats = db.get_ban_stats(&fallback)?;
+                resolved = fallback;
+            }
+        }
+        if stats.is_empty() {
+            warn!("No ban counts in database; ban suggestions are disabled");
+            return Ok(());
+        }
+
+        info!(
+            "Loaded ban counts for {} heroes (patch {resolved})",
+            stats.len()
+        );
+        self.ban_stats = stats;
+        self.ban_patch = Some(resolved);
+        Ok(())
+    }
+
+    /// Heroes to offer during the ban phase, most-banned first on the active
+    /// patch. Empty when the database holds no ban counts or no heroes, so a
+    /// fresh install never shows numbers the data does not support.
+    pub fn get_ban_suggestions(&self, limit: usize) -> Vec<BanSuggestion> {
+        let state = self.state.read();
+        rank_ban_suggestions(
+            &self.ban_stats,
+            &state.available_heroes,
+            self.ban_patch.as_deref(),
+            limit,
+        )
     }
 
     /// Validate a pick before it is applied. Manual corrections deliberately do
@@ -994,6 +1086,102 @@ impl DraftEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_ban_suggestions_rank_by_prevalence_and_skip_unavailable() {
+        let stats = vec![
+            BanStat {
+                hero_id: HeroId(1),
+                bans: 10,
+                games: 100,
+            },
+            BanStat {
+                hero_id: HeroId(2),
+                bans: 40,
+                games: 100,
+            },
+            BanStat {
+                hero_id: HeroId(3),
+                bans: 30,
+                games: 100,
+            },
+            BanStat {
+                hero_id: HeroId(4),
+                bans: 0,
+                games: 100,
+            },
+        ];
+        // Hero 3 is already banned, so it is not available.
+        let available = vec![HeroId(1), HeroId(2), HeroId(4)];
+
+        let ranked = rank_ban_suggestions(&stats, &available, Some("7.41"), 10);
+        assert_eq!(
+            ranked.iter().map(|row| row.hero_id.0).collect::<Vec<_>>(),
+            vec![2, 1]
+        );
+        assert!((ranked[0].ban_rate - 0.4).abs() < 1e-6);
+        assert_eq!(ranked[0].patch_version, "7.41");
+        assert_eq!(ranked.len(), 2);
+    }
+
+    #[test]
+    fn test_ban_suggestions_are_empty_without_data_or_roster() {
+        let stats = vec![BanStat {
+            hero_id: HeroId(1),
+            bans: 5,
+            games: 10,
+        }];
+
+        assert!(rank_ban_suggestions(&[], &[HeroId(1)], Some("7.41"), 10).is_empty());
+        assert!(rank_ban_suggestions(&stats, &[], Some("7.41"), 10).is_empty());
+        assert!(rank_ban_suggestions(&stats, &[HeroId(1)], None, 10).is_empty());
+    }
+
+    #[test]
+    fn test_engine_serves_ban_suggestions_from_persisted_counts() {
+        let dir = std::env::temp_dir().join(format!("sd-ban-engine-{}", uuid::Uuid::new_v4()));
+        let db = Arc::new(Database::new(dir.clone()).unwrap());
+
+        let heroes: Vec<Hero> = (1..=2)
+            .map(|id| {
+                let mut hero = DraftEngine::fallback_heroes().remove(0);
+                hero.id = HeroId(id);
+                hero.name = format!("npc_dota_hero_test{id}");
+                hero
+            })
+            .collect();
+        db.bulk_upsert_heroes(&heroes).unwrap();
+        // The active patch has no counts; the engine must fall back to the
+        // newest patch that does, instead of showing nothing.
+        db.set_active_patch("7.99").unwrap();
+        db.bulk_upsert_ban_stats(
+            &[
+                BanStat {
+                    hero_id: HeroId(1),
+                    bans: 10,
+                    games: 100,
+                },
+                BanStat {
+                    hero_id: HeroId(2),
+                    bans: 40,
+                    games: 100,
+                },
+            ],
+            "7.41",
+        )
+        .unwrap();
+
+        let mut engine = DraftEngine::new();
+        engine.set_database(db);
+        engine.initialize().unwrap();
+
+        let suggestions = engine.get_ban_suggestions(5);
+        assert_eq!(suggestions.len(), 2);
+        assert_eq!(suggestions[0].hero_id, HeroId(2));
+        assert_eq!(suggestions[0].patch_version, "7.41");
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
 
     #[test]
     fn test_fallback_heroes_are_explicit_and_usable() {

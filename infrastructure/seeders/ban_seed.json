@@ -1,0 +1,8929 @@
+{
+ "source": "Captains Mode drafts exported by ml/backtest/export_drafts.py",
+ "generated_by": "ml/backtest/export_ban_prior.py",
+ "matches": 90020,
+ "rows": [
+  {
+   "patch_version": "7.30",
+   "hero_id": 1,
+   "bans": 47,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 2,
+   "bans": 11,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 3,
+   "bans": 9,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 4,
+   "bans": 16,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 5,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 6,
+   "bans": 34,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 7,
+   "bans": 4,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 8,
+   "bans": 51,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 9,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 10,
+   "bans": 40,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 11,
+   "bans": 11,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 12,
+   "bans": 58,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 13,
+   "bans": 50,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 14,
+   "bans": 16,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 15,
+   "bans": 33,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 16,
+   "bans": 10,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 17,
+   "bans": 46,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 18,
+   "bans": 5,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 19,
+   "bans": 4,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 20,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 21,
+   "bans": 24,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 22,
+   "bans": 9,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 23,
+   "bans": 28,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 25,
+   "bans": 31,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 26,
+   "bans": 17,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 27,
+   "bans": 3,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 28,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 29,
+   "bans": 21,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 30,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 32,
+   "bans": 9,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 33,
+   "bans": 7,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 34,
+   "bans": 55,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 35,
+   "bans": 16,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 36,
+   "bans": 20,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 37,
+   "bans": 6,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 38,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 39,
+   "bans": 55,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 40,
+   "bans": 10,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 41,
+   "bans": 56,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 42,
+   "bans": 50,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 43,
+   "bans": 13,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 44,
+   "bans": 20,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 45,
+   "bans": 8,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 46,
+   "bans": 19,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 47,
+   "bans": 55,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 48,
+   "bans": 14,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 49,
+   "bans": 4,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 50,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 51,
+   "bans": 4,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 52,
+   "bans": 3,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 54,
+   "bans": 36,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 55,
+   "bans": 5,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 56,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 57,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 58,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 59,
+   "bans": 11,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 60,
+   "bans": 24,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 61,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 62,
+   "bans": 8,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 63,
+   "bans": 49,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 64,
+   "bans": 8,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 65,
+   "bans": 12,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 66,
+   "bans": 3,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 67,
+   "bans": 12,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 68,
+   "bans": 24,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 69,
+   "bans": 16,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 70,
+   "bans": 63,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 71,
+   "bans": 93,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 72,
+   "bans": 3,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 73,
+   "bans": 5,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 74,
+   "bans": 32,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 75,
+   "bans": 18,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 76,
+   "bans": 102,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 77,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 78,
+   "bans": 14,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 79,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 81,
+   "bans": 3,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 82,
+   "bans": 4,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 84,
+   "bans": 11,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 85,
+   "bans": 9,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 86,
+   "bans": 3,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 87,
+   "bans": 4,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 88,
+   "bans": 13,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 89,
+   "bans": 6,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 90,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 91,
+   "bans": 18,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 92,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 93,
+   "bans": 47,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 94,
+   "bans": 43,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 95,
+   "bans": 5,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 96,
+   "bans": 8,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 97,
+   "bans": 20,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 98,
+   "bans": 31,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 99,
+   "bans": 21,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 100,
+   "bans": 6,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 101,
+   "bans": 6,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 102,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 103,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 104,
+   "bans": 18,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 105,
+   "bans": 20,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 106,
+   "bans": 25,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 107,
+   "bans": 5,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 108,
+   "bans": 12,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 109,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 110,
+   "bans": 1,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 111,
+   "bans": 11,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 112,
+   "bans": 4,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 113,
+   "bans": 8,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 114,
+   "bans": 20,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 119,
+   "bans": 7,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 120,
+   "bans": 8,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 121,
+   "bans": 6,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 123,
+   "bans": 7,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 126,
+   "bans": 40,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 128,
+   "bans": 11,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 129,
+   "bans": 15,
+   "games": 146
+  },
+  {
+   "patch_version": "7.30",
+   "hero_id": 135,
+   "bans": 2,
+   "games": 146
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 1,
+   "bans": 173,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 2,
+   "bans": 47,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 3,
+   "bans": 18,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 4,
+   "bans": 84,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 5,
+   "bans": 9,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 6,
+   "bans": 97,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 7,
+   "bans": 17,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 8,
+   "bans": 253,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 9,
+   "bans": 42,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 10,
+   "bans": 86,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 11,
+   "bans": 73,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 12,
+   "bans": 161,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 13,
+   "bans": 252,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 14,
+   "bans": 61,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 15,
+   "bans": 163,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 16,
+   "bans": 158,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 17,
+   "bans": 136,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 18,
+   "bans": 11,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 19,
+   "bans": 236,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 20,
+   "bans": 23,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 21,
+   "bans": 62,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 22,
+   "bans": 51,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 23,
+   "bans": 102,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 25,
+   "bans": 92,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 26,
+   "bans": 40,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 27,
+   "bans": 27,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 28,
+   "bans": 32,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 29,
+   "bans": 71,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 30,
+   "bans": 17,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 31,
+   "bans": 12,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 32,
+   "bans": 43,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 33,
+   "bans": 36,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 34,
+   "bans": 64,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 35,
+   "bans": 147,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 36,
+   "bans": 258,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 37,
+   "bans": 6,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 38,
+   "bans": 23,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 39,
+   "bans": 116,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 40,
+   "bans": 48,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 41,
+   "bans": 182,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 42,
+   "bans": 127,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 43,
+   "bans": 143,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 44,
+   "bans": 114,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 45,
+   "bans": 70,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 46,
+   "bans": 84,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 47,
+   "bans": 301,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 48,
+   "bans": 31,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 49,
+   "bans": 25,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 50,
+   "bans": 4,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 51,
+   "bans": 29,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 52,
+   "bans": 25,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 53,
+   "bans": 22,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 54,
+   "bans": 127,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 55,
+   "bans": 6,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 56,
+   "bans": 23,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 57,
+   "bans": 42,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 58,
+   "bans": 9,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 59,
+   "bans": 175,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 60,
+   "bans": 116,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 61,
+   "bans": 4,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 62,
+   "bans": 45,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 63,
+   "bans": 72,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 64,
+   "bans": 69,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 65,
+   "bans": 56,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 66,
+   "bans": 17,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 67,
+   "bans": 28,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 68,
+   "bans": 87,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 69,
+   "bans": 40,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 70,
+   "bans": 233,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 71,
+   "bans": 74,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 72,
+   "bans": 21,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 73,
+   "bans": 20,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 74,
+   "bans": 173,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 75,
+   "bans": 73,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 76,
+   "bans": 212,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 77,
+   "bans": 8,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 78,
+   "bans": 86,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 79,
+   "bans": 24,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 80,
+   "bans": 43,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 81,
+   "bans": 134,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 82,
+   "bans": 16,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 83,
+   "bans": 3,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 84,
+   "bans": 27,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 85,
+   "bans": 100,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 86,
+   "bans": 46,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 87,
+   "bans": 28,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 88,
+   "bans": 31,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 89,
+   "bans": 13,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 90,
+   "bans": 91,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 91,
+   "bans": 40,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 92,
+   "bans": 35,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 93,
+   "bans": 102,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 94,
+   "bans": 268,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 95,
+   "bans": 26,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 96,
+   "bans": 17,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 97,
+   "bans": 25,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 98,
+   "bans": 113,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 99,
+   "bans": 156,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 100,
+   "bans": 50,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 101,
+   "bans": 29,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 102,
+   "bans": 74,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 103,
+   "bans": 4,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 104,
+   "bans": 54,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 105,
+   "bans": 26,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 106,
+   "bans": 164,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 107,
+   "bans": 29,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 108,
+   "bans": 93,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 109,
+   "bans": 41,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 110,
+   "bans": 36,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 111,
+   "bans": 15,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 112,
+   "bans": 58,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 113,
+   "bans": 29,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 114,
+   "bans": 97,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 119,
+   "bans": 15,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 120,
+   "bans": 87,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 121,
+   "bans": 56,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 123,
+   "bans": 61,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 126,
+   "bans": 167,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 128,
+   "bans": 40,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 129,
+   "bans": 148,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 135,
+   "bans": 39,
+   "games": 650
+  },
+  {
+   "patch_version": "7.31",
+   "hero_id": 136,
+   "bans": 30,
+   "games": 650
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 1,
+   "bans": 196,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 2,
+   "bans": 112,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 3,
+   "bans": 4,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 4,
+   "bans": 247,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 5,
+   "bans": 54,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 6,
+   "bans": 535,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 7,
+   "bans": 62,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 8,
+   "bans": 496,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 9,
+   "bans": 86,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 10,
+   "bans": 243,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 11,
+   "bans": 370,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 12,
+   "bans": 219,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 13,
+   "bans": 360,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 14,
+   "bans": 238,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 15,
+   "bans": 292,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 16,
+   "bans": 57,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 17,
+   "bans": 153,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 18,
+   "bans": 40,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 19,
+   "bans": 218,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 20,
+   "bans": 31,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 21,
+   "bans": 102,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 22,
+   "bans": 217,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 23,
+   "bans": 100,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 25,
+   "bans": 508,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 26,
+   "bans": 26,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 27,
+   "bans": 20,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 28,
+   "bans": 76,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 29,
+   "bans": 111,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 30,
+   "bans": 70,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 31,
+   "bans": 61,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 32,
+   "bans": 367,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 33,
+   "bans": 158,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 34,
+   "bans": 192,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 35,
+   "bans": 478,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 36,
+   "bans": 135,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 37,
+   "bans": 8,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 38,
+   "bans": 110,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 39,
+   "bans": 143,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 40,
+   "bans": 32,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 41,
+   "bans": 501,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 42,
+   "bans": 39,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 43,
+   "bans": 276,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 44,
+   "bans": 143,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 45,
+   "bans": 60,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 46,
+   "bans": 65,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 47,
+   "bans": 380,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 48,
+   "bans": 23,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 49,
+   "bans": 37,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 50,
+   "bans": 45,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 51,
+   "bans": 61,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 52,
+   "bans": 357,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 53,
+   "bans": 154,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 54,
+   "bans": 396,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 55,
+   "bans": 14,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 56,
+   "bans": 132,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 57,
+   "bans": 26,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 58,
+   "bans": 26,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 59,
+   "bans": 189,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 60,
+   "bans": 197,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 61,
+   "bans": 147,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 62,
+   "bans": 76,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 63,
+   "bans": 51,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 64,
+   "bans": 81,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 65,
+   "bans": 274,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 66,
+   "bans": 11,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 67,
+   "bans": 275,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 68,
+   "bans": 80,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 69,
+   "bans": 251,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 70,
+   "bans": 662,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 71,
+   "bans": 51,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 72,
+   "bans": 42,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 73,
+   "bans": 26,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 74,
+   "bans": 201,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 75,
+   "bans": 295,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 76,
+   "bans": 507,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 77,
+   "bans": 47,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 78,
+   "bans": 66,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 79,
+   "bans": 11,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 80,
+   "bans": 151,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 81,
+   "bans": 71,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 82,
+   "bans": 27,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 83,
+   "bans": 114,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 84,
+   "bans": 22,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 85,
+   "bans": 258,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 86,
+   "bans": 131,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 87,
+   "bans": 124,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 88,
+   "bans": 131,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 89,
+   "bans": 226,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 90,
+   "bans": 70,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 91,
+   "bans": 22,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 92,
+   "bans": 103,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 93,
+   "bans": 547,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 94,
+   "bans": 80,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 95,
+   "bans": 63,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 96,
+   "bans": 68,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 97,
+   "bans": 65,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 98,
+   "bans": 126,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 99,
+   "bans": 66,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 100,
+   "bans": 330,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 101,
+   "bans": 71,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 102,
+   "bans": 47,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 103,
+   "bans": 38,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 104,
+   "bans": 144,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 105,
+   "bans": 25,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 106,
+   "bans": 366,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 107,
+   "bans": 39,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 108,
+   "bans": 54,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 109,
+   "bans": 62,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 110,
+   "bans": 26,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 111,
+   "bans": 41,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 112,
+   "bans": 73,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 113,
+   "bans": 171,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 114,
+   "bans": 195,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 119,
+   "bans": 30,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 120,
+   "bans": 296,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 121,
+   "bans": 37,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 123,
+   "bans": 60,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 126,
+   "bans": 190,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 128,
+   "bans": 91,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 129,
+   "bans": 209,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 135,
+   "bans": 252,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 136,
+   "bans": 287,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.32",
+   "hero_id": 137,
+   "bans": 267,
+   "games": 1362
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 1,
+   "bans": 207,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 2,
+   "bans": 95,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 3,
+   "bans": 1,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 4,
+   "bans": 188,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 5,
+   "bans": 15,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 6,
+   "bans": 136,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 7,
+   "bans": 24,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 8,
+   "bans": 160,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 9,
+   "bans": 6,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 10,
+   "bans": 143,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 11,
+   "bans": 54,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 12,
+   "bans": 287,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 13,
+   "bans": 114,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 14,
+   "bans": 26,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 15,
+   "bans": 7,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 16,
+   "bans": 37,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 17,
+   "bans": 168,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 18,
+   "bans": 39,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 19,
+   "bans": 31,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 20,
+   "bans": 6,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 21,
+   "bans": 216,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 22,
+   "bans": 28,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 23,
+   "bans": 18,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 25,
+   "bans": 31,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 26,
+   "bans": 7,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 27,
+   "bans": 2,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 28,
+   "bans": 11,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 29,
+   "bans": 22,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 30,
+   "bans": 16,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 31,
+   "bans": 46,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 32,
+   "bans": 142,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 33,
+   "bans": 10,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 34,
+   "bans": 156,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 35,
+   "bans": 61,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 36,
+   "bans": 64,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 37,
+   "bans": 3,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 38,
+   "bans": 55,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 39,
+   "bans": 130,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 40,
+   "bans": 36,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 41,
+   "bans": 117,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 42,
+   "bans": 23,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 43,
+   "bans": 27,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 44,
+   "bans": 32,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 45,
+   "bans": 59,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 46,
+   "bans": 29,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 47,
+   "bans": 53,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 48,
+   "bans": 11,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 49,
+   "bans": 4,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 50,
+   "bans": 11,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 51,
+   "bans": 8,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 52,
+   "bans": 42,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 53,
+   "bans": 8,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 54,
+   "bans": 45,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 55,
+   "bans": 43,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 56,
+   "bans": 53,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 57,
+   "bans": 45,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 58,
+   "bans": 33,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 59,
+   "bans": 83,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 60,
+   "bans": 42,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 61,
+   "bans": 77,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 62,
+   "bans": 67,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 63,
+   "bans": 4,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 64,
+   "bans": 24,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 65,
+   "bans": 74,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 66,
+   "bans": 16,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 67,
+   "bans": 41,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 68,
+   "bans": 51,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 69,
+   "bans": 89,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 70,
+   "bans": 180,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 71,
+   "bans": 175,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 72,
+   "bans": 4,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 73,
+   "bans": 61,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 74,
+   "bans": 82,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 75,
+   "bans": 71,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 76,
+   "bans": 179,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 77,
+   "bans": 36,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 78,
+   "bans": 23,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 79,
+   "bans": 35,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 80,
+   "bans": 28,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 81,
+   "bans": 14,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 82,
+   "bans": 39,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 83,
+   "bans": 1,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 84,
+   "bans": 16,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 85,
+   "bans": 214,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 86,
+   "bans": 49,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 87,
+   "bans": 44,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 88,
+   "bans": 146,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 89,
+   "bans": 113,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 90,
+   "bans": 24,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 91,
+   "bans": 24,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 92,
+   "bans": 20,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 93,
+   "bans": 309,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 94,
+   "bans": 304,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 95,
+   "bans": 17,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 96,
+   "bans": 4,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 97,
+   "bans": 68,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 98,
+   "bans": 185,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 99,
+   "bans": 22,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 100,
+   "bans": 12,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 101,
+   "bans": 44,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 102,
+   "bans": 22,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 103,
+   "bans": 1,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 104,
+   "bans": 184,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 105,
+   "bans": 129,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 106,
+   "bans": 150,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 107,
+   "bans": 15,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 108,
+   "bans": 95,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 109,
+   "bans": 45,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 110,
+   "bans": 10,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 111,
+   "bans": 79,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 112,
+   "bans": 41,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 113,
+   "bans": 69,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 114,
+   "bans": 126,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 119,
+   "bans": 10,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 120,
+   "bans": 117,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 121,
+   "bans": 15,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 123,
+   "bans": 17,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 126,
+   "bans": 147,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 128,
+   "bans": 77,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 129,
+   "bans": 32,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 135,
+   "bans": 42,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 136,
+   "bans": 25,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 137,
+   "bans": 73,
+   "games": 581
+  },
+  {
+   "patch_version": "7.33",
+   "hero_id": 138,
+   "bans": 60,
+   "games": 581
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 1,
+   "bans": 128,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 2,
+   "bans": 149,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 3,
+   "bans": 40,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 4,
+   "bans": 89,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 5,
+   "bans": 15,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 6,
+   "bans": 82,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 7,
+   "bans": 143,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 8,
+   "bans": 53,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 9,
+   "bans": 19,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 10,
+   "bans": 96,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 11,
+   "bans": 60,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 12,
+   "bans": 177,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 13,
+   "bans": 335,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 14,
+   "bans": 61,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 15,
+   "bans": 82,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 16,
+   "bans": 64,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 17,
+   "bans": 126,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 18,
+   "bans": 128,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 19,
+   "bans": 29,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 20,
+   "bans": 193,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 21,
+   "bans": 58,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 22,
+   "bans": 115,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 23,
+   "bans": 517,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 25,
+   "bans": 358,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 26,
+   "bans": 27,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 27,
+   "bans": 41,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 28,
+   "bans": 207,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 29,
+   "bans": 80,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 30,
+   "bans": 234,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 31,
+   "bans": 53,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 32,
+   "bans": 148,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 33,
+   "bans": 5,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 34,
+   "bans": 177,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 35,
+   "bans": 134,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 36,
+   "bans": 474,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 37,
+   "bans": 209,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 38,
+   "bans": 60,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 39,
+   "bans": 210,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 40,
+   "bans": 53,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 41,
+   "bans": 328,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 42,
+   "bans": 340,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 43,
+   "bans": 38,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 44,
+   "bans": 300,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 45,
+   "bans": 193,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 46,
+   "bans": 249,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 47,
+   "bans": 142,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 48,
+   "bans": 118,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 49,
+   "bans": 8,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 50,
+   "bans": 412,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 51,
+   "bans": 22,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 52,
+   "bans": 25,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 53,
+   "bans": 720,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 54,
+   "bans": 226,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 55,
+   "bans": 45,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 56,
+   "bans": 53,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 57,
+   "bans": 30,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 58,
+   "bans": 34,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 59,
+   "bans": 196,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 60,
+   "bans": 137,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 61,
+   "bans": 32,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 62,
+   "bans": 10,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 63,
+   "bans": 318,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 64,
+   "bans": 78,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 65,
+   "bans": 20,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 66,
+   "bans": 46,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 67,
+   "bans": 514,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 68,
+   "bans": 220,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 69,
+   "bans": 62,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 70,
+   "bans": 153,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 71,
+   "bans": 848,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 72,
+   "bans": 210,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 73,
+   "bans": 24,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 74,
+   "bans": 447,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 75,
+   "bans": 89,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 76,
+   "bans": 405,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 77,
+   "bans": 49,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 78,
+   "bans": 167,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 79,
+   "bans": 127,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 80,
+   "bans": 228,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 81,
+   "bans": 542,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 82,
+   "bans": 40,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 83,
+   "bans": 619,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 84,
+   "bans": 33,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 85,
+   "bans": 112,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 86,
+   "bans": 68,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 87,
+   "bans": 30,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 88,
+   "bans": 102,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 89,
+   "bans": 193,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 90,
+   "bans": 22,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 91,
+   "bans": 66,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 92,
+   "bans": 53,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 93,
+   "bans": 231,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 94,
+   "bans": 35,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 95,
+   "bans": 89,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 96,
+   "bans": 233,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 97,
+   "bans": 91,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 98,
+   "bans": 64,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 99,
+   "bans": 522,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 100,
+   "bans": 54,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 101,
+   "bans": 64,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 102,
+   "bans": 12,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 103,
+   "bans": 14,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 104,
+   "bans": 211,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 105,
+   "bans": 39,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 106,
+   "bans": 83,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 107,
+   "bans": 207,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 108,
+   "bans": 22,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 109,
+   "bans": 49,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 110,
+   "bans": 150,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 111,
+   "bans": 41,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 112,
+   "bans": 28,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 113,
+   "bans": 65,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 114,
+   "bans": 89,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 119,
+   "bans": 188,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 120,
+   "bans": 247,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 121,
+   "bans": 402,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 123,
+   "bans": 9,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 126,
+   "bans": 35,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 128,
+   "bans": 37,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 129,
+   "bans": 33,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 135,
+   "bans": 253,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 136,
+   "bans": 47,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 137,
+   "bans": 640,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.34",
+   "hero_id": 138,
+   "bans": 389,
+   "games": 1390
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 1,
+   "bans": 657,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 2,
+   "bans": 263,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 3,
+   "bans": 248,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 4,
+   "bans": 254,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 5,
+   "bans": 88,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 6,
+   "bans": 351,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 7,
+   "bans": 191,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 8,
+   "bans": 170,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 9,
+   "bans": 83,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 10,
+   "bans": 658,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 11,
+   "bans": 80,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 12,
+   "bans": 330,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 13,
+   "bans": 1445,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 14,
+   "bans": 362,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 15,
+   "bans": 670,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 16,
+   "bans": 97,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 17,
+   "bans": 394,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 18,
+   "bans": 166,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 19,
+   "bans": 611,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 20,
+   "bans": 848,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 21,
+   "bans": 734,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 22,
+   "bans": 605,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 23,
+   "bans": 679,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 25,
+   "bans": 853,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 26,
+   "bans": 816,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 27,
+   "bans": 84,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 28,
+   "bans": 637,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 29,
+   "bans": 176,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 30,
+   "bans": 262,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 31,
+   "bans": 112,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 32,
+   "bans": 218,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 33,
+   "bans": 203,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 34,
+   "bans": 172,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 35,
+   "bans": 443,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 36,
+   "bans": 376,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 37,
+   "bans": 105,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 38,
+   "bans": 147,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 39,
+   "bans": 426,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 40,
+   "bans": 317,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 41,
+   "bans": 1349,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 42,
+   "bans": 123,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 43,
+   "bans": 554,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 44,
+   "bans": 202,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 45,
+   "bans": 336,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 46,
+   "bans": 397,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 47,
+   "bans": 976,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 48,
+   "bans": 479,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 49,
+   "bans": 866,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 50,
+   "bans": 153,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 51,
+   "bans": 85,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 52,
+   "bans": 490,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 53,
+   "bans": 1187,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 54,
+   "bans": 984,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 55,
+   "bans": 135,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 56,
+   "bans": 106,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 57,
+   "bans": 260,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 58,
+   "bans": 256,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 59,
+   "bans": 540,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 60,
+   "bans": 351,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 61,
+   "bans": 418,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 62,
+   "bans": 127,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 63,
+   "bans": 217,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 64,
+   "bans": 150,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 65,
+   "bans": 446,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 66,
+   "bans": 677,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 67,
+   "bans": 224,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 68,
+   "bans": 191,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 69,
+   "bans": 1454,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 70,
+   "bans": 525,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 71,
+   "bans": 691,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 72,
+   "bans": 320,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 73,
+   "bans": 100,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 74,
+   "bans": 574,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 75,
+   "bans": 85,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 76,
+   "bans": 1586,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 77,
+   "bans": 193,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 78,
+   "bans": 343,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 79,
+   "bans": 433,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 80,
+   "bans": 434,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 81,
+   "bans": 61,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 82,
+   "bans": 597,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 83,
+   "bans": 310,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 84,
+   "bans": 50,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 85,
+   "bans": 297,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 86,
+   "bans": 358,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 87,
+   "bans": 572,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 88,
+   "bans": 712,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 89,
+   "bans": 440,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 90,
+   "bans": 316,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 91,
+   "bans": 314,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 92,
+   "bans": 169,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 93,
+   "bans": 908,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 94,
+   "bans": 318,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 95,
+   "bans": 476,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 96,
+   "bans": 669,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 97,
+   "bans": 489,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 98,
+   "bans": 1586,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 99,
+   "bans": 178,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 100,
+   "bans": 125,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 101,
+   "bans": 69,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 102,
+   "bans": 649,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 103,
+   "bans": 32,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 104,
+   "bans": 153,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 105,
+   "bans": 372,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 106,
+   "bans": 664,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 107,
+   "bans": 187,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 108,
+   "bans": 78,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 109,
+   "bans": 162,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 110,
+   "bans": 227,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 111,
+   "bans": 197,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 112,
+   "bans": 496,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 113,
+   "bans": 381,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 114,
+   "bans": 221,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 119,
+   "bans": 134,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 120,
+   "bans": 528,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 121,
+   "bans": 490,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 123,
+   "bans": 583,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 126,
+   "bans": 132,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 128,
+   "bans": 110,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 129,
+   "bans": 591,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 135,
+   "bans": 151,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 136,
+   "bans": 92,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 137,
+   "bans": 677,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.35",
+   "hero_id": 138,
+   "bans": 69,
+   "games": 3626
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 1,
+   "bans": 173,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 2,
+   "bans": 370,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 3,
+   "bans": 61,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 4,
+   "bans": 62,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 5,
+   "bans": 48,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 6,
+   "bans": 94,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 7,
+   "bans": 83,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 8,
+   "bans": 171,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 9,
+   "bans": 24,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 10,
+   "bans": 87,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 11,
+   "bans": 690,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 12,
+   "bans": 124,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 13,
+   "bans": 372,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 14,
+   "bans": 414,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 15,
+   "bans": 209,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 16,
+   "bans": 251,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 17,
+   "bans": 494,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 18,
+   "bans": 133,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 19,
+   "bans": 797,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 20,
+   "bans": 356,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 21,
+   "bans": 311,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 22,
+   "bans": 301,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 23,
+   "bans": 32,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 25,
+   "bans": 193,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 26,
+   "bans": 26,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 27,
+   "bans": 161,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 28,
+   "bans": 187,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 29,
+   "bans": 25,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 30,
+   "bans": 362,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 31,
+   "bans": 56,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 32,
+   "bans": 29,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 33,
+   "bans": 149,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 34,
+   "bans": 45,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 35,
+   "bans": 105,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 36,
+   "bans": 188,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 37,
+   "bans": 48,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 38,
+   "bans": 392,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 39,
+   "bans": 144,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 40,
+   "bans": 237,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 41,
+   "bans": 192,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 42,
+   "bans": 157,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 43,
+   "bans": 46,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 44,
+   "bans": 58,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 45,
+   "bans": 22,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 46,
+   "bans": 456,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 47,
+   "bans": 140,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 48,
+   "bans": 27,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 49,
+   "bans": 261,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 50,
+   "bans": 70,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 51,
+   "bans": 460,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 52,
+   "bans": 268,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 53,
+   "bans": 33,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 54,
+   "bans": 461,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 55,
+   "bans": 473,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 56,
+   "bans": 76,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 57,
+   "bans": 2,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 58,
+   "bans": 70,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 59,
+   "bans": 109,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 60,
+   "bans": 348,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 61,
+   "bans": 250,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 62,
+   "bans": 40,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 63,
+   "bans": 718,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 64,
+   "bans": 112,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 65,
+   "bans": 131,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 66,
+   "bans": 85,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 67,
+   "bans": 23,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 68,
+   "bans": 39,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 69,
+   "bans": 192,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 70,
+   "bans": 682,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 71,
+   "bans": 370,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 72,
+   "bans": 103,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 73,
+   "bans": 42,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 74,
+   "bans": 196,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 75,
+   "bans": 149,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 76,
+   "bans": 473,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 77,
+   "bans": 53,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 78,
+   "bans": 301,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 79,
+   "bans": 117,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 80,
+   "bans": 79,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 81,
+   "bans": 446,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 82,
+   "bans": 104,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 83,
+   "bans": 63,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 84,
+   "bans": 36,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 85,
+   "bans": 77,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 86,
+   "bans": 208,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 87,
+   "bans": 124,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 88,
+   "bans": 288,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 89,
+   "bans": 51,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 90,
+   "bans": 107,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 91,
+   "bans": 148,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 92,
+   "bans": 59,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 93,
+   "bans": 137,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 94,
+   "bans": 88,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 95,
+   "bans": 323,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 96,
+   "bans": 304,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 97,
+   "bans": 58,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 98,
+   "bans": 286,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 99,
+   "bans": 29,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 100,
+   "bans": 15,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 101,
+   "bans": 53,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 102,
+   "bans": 54,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 103,
+   "bans": 66,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 104,
+   "bans": 251,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 105,
+   "bans": 71,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 106,
+   "bans": 409,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 107,
+   "bans": 66,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 108,
+   "bans": 247,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 109,
+   "bans": 21,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 110,
+   "bans": 429,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 111,
+   "bans": 148,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 112,
+   "bans": 124,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 113,
+   "bans": 115,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 114,
+   "bans": 308,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 119,
+   "bans": 334,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 120,
+   "bans": 250,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 121,
+   "bans": 73,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 123,
+   "bans": 283,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 126,
+   "bans": 170,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 128,
+   "bans": 152,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 129,
+   "bans": 190,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 135,
+   "bans": 32,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 136,
+   "bans": 83,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 137,
+   "bans": 186,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.36",
+   "hero_id": 138,
+   "bans": 9,
+   "games": 1641
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 1,
+   "bans": 2158,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 2,
+   "bans": 1750,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 3,
+   "bans": 393,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 4,
+   "bans": 2874,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 5,
+   "bans": 190,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 6,
+   "bans": 2180,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 7,
+   "bans": 2232,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 8,
+   "bans": 1027,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 9,
+   "bans": 995,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 10,
+   "bans": 5290,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 11,
+   "bans": 4652,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 12,
+   "bans": 374,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 13,
+   "bans": 6770,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 14,
+   "bans": 2360,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 15,
+   "bans": 1955,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 16,
+   "bans": 3732,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 17,
+   "bans": 3648,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 18,
+   "bans": 276,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 19,
+   "bans": 2936,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 20,
+   "bans": 1172,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 21,
+   "bans": 2433,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 22,
+   "bans": 1341,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 23,
+   "bans": 802,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 25,
+   "bans": 6930,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 26,
+   "bans": 1555,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 27,
+   "bans": 680,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 28,
+   "bans": 439,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 29,
+   "bans": 923,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 30,
+   "bans": 1087,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 31,
+   "bans": 4859,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 32,
+   "bans": 834,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 33,
+   "bans": 1603,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 34,
+   "bans": 1063,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 35,
+   "bans": 3083,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 36,
+   "bans": 829,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 37,
+   "bans": 1299,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 38,
+   "bans": 3893,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 39,
+   "bans": 4888,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 40,
+   "bans": 883,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 41,
+   "bans": 628,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 42,
+   "bans": 524,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 43,
+   "bans": 447,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 44,
+   "bans": 2588,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 45,
+   "bans": 1351,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 46,
+   "bans": 2241,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 47,
+   "bans": 3081,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 48,
+   "bans": 2477,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 49,
+   "bans": 7006,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 50,
+   "bans": 1192,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 51,
+   "bans": 6659,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 52,
+   "bans": 633,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 53,
+   "bans": 1253,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 54,
+   "bans": 2898,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 55,
+   "bans": 868,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 56,
+   "bans": 392,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 57,
+   "bans": 1432,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 58,
+   "bans": 2198,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 59,
+   "bans": 1998,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 60,
+   "bans": 3429,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 61,
+   "bans": 1574,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 62,
+   "bans": 1839,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 63,
+   "bans": 1881,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 64,
+   "bans": 1007,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 65,
+   "bans": 1732,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 66,
+   "bans": 1196,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 67,
+   "bans": 3504,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 68,
+   "bans": 520,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 69,
+   "bans": 5773,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 70,
+   "bans": 3942,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 71,
+   "bans": 1359,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 72,
+   "bans": 2123,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 73,
+   "bans": 6572,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 74,
+   "bans": 6064,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 75,
+   "bans": 1052,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 76,
+   "bans": 3130,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 77,
+   "bans": 2125,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 78,
+   "bans": 915,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 79,
+   "bans": 5604,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 80,
+   "bans": 1666,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 81,
+   "bans": 796,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 82,
+   "bans": 718,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 83,
+   "bans": 485,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 84,
+   "bans": 1256,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 85,
+   "bans": 860,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 86,
+   "bans": 2356,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 87,
+   "bans": 612,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 88,
+   "bans": 6367,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 89,
+   "bans": 1636,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 90,
+   "bans": 384,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 91,
+   "bans": 696,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 92,
+   "bans": 1947,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 93,
+   "bans": 1597,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 94,
+   "bans": 4487,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 95,
+   "bans": 796,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 96,
+   "bans": 1696,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 97,
+   "bans": 3692,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 98,
+   "bans": 3731,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 99,
+   "bans": 3888,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 100,
+   "bans": 2860,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 101,
+   "bans": 144,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 102,
+   "bans": 3159,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 103,
+   "bans": 404,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 104,
+   "bans": 1040,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 105,
+   "bans": 432,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 106,
+   "bans": 3193,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 107,
+   "bans": 2458,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 108,
+   "bans": 1325,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 109,
+   "bans": 1355,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 110,
+   "bans": 4188,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 111,
+   "bans": 1217,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 112,
+   "bans": 1719,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 113,
+   "bans": 700,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 114,
+   "bans": 5239,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 119,
+   "bans": 2225,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 120,
+   "bans": 3520,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 121,
+   "bans": 548,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 123,
+   "bans": 1064,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 126,
+   "bans": 1666,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 128,
+   "bans": 560,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 129,
+   "bans": 3022,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 135,
+   "bans": 4609,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 136,
+   "bans": 1334,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 137,
+   "bans": 2399,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.37",
+   "hero_id": 138,
+   "bans": 1417,
+   "games": 19513
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 1,
+   "bans": 2649,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 2,
+   "bans": 1431,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 3,
+   "bans": 356,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 4,
+   "bans": 759,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 5,
+   "bans": 305,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 6,
+   "bans": 1575,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 7,
+   "bans": 1775,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 8,
+   "bans": 1021,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 9,
+   "bans": 233,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 10,
+   "bans": 4552,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 11,
+   "bans": 1121,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 12,
+   "bans": 288,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 13,
+   "bans": 5361,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 14,
+   "bans": 1102,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 15,
+   "bans": 1225,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 16,
+   "bans": 1841,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 17,
+   "bans": 3756,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 18,
+   "bans": 543,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 19,
+   "bans": 4323,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 20,
+   "bans": 390,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 21,
+   "bans": 1485,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 22,
+   "bans": 1554,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 23,
+   "bans": 1406,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 25,
+   "bans": 1147,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 26,
+   "bans": 834,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 27,
+   "bans": 2159,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 28,
+   "bans": 1111,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 29,
+   "bans": 3952,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 30,
+   "bans": 962,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 31,
+   "bans": 580,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 32,
+   "bans": 941,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 33,
+   "bans": 904,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 34,
+   "bans": 4884,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 35,
+   "bans": 3251,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 36,
+   "bans": 1483,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 37,
+   "bans": 2809,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 38,
+   "bans": 4340,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 39,
+   "bans": 4633,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 40,
+   "bans": 1066,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 41,
+   "bans": 821,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 42,
+   "bans": 2131,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 43,
+   "bans": 977,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 44,
+   "bans": 3832,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 45,
+   "bans": 298,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 46,
+   "bans": 4347,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 47,
+   "bans": 1942,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 48,
+   "bans": 213,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 49,
+   "bans": 4515,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 50,
+   "bans": 3082,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 51,
+   "bans": 2241,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 52,
+   "bans": 1949,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 53,
+   "bans": 5616,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 54,
+   "bans": 5310,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 55,
+   "bans": 2507,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 56,
+   "bans": 402,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 57,
+   "bans": 202,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 58,
+   "bans": 701,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 59,
+   "bans": 3778,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 60,
+   "bans": 6533,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 61,
+   "bans": 529,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 62,
+   "bans": 739,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 63,
+   "bans": 2452,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 64,
+   "bans": 5940,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 65,
+   "bans": 597,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 66,
+   "bans": 287,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 67,
+   "bans": 1252,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 68,
+   "bans": 5888,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 69,
+   "bans": 2042,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 70,
+   "bans": 4738,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 71,
+   "bans": 555,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 72,
+   "bans": 1184,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 73,
+   "bans": 554,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 74,
+   "bans": 2969,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 75,
+   "bans": 6128,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 76,
+   "bans": 4594,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 77,
+   "bans": 532,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 78,
+   "bans": 576,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 79,
+   "bans": 769,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 80,
+   "bans": 487,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 81,
+   "bans": 246,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 82,
+   "bans": 538,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 83,
+   "bans": 183,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 84,
+   "bans": 270,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 85,
+   "bans": 916,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 86,
+   "bans": 1797,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 87,
+   "bans": 1079,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 88,
+   "bans": 1165,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 89,
+   "bans": 214,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 90,
+   "bans": 1194,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 91,
+   "bans": 719,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 92,
+   "bans": 734,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 93,
+   "bans": 3501,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 94,
+   "bans": 4741,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 95,
+   "bans": 637,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 96,
+   "bans": 794,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 97,
+   "bans": 4241,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 98,
+   "bans": 1217,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 99,
+   "bans": 2633,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 100,
+   "bans": 1001,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 101,
+   "bans": 671,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 102,
+   "bans": 5773,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 103,
+   "bans": 423,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 104,
+   "bans": 1049,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 105,
+   "bans": 652,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 106,
+   "bans": 4832,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 107,
+   "bans": 384,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 108,
+   "bans": 1030,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 109,
+   "bans": 2344,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 110,
+   "bans": 1809,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 111,
+   "bans": 958,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 112,
+   "bans": 1514,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 113,
+   "bans": 473,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 114,
+   "bans": 4729,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 119,
+   "bans": 897,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 120,
+   "bans": 2381,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 121,
+   "bans": 333,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 123,
+   "bans": 215,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 126,
+   "bans": 886,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 128,
+   "bans": 434,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 129,
+   "bans": 1765,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 131,
+   "bans": 1924,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 135,
+   "bans": 2388,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 136,
+   "bans": 1383,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 137,
+   "bans": 603,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.38",
+   "hero_id": 138,
+   "bans": 1267,
+   "games": 16958
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 1,
+   "bans": 5051,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 2,
+   "bans": 8543,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 3,
+   "bans": 1654,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 4,
+   "bans": 486,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 5,
+   "bans": 267,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 6,
+   "bans": 2687,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 7,
+   "bans": 3897,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 8,
+   "bans": 3612,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 9,
+   "bans": 234,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 10,
+   "bans": 4267,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 11,
+   "bans": 6631,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 12,
+   "bans": 1615,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 13,
+   "bans": 11515,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 14,
+   "bans": 2524,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 15,
+   "bans": 1235,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 16,
+   "bans": 2713,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 17,
+   "bans": 5782,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 18,
+   "bans": 2794,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 19,
+   "bans": 2237,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 20,
+   "bans": 2937,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 21,
+   "bans": 3844,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 22,
+   "bans": 1785,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 23,
+   "bans": 4206,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 25,
+   "bans": 2803,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 26,
+   "bans": 1665,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 27,
+   "bans": 8379,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 28,
+   "bans": 1938,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 29,
+   "bans": 1537,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 30,
+   "bans": 2101,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 31,
+   "bans": 1214,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 32,
+   "bans": 644,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 33,
+   "bans": 1656,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 34,
+   "bans": 4108,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 35,
+   "bans": 3166,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 36,
+   "bans": 2584,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 37,
+   "bans": 1541,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 38,
+   "bans": 6061,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 39,
+   "bans": 13795,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 40,
+   "bans": 2971,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 41,
+   "bans": 1805,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 42,
+   "bans": 1603,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 43,
+   "bans": 5111,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 44,
+   "bans": 513,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 45,
+   "bans": 2386,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 46,
+   "bans": 7360,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 47,
+   "bans": 2745,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 48,
+   "bans": 630,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 49,
+   "bans": 3219,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 50,
+   "bans": 3391,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 51,
+   "bans": 3517,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 52,
+   "bans": 3393,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 53,
+   "bans": 12596,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 54,
+   "bans": 4985,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 55,
+   "bans": 1974,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 56,
+   "bans": 876,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 57,
+   "bans": 727,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 58,
+   "bans": 1084,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 59,
+   "bans": 4785,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 60,
+   "bans": 3619,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 61,
+   "bans": 664,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 62,
+   "bans": 322,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 63,
+   "bans": 2727,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 64,
+   "bans": 2973,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 65,
+   "bans": 5502,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 66,
+   "bans": 919,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 67,
+   "bans": 2587,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 68,
+   "bans": 4178,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 69,
+   "bans": 3820,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 70,
+   "bans": 11606,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 71,
+   "bans": 1306,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 72,
+   "bans": 2913,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 73,
+   "bans": 999,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 74,
+   "bans": 3129,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 75,
+   "bans": 10033,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 76,
+   "bans": 5624,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 77,
+   "bans": 2061,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 78,
+   "bans": 1834,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 79,
+   "bans": 1931,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 80,
+   "bans": 1209,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 81,
+   "bans": 625,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 82,
+   "bans": 1176,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 83,
+   "bans": 376,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 84,
+   "bans": 524,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 85,
+   "bans": 8567,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 86,
+   "bans": 3399,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 87,
+   "bans": 3333,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 88,
+   "bans": 2285,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 89,
+   "bans": 2772,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 90,
+   "bans": 909,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 91,
+   "bans": 1325,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 92,
+   "bans": 2245,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 93,
+   "bans": 1992,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 94,
+   "bans": 7621,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 95,
+   "bans": 1581,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 96,
+   "bans": 2299,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 97,
+   "bans": 3005,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 98,
+   "bans": 5370,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 99,
+   "bans": 2516,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 100,
+   "bans": 3071,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 101,
+   "bans": 1968,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 102,
+   "bans": 5137,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 103,
+   "bans": 466,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 104,
+   "bans": 2122,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 105,
+   "bans": 2548,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 106,
+   "bans": 4788,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 107,
+   "bans": 906,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 108,
+   "bans": 1385,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 109,
+   "bans": 4968,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 110,
+   "bans": 1649,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 111,
+   "bans": 2716,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 112,
+   "bans": 911,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 113,
+   "bans": 1395,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 114,
+   "bans": 4481,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 119,
+   "bans": 3057,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 120,
+   "bans": 4153,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 121,
+   "bans": 447,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 123,
+   "bans": 1067,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 126,
+   "bans": 4418,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 128,
+   "bans": 4002,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 129,
+   "bans": 5548,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 131,
+   "bans": 1649,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 135,
+   "bans": 12161,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 136,
+   "bans": 5590,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 137,
+   "bans": 1359,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 138,
+   "bans": 1170,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.39",
+   "hero_id": 145,
+   "bans": 762,
+   "games": 28956
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 1,
+   "bans": 1424,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 2,
+   "bans": 1997,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 3,
+   "bans": 566,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 4,
+   "bans": 305,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 5,
+   "bans": 227,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 6,
+   "bans": 2141,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 7,
+   "bans": 411,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 8,
+   "bans": 1155,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 9,
+   "bans": 163,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 10,
+   "bans": 1027,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 11,
+   "bans": 3157,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 12,
+   "bans": 1548,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 13,
+   "bans": 3170,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 14,
+   "bans": 1053,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 15,
+   "bans": 1390,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 16,
+   "bans": 1189,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 17,
+   "bans": 2039,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 18,
+   "bans": 409,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 19,
+   "bans": 1773,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 20,
+   "bans": 318,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 21,
+   "bans": 2405,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 22,
+   "bans": 799,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 23,
+   "bans": 666,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 25,
+   "bans": 1701,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 26,
+   "bans": 1158,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 27,
+   "bans": 1066,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 28,
+   "bans": 1971,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 29,
+   "bans": 1655,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 30,
+   "bans": 682,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 31,
+   "bans": 733,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 32,
+   "bans": 302,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 33,
+   "bans": 541,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 34,
+   "bans": 1424,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 35,
+   "bans": 1212,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 36,
+   "bans": 1937,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 37,
+   "bans": 1199,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 38,
+   "bans": 2499,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 39,
+   "bans": 3357,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 40,
+   "bans": 1539,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 41,
+   "bans": 1121,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 42,
+   "bans": 381,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 43,
+   "bans": 1201,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 44,
+   "bans": 225,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 45,
+   "bans": 412,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 46,
+   "bans": 1498,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 47,
+   "bans": 3382,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 48,
+   "bans": 797,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 49,
+   "bans": 801,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 50,
+   "bans": 740,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 51,
+   "bans": 900,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 52,
+   "bans": 832,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 53,
+   "bans": 975,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 54,
+   "bans": 2408,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 55,
+   "bans": 266,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 56,
+   "bans": 1333,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 57,
+   "bans": 265,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 58,
+   "bans": 248,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 59,
+   "bans": 2438,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 60,
+   "bans": 1937,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 61,
+   "bans": 450,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 62,
+   "bans": 228,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 63,
+   "bans": 1220,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 64,
+   "bans": 2283,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 65,
+   "bans": 1840,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 66,
+   "bans": 431,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 67,
+   "bans": 711,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 68,
+   "bans": 700,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 69,
+   "bans": 1334,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 70,
+   "bans": 3246,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 71,
+   "bans": 1333,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 72,
+   "bans": 808,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 73,
+   "bans": 840,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 74,
+   "bans": 2220,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 75,
+   "bans": 1965,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 76,
+   "bans": 1602,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 77,
+   "bans": 821,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 78,
+   "bans": 1123,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 79,
+   "bans": 1678,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 80,
+   "bans": 1161,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 81,
+   "bans": 148,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 82,
+   "bans": 578,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 83,
+   "bans": 1906,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 84,
+   "bans": 228,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 85,
+   "bans": 1144,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 86,
+   "bans": 2042,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 87,
+   "bans": 983,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 88,
+   "bans": 1304,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 89,
+   "bans": 322,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 90,
+   "bans": 1098,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 91,
+   "bans": 732,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 92,
+   "bans": 1077,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 93,
+   "bans": 1736,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 94,
+   "bans": 1427,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 95,
+   "bans": 584,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 96,
+   "bans": 897,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 97,
+   "bans": 812,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 98,
+   "bans": 1899,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 99,
+   "bans": 582,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 100,
+   "bans": 1610,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 101,
+   "bans": 1129,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 102,
+   "bans": 1192,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 103,
+   "bans": 100,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 104,
+   "bans": 689,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 105,
+   "bans": 1341,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 106,
+   "bans": 2334,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 107,
+   "bans": 776,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 108,
+   "bans": 1469,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 109,
+   "bans": 1316,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 110,
+   "bans": 1256,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 111,
+   "bans": 559,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 112,
+   "bans": 389,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 113,
+   "bans": 744,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 114,
+   "bans": 888,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 119,
+   "bans": 869,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 120,
+   "bans": 1932,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 121,
+   "bans": 397,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 123,
+   "bans": 841,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 126,
+   "bans": 2177,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 128,
+   "bans": 2324,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 129,
+   "bans": 1870,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 131,
+   "bans": 525,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 135,
+   "bans": 2123,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 136,
+   "bans": 960,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 137,
+   "bans": 1097,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 138,
+   "bans": 738,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 145,
+   "bans": 1194,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.40",
+   "hero_id": 155,
+   "bans": 1392,
+   "games": 11022
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 1,
+   "bans": 146,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 2,
+   "bans": 678,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 3,
+   "bans": 711,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 4,
+   "bans": 80,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 5,
+   "bans": 22,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 6,
+   "bans": 862,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 7,
+   "bans": 54,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 8,
+   "bans": 108,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 9,
+   "bans": 81,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 10,
+   "bans": 156,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 11,
+   "bans": 1103,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 12,
+   "bans": 230,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 13,
+   "bans": 1563,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 14,
+   "bans": 115,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 15,
+   "bans": 210,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 16,
+   "bans": 727,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 17,
+   "bans": 819,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 18,
+   "bans": 70,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 19,
+   "bans": 728,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 20,
+   "bans": 70,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 21,
+   "bans": 1156,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 22,
+   "bans": 269,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 23,
+   "bans": 135,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 25,
+   "bans": 419,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 26,
+   "bans": 255,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 27,
+   "bans": 128,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 28,
+   "bans": 688,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 29,
+   "bans": 595,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 30,
+   "bans": 182,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 31,
+   "bans": 164,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 32,
+   "bans": 87,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 33,
+   "bans": 443,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 34,
+   "bans": 426,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 35,
+   "bans": 266,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 36,
+   "bans": 656,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 37,
+   "bans": 175,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 38,
+   "bans": 1387,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 39,
+   "bans": 803,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 40,
+   "bans": 839,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 41,
+   "bans": 425,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 42,
+   "bans": 132,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 43,
+   "bans": 407,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 44,
+   "bans": 59,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 45,
+   "bans": 79,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 46,
+   "bans": 291,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 47,
+   "bans": 894,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 48,
+   "bans": 257,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 49,
+   "bans": 50,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 50,
+   "bans": 200,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 51,
+   "bans": 894,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 52,
+   "bans": 108,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 53,
+   "bans": 656,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 54,
+   "bans": 611,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 55,
+   "bans": 311,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 56,
+   "bans": 262,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 57,
+   "bans": 31,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 58,
+   "bans": 357,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 59,
+   "bans": 1111,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 60,
+   "bans": 370,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 61,
+   "bans": 77,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 62,
+   "bans": 46,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 63,
+   "bans": 329,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 64,
+   "bans": 148,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 65,
+   "bans": 1246,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 66,
+   "bans": 108,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 67,
+   "bans": 171,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 68,
+   "bans": 105,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 69,
+   "bans": 1231,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 70,
+   "bans": 470,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 71,
+   "bans": 299,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 72,
+   "bans": 108,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 73,
+   "bans": 721,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 74,
+   "bans": 785,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 75,
+   "bans": 473,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 76,
+   "bans": 202,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 77,
+   "bans": 371,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 78,
+   "bans": 510,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 79,
+   "bans": 459,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 80,
+   "bans": 1722,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 81,
+   "bans": 15,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 82,
+   "bans": 156,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 83,
+   "bans": 1308,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 84,
+   "bans": 20,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 85,
+   "bans": 505,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 86,
+   "bans": 860,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 87,
+   "bans": 151,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 88,
+   "bans": 691,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 89,
+   "bans": 185,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 90,
+   "bans": 955,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 91,
+   "bans": 479,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 92,
+   "bans": 775,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 93,
+   "bans": 371,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 94,
+   "bans": 235,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 95,
+   "bans": 205,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 96,
+   "bans": 418,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 97,
+   "bans": 303,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 98,
+   "bans": 388,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 99,
+   "bans": 462,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 100,
+   "bans": 573,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 101,
+   "bans": 250,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 102,
+   "bans": 421,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 103,
+   "bans": 12,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 104,
+   "bans": 80,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 105,
+   "bans": 898,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 106,
+   "bans": 1020,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 107,
+   "bans": 350,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 108,
+   "bans": 582,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 109,
+   "bans": 482,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 110,
+   "bans": 847,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 111,
+   "bans": 192,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 112,
+   "bans": 319,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 113,
+   "bans": 272,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 114,
+   "bans": 573,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 119,
+   "bans": 170,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 120,
+   "bans": 1391,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 121,
+   "bans": 169,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 123,
+   "bans": 705,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 126,
+   "bans": 1034,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 128,
+   "bans": 1264,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 129,
+   "bans": 281,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 131,
+   "bans": 304,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 135,
+   "bans": 695,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 136,
+   "bans": 456,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 137,
+   "bans": 175,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 138,
+   "bans": 418,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 145,
+   "bans": 751,
+   "games": 4175
+  },
+  {
+   "patch_version": "7.41",
+   "hero_id": 155,
+   "bans": 577,
+   "games": 4175
+  }
+ ]
+}

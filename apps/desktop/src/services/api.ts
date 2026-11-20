@@ -4,6 +4,7 @@ import type {
   DraftState,
   RecommendationSet,
   AppConfig,
+  BanSuggestion,
 } from '@shared';
 
 export interface GetRecommendationsParams {
@@ -27,6 +28,10 @@ export interface ManualBanParams {
 class ApiService {
   async getRecommendations(params: GetRecommendationsParams): Promise<RecommendationSet> {
     return invoke('get_recommendations', params as unknown as InvokeArgs);
+  }
+
+  async getBanSuggestions(limit = 10): Promise<BanSuggestion[]> {
+    return invoke('get_ban_suggestions', { limit });
   }
 
   async getScoreBreakdown(
