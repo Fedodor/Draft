@@ -13,8 +13,9 @@ meta score; ranked on their own, composition and matchup+synergy carry only a
 barely detectable ordering signal and matchup+synergy is worse than chance at
 top-1.
 
-The ban phase is the worst of it: the engine's top ban is the hero the team
-bans 1.28% of the time, against 4.41% for a per-patch ban-prevalence table.
+The ban phase has no suggestions at all: during bans the app keeps showing the
+same pick cards, and that list names the banned hero 1.28% of the time, against
+4.41% for a per-patch ban-prevalence table.
 Gating the engine behind a fresh prior's shortlist ties that prior rather than
 beating it (3.41% vs 3.38%, McNemar z = 0.4).
 
@@ -166,16 +167,31 @@ With ~120 heroes available, chance is ~0.8% for rank-1. Opening bans are ~2.5x
 chance, later bans are at chance. So teams do occasionally ban what the scorer
 likes, but no more than that: the scorer is not tracking the ban phase.
 
-## Ban phase: what the app would suggest while banning
+## Ban phase: there are no ban suggestions, and the pick list scores badly
 
-The proxy above asks whether bans remove heroes the engine likes. This asks the
-product question: with heroes still available when a team bans, how often is the
-hero they ban the engine's (or a prior's) top suggestion? Evaluation slice,
-111,282 ban actions:
+The proxy above asks whether bans remove heroes the engine likes. This section
+asks what a user would see while banning. **First, what the app actually does
+(traced through the code):**
+
+- `commands.rs::get_recommendations` never looks at `is_picking_phase`; it
+  returns the same pick set for the selected team whatever the draft is doing.
+- `RecommendationPanel` renders "Top Picks", "Safe Picks", "High Impact",
+  "Comfort Picks" and "Anti-Meta" — there is no ban category, and the overlay's
+  list is `top_picks` under a "Top Picks" heading.
+- `DraftOverlay` badges the draft as "PICKING PHASE" or "WAITING"; there is no
+  banning state anywhere in the UI, and `TeamAnalysisPanel` only counts
+  completed bans. HeroPicker's "Ban" mode records a ban manually; it does not
+  suggest one.
+- The feed does refresh on ban events, so the list is current during bans with
+  banned heroes removed — it just stays a pick list.
+
+So there is no ban feature to measure. The number below is the closest thing to
+current behaviour: how often the pick list already on screen happens to name the
+hero the team bans. Evaluation slice, 111,282 ban actions:
 
 | ranking | top-1 | top-3 | top-5 | mean pct |
 | --- | --- | --- | --- | --- |
-| engine (shipped) | 1.28% | 3.6% | 7.7% | 0.553 |
+| engine pick list (what is on screen) | 1.28% | 3.6% | 7.7% | 0.553 |
 | ban prevalence, global warm-up | 3.28% | 8.5% | 10.3% | 0.622 |
 | ban prevalence, rolling per-patch | 4.41% | 11.6% | 17.1% | 0.708 |
 
@@ -187,9 +203,11 @@ the drafts already replayed in this patch (falling back to the global table unti
 a patch has 200 replayed bans).
 
 Bans concentrate harder than picks: 4.41% top-1 and 17.1% top-5 for the per-patch
-ban table, against 3.38% and 13.8% for the pick prior. Ban guidance is currently
-the engine's, so this is a 3.4x gap in top-1 and better than 2x in top-5 — the
-largest measured gap in this report.
+ban table, against 3.38% and 13.8% for the pick prior. If the app added ban
+suggestions built on that table instead of leaving the pick cards on screen, the
+observable gap would be 3.4x in top-1 and better than 2x in top-5 — the largest
+difference measured anywhere in this report. It is a hypothetical improvement to
+be justified, not a comparison against a shipped ban feature.</think>
 
 ## Component ablation
 
@@ -411,9 +429,10 @@ data is not the explanation.
   are optimistic. Removing the leakage could only lower them.
 - One database snapshot was evaluated (patch 7.41, all other patches replayed
   against it), matching how the app ships.
-- Ban guidance is measured only as "is the banned hero our top suggestion". It
-  does not check whether a suggested ban would have been a *good* ban, which
-  would need a counterfactual the corpus cannot provide.
+- There is no ban-suggestion feature to evaluate, so the ban section measures
+  the pick list repurposed as one. Even if a prevalence table were added, it
+  would only predict *which* bans happen, not whether a suggested ban is a good
+  ban — that needs a counterfactual the corpus cannot provide.
 - ML is disabled by default in the shipped config (`default_ml_enabled()`
   returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
   The ML-on path was measured on a 3,000-draft matched sample rather than the
