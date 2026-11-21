@@ -180,6 +180,35 @@ pub async fn manual_ban(
 }
 
 #[command(rename_all = "snake_case")]
+pub async fn manual_ban_many(
+    engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
+    hero_ids: Vec<i32>,
+    team: String,
+) -> Result<(), CommandError> {
+    let team_side = parse_team(&team)?;
+    let engine_guard = engine.lock().unwrap();
+    let state = (*engine_guard).get_state();
+    let bans: Vec<DraftBan> = hero_ids
+        .iter()
+        .enumerate()
+        .map(|(index, hero_id)| DraftBan {
+            hero_id: HeroId(*hero_id),
+            order: state.bans.len() as i32 + index as i32 + 1,
+            team: team_side,
+        })
+        .collect();
+
+    (*engine_guard)
+        .add_bans(&bans)
+        .map_err(CommandError::from)?;
+    for ban in &bans {
+        (*engine_guard).lift_suppression(&ban.hero_id);
+    }
+    info!("Manual bans added: {} heroes, team={}", bans.len(), team);
+    Ok(())
+}
+
+#[command(rename_all = "snake_case")]
 pub async fn undo_last_action(
     engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
 ) -> Result<Option<DraftAction>, CommandError> {

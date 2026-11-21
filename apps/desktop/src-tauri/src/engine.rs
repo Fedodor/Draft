@@ -593,6 +593,30 @@ impl DraftEngine {
         debug!("Ban added: {:?}", ban_for_log);
     }
 
+    /// Apply a batch of bans atomically.
+    ///
+    /// Every ban is validated before any is applied, so the batch either lands
+    /// whole or leaves the draft untouched. A half-applied batch cannot be
+    /// retried: the heroes it already banned are gone from the pool, so the
+    /// same request would fail forever.
+    pub fn add_bans(&self, bans: &[DraftBan]) -> std::result::Result<(), EngineError> {
+        let mut seen = std::collections::HashSet::new();
+        for ban in bans {
+            if !seen.insert(ban.hero_id.0) {
+                return Err(EngineError::HeroUnavailable {
+                    hero_id: ban.hero_id.0,
+                });
+            }
+        }
+        for ban in bans {
+            self.validate_ban(ban)?;
+        }
+        for ban in bans {
+            self.add_ban(ban.clone());
+        }
+        Ok(())
+    }
+
     /// Reverse the most recent pick or ban. Returns the removed action, or
     /// `None` when there is nothing to undo.
     pub fn undo_last_action(&self) -> Option<DraftAction> {
@@ -1463,6 +1487,29 @@ mod tests {
         engine.add_pick(radiant_pick(1, 1));
         let duplicate = engine.validate_pick(&radiant_pick(1, 2));
         assert_eq!(duplicate, Err(EngineError::HeroUnavailable { hero_id: 1 }));
+    }
+
+    #[test]
+    fn test_add_bans_is_all_or_nothing() {
+        let engine = engine_with_heroes(3);
+        let ban = |hero_id: i32, order: i32| DraftBan {
+            hero_id: HeroId(hero_id),
+            order,
+            team: TeamSide::Radiant,
+        };
+
+        // Hero 3 is unavailable, so hero 1 must not be banned either.
+        engine.state.write().available_heroes.retain(|id| id.0 != 3);
+        assert_eq!(
+            engine.add_bans(&[ban(1, 1), ban(3, 2)]),
+            Err(EngineError::HeroUnavailable { hero_id: 3 })
+        );
+        let state = engine.get_state();
+        assert!(state.bans.is_empty());
+        assert!(state.available_heroes.contains(&HeroId(1)));
+
+        assert!(engine.add_bans(&[ban(1, 1), ban(2, 2)]).is_ok());
+        assert_eq!(engine.get_state().bans.len(), 2);
     }
 
     #[test]

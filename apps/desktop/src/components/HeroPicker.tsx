@@ -4,9 +4,12 @@ import { HeroPortrait } from './HeroPortrait';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, RotateCcw, Trash2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import type { Hero, HeroId } from '@shared';
+import type { BanSuggestion, Hero, HeroId } from '@shared';
 
 type DraftMode = 'pick' | 'ban';
+
+/** Ranked All Pick bans 16 heroes before the first pick. */
+const ALL_PICK_BAN_COUNT = 16;
 
 export function HeroPicker() {
   const { heroes, draft, getHero, setDraft, setRecommendations } = useEngineStore();
@@ -16,6 +19,7 @@ export function HeroPicker() {
   const [mode, setMode] = useState<DraftMode>('pick');
   const [isBusy, setIsBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [banPreview, setBanPreview] = useState<BanSuggestion[] | null>(null);
 
   const availableHeroes = draft.available_heroes;
 
@@ -79,6 +83,20 @@ export function HeroPicker() {
     });
 
   const handleReset = () => runAction(() => api.resetDraft());
+
+  const previewTopBans = () =>
+    runAction(async () => {
+      setBanPreview(await api.getBanSuggestions(ALL_PICK_BAN_COUNT));
+    });
+
+  const confirmTopBans = () =>
+    runAction(async () => {
+      const heroIds = (banPreview ?? []).map((suggestion) => suggestion.hero_id);
+      if (heroIds.length > 0) {
+        await api.manualBanMany({ hero_ids: heroIds, team: selectedTeam });
+      }
+      setBanPreview(null);
+    });
 
   const isCurrentTurn = draft.current_pick === selectedTeam;
   const allyPicks = selectedTeam === 'radiant' ? draft.radiant_picks : draft.dire_picks;
@@ -149,6 +167,64 @@ export function HeroPicker() {
             </span>
           )}
         </div>
+
+        {!draft.has_live_draft && (
+          <div className="mb-3">
+            {banPreview === null ? (
+              <button
+                onClick={previewTopBans}
+                disabled={isBusy}
+                className="w-full rounded border border-dota-border py-1.5 text-xs font-medium text-dota-textMuted hover:bg-dota-border hover:text-dota-text disabled:opacity-40"
+              >
+                Add most-banned heroes…
+              </button>
+            ) : banPreview.length === 0 ? (
+              <p className="text-xs text-dota-textMuted">
+                No ban data for this patch.
+              </p>
+            ) : (
+              <div className="rounded-lg border border-dota-border bg-dota-bg/60 p-2">
+                <p className="mb-1.5 text-xs text-dota-textMuted">
+                  Top {banPreview.length} most-banned on patch{' '}
+                  {banPreview[0].patch_version}. Review, then add them as bans.
+                </p>
+                <div className="mb-2 max-h-40 space-y-1 overflow-y-auto">
+                  {banPreview.map((suggestion, index) => (
+                    <div
+                      key={suggestion.hero_id}
+                      className="flex items-center justify-between gap-2 text-xs text-dota-text"
+                    >
+                      <span className="truncate">
+                        {index + 1}.{' '}
+                        {getHero(suggestion.hero_id)?.localized_name ??
+                          `Hero ${suggestion.hero_id}`}
+                      </span>
+                      <span className="shrink-0 text-dota-textMuted">
+                        {Math.round(suggestion.ban_rate * 100)}%
+                      </span>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={confirmTopBans}
+                    disabled={isBusy}
+                    className="flex-1 rounded bg-red-500 py-1 text-xs font-medium text-white hover:bg-red-600 disabled:opacity-40"
+                  >
+                    Add {banPreview.length} bans
+                  </button>
+                  <button
+                    onClick={() => setBanPreview(null)}
+                    disabled={isBusy}
+                    className="rounded border border-dota-border px-3 py-1 text-xs text-dota-textMuted hover:text-dota-text disabled:opacity-40"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {errorMessage && (
           <div className="mb-3 px-2 py-1.5 text-xs bg-red-500/10 border border-red-500/30 text-red-400 rounded">

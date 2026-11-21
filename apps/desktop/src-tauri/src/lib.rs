@@ -105,6 +105,7 @@ pub fn run() {
             commands::get_draft_state,
             commands::manual_pick,
             commands::manual_ban,
+            commands::manual_ban_many,
             commands::undo_last_action,
             commands::reset_draft,
             commands::get_hero_list,

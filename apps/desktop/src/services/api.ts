@@ -60,6 +60,14 @@ class ApiService {
     return invoke('manual_ban', params as unknown as InvokeArgs);
   }
 
+  /** All-or-nothing: the backend validates every hero before applying any. */
+  async manualBanMany(params: {
+    hero_ids: number[];
+    team: 'radiant' | 'dire';
+  }): Promise<void> {
+    return invoke('manual_ban_many', params as unknown as InvokeArgs);
+  }
+
   async undoLastAction(): Promise<DraftAction | null> {
     return invoke('undo_last_action');
   }
