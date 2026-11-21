@@ -54,6 +54,7 @@ const defaultConfig: AppConfig = {
   ml_model_path: 'ml/models/draft_model_xgboost_full.onnx',
   auto_update_meta: true,
   preferred_language: 'en',
+  all_pick_ban_count: 16,
 };
 
 const initialDraftState: DraftState = {

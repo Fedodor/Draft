@@ -586,6 +586,10 @@ pub struct AppConfig {
     pub auto_update_meta: bool,
     #[serde(default = "default_language")]
     pub preferred_language: String,
+    /// Ranked All Pick bans before the first pick. Valve changes it between
+    /// patches, so it is a setting rather than a constant.
+    #[serde(default = "default_all_pick_ban_count")]
+    pub all_pick_ban_count: u16,
 }
 
 fn default_gsi_port() -> u16 {
@@ -610,6 +614,9 @@ fn default_ml_enabled() -> bool {
 }
 fn default_language() -> String {
     "en".to_string()
+}
+fn default_all_pick_ban_count() -> u16 {
+    16
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -637,6 +644,7 @@ impl Default for AppConfig {
             ml_model_path: default_model_path(),
             auto_update_meta: true,
             preferred_language: default_language(),
+            all_pick_ban_count: default_all_pick_ban_count(),
         }
     }
 }
@@ -669,6 +677,12 @@ impl AppConfig {
             return Err(format!(
                 "overlay_size must be at least 100x100 (got {}x{})",
                 self.overlay_size.width, self.overlay_size.height
+            ));
+        }
+        if !(1..=30).contains(&self.all_pick_ban_count) {
+            return Err(format!(
+                "all_pick_ban_count must be between 1 and 30 (got {})",
+                self.all_pick_ban_count
             ));
         }
         Ok(())
@@ -710,7 +724,20 @@ mod tests {
         assert!(config
             .ml_model_path
             .ends_with("draft_model_xgboost_full.onnx"));
+        assert_eq!(config.all_pick_ban_count, 16);
         assert!(config.validate().is_ok());
+
+        let no_bans = AppConfig {
+            all_pick_ban_count: 0,
+            ..AppConfig::default()
+        };
+        assert!(no_bans.validate().is_err());
+
+        let too_many_bans = AppConfig {
+            all_pick_ban_count: 31,
+            ..AppConfig::default()
+        };
+        assert!(too_many_bans.validate().is_err());
 
         let invalid = AppConfig {
             gsi_port: 80,

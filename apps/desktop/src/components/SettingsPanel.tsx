@@ -3,7 +3,7 @@ import { api, describeCommandError, type MlStatus } from '../services/api';
 import { useGsiStatus } from '../hooks/useGsiStatus';
 import type { AppConfig } from '@shared';
 import {
-  Server, Monitor, Brain,
+  Server, Monitor, Brain, Ban,
   Loader2, CheckCircle, AlertCircle
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
@@ -29,6 +29,9 @@ function validateConfig(config: AppConfig): string | null {
   }
   if (config.overlay_size.width < 100 || config.overlay_size.height < 100) {
     return 'Overlay size must be at least 100x100';
+  }
+  if (!Number.isInteger(config.all_pick_ban_count) || config.all_pick_ban_count < 1 || config.all_pick_ban_count > 30) {
+    return 'All Pick ban count must be between 1 and 30';
   }
   return null;
 }
@@ -275,6 +278,23 @@ export function SettingsPanel() {
             </div>
           </SettingItem>
         </div>
+      </SettingsSection>
+
+      {/* All Pick Settings */}
+      <SettingsSection title="All Pick" icon={<Ban className="w-5 h-5" />}>
+        <SettingItem
+          label="Ban Count"
+          description="Heroes added by 'Add most-banned heroes'. Valve changes the count between patches (16 at the time of writing)."
+        >
+          <input
+            type="number"
+            value={Number.isNaN(config.all_pick_ban_count) ? '' : config.all_pick_ban_count}
+            onChange={(e) => setConfig({ all_pick_ban_count: parseInt(e.target.value, 10) })}
+            min={1}
+            max={30}
+            className="w-32 px-3 py-2 bg-dota-bg border border-dota-border rounded-lg text-sm text-dota-text focus:outline-none focus:ring-2 focus:ring-dota-accent focus:border-transparent"
+          />
+        </SettingItem>
       </SettingsSection>
 
       {/* ML Settings */}

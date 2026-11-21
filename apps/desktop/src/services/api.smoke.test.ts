@@ -82,6 +82,7 @@ describe('manual draft IPC smoke test', () => {
       ml_model_path: 'm.onnx',
       auto_update_meta: true,
       preferred_language: 'en',
+      all_pick_ban_count: 16,
     });
     const config = await api.getConfig();
     expect(mockedInvoke).toHaveBeenCalledWith('get_config');
@@ -100,6 +101,7 @@ describe('manual draft IPC smoke test', () => {
       ml_model_path: 'm.onnx',
       auto_update_meta: true,
       preferred_language: 'en',
+      all_pick_ban_count: 16,
     };
     await api.setConfig(config);
     expect(mockedInvoke).toHaveBeenCalledWith('set_config', { config });

@@ -232,6 +232,8 @@ export interface AppConfig {
   ml_model_path: string;
   auto_update_meta: boolean;
   preferred_language: string;
+  /** Ranked All Pick bans before the first pick; Valve changes it by patch. */
+  all_pick_ban_count: number;
 }
 
 export interface GsiStatus {

@@ -1,4 +1,4 @@
-import { useEngineStore, useUIStore } from '../stores';
+import { useConfigStore, useEngineStore, useUIStore } from '../stores';
 import { api, describeCommandError } from '../services/api';
 import { HeroPortrait } from './HeroPortrait';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,12 +8,10 @@ import type { BanSuggestion, Hero, HeroId } from '@shared';
 
 type DraftMode = 'pick' | 'ban';
 
-/** Ranked All Pick bans 16 heroes before the first pick. */
-const ALL_PICK_BAN_COUNT = 16;
-
 export function HeroPicker() {
   const { heroes, draft, getHero, setDraft, setRecommendations } = useEngineStore();
   const { selectedTeam } = useUIStore();
+  const allPickBanCount = useConfigStore((state) => state.config.all_pick_ban_count);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedRole, setSelectedRole] = useState<string>('all');
   const [mode, setMode] = useState<DraftMode>('pick');
@@ -95,7 +93,7 @@ export function HeroPicker() {
 
   const previewTopBans = () =>
     runAction(async () => {
-      setBanPreview(await api.getBanSuggestions(ALL_PICK_BAN_COUNT));
+      setBanPreview(await api.getBanSuggestions(allPickBanCount));
     });
 
   const confirmTopBans = () =>
