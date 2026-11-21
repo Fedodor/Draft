@@ -493,6 +493,16 @@ impl DraftEngine {
         Ok(())
     }
 
+    /// Reload the active patch's ban counts.
+    ///
+    /// The engine caches them at startup; a user who seeds `hero_ban_stats`
+    /// afterwards would otherwise keep an empty All Pick preview until a
+    /// restart, even after the health notice reports the gap as fixed.
+    pub fn refresh_ban_data(&mut self) -> Result<()> {
+        self.ban_stats.clear();
+        self.load_ban_data()
+    }
+
     /// Heroes to offer during the ban phase, most-banned first on the active
     /// patch. Empty when the database holds no ban counts or no heroes, so a
     /// fresh install never shows numbers the data does not support.
@@ -1208,6 +1218,53 @@ mod tests {
         stale.set_database(db);
         stale.initialize().unwrap();
         assert!(stale.get_ban_suggestions(5).is_empty());
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_refresh_ban_data_picks_up_rows_seeded_after_startup() {
+        let dir = std::env::temp_dir().join(format!("sd-ban-refresh-{}", uuid::Uuid::new_v4()));
+        let db = Arc::new(Database::new(dir.clone()).unwrap());
+
+        let mut hero = DraftEngine::fallback_heroes().remove(0);
+        hero.id = HeroId(1);
+        hero.name = "npc_dota_hero_test1".to_string();
+        db.bulk_upsert_heroes(&[hero]).unwrap();
+        db.set_active_patch("7.41").unwrap();
+
+        let mut engine = DraftEngine::new();
+        engine.set_database(db.clone());
+        engine.initialize().unwrap();
+        assert!(engine.get_ban_suggestions(5).is_empty());
+        assert!(engine
+            .data_health()
+            .unwrap()
+            .issues
+            .iter()
+            .any(|issue| issue.contains("no ban data")));
+
+        // Seeding while the app is running is exactly the Recheck case.
+        db.bulk_upsert_ban_stats(
+            &[BanStat {
+                hero_id: HeroId(1),
+                bans: 10,
+                games: 100,
+            }],
+            "7.41",
+        )
+        .unwrap();
+        engine.refresh_ban_data().unwrap();
+
+        let suggestions = engine.get_ban_suggestions(5);
+        assert_eq!(suggestions.len(), 1);
+        assert_eq!(suggestions[0].hero_id, HeroId(1));
+        assert!(!engine
+            .data_health()
+            .unwrap()
+            .issues
+            .iter()
+            .any(|issue| issue.contains("ban data")));
 
         let _ = std::fs::remove_dir_all(dir);
     }
