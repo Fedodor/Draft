@@ -103,6 +103,11 @@ function Check {
     }
 }
 
+function Skip {
+    param([string]$Name, [string]$Reason = "")
+    Write-Host "SKIP  $Name :: $Reason" -ForegroundColor Yellow
+}
+
 function Test-PortInUse {
     param([int]$Port)
     $listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
@@ -854,11 +859,13 @@ try {
         "run seed_matchups (infrastructure/seeders) to seed hero_ban_stats, then rerun this script. " +
         $previewDetail
     }
+    $previewHasBans = $previewOpened -and [int]$preview.rows -gt 0
     Check "bulk preview lists the patch's most-banned heroes for review" `
-        ($previewOpened -and [int]$preview.rows -gt 0 -and $preview.summary -ne "" -and $preview.confirm) `
+        ($previewHasBans -and $preview.summary -ne "" -and $preview.confirm) `
         $previewDetail
 
-    $confirmed = Invoke-Eval -WebSocketUrl $main -Expression @'
+    if ($previewHasBans) {
+        $confirmed = Invoke-Eval -WebSocketUrl $main -Expression @'
 (() => {
   const button = [...document.querySelectorAll('button')].find(b => {
     const label = b.textContent.trim();
@@ -869,14 +876,14 @@ try {
   return true;
 })()
 '@
-    Start-Sleep -Seconds 3
-    $bansAfterAdd = Invoke-Eval -WebSocketUrl $main `
-        -Expression "(async () => (await window.__TAURI_INTERNALS__.invoke('get_draft_state')).bans.length)()"
-    Check "confirm adds the whole previewed batch in one action" `
-        ($confirmed -and [int]$bansAfterAdd -eq [int]$preview.rows) `
-        "confirmed=$confirmed bans=$bansAfterAdd preview=$($preview.rows)"
+        Start-Sleep -Seconds 3
+        $bansAfterAdd = Invoke-Eval -WebSocketUrl $main `
+            -Expression "(async () => (await window.__TAURI_INTERNALS__.invoke('get_draft_state')).bans.length)()"
+        Check "confirm adds the whole previewed batch in one action" `
+            ($confirmed -and [int]$bansAfterAdd -eq [int]$preview.rows) `
+            "confirmed=$confirmed bans=$bansAfterAdd preview=$($preview.rows)"
 
-    $undoOffered = Invoke-Eval -WebSocketUrl $main -Expression @'
+        $undoOffered = Invoke-Eval -WebSocketUrl $main -Expression @'
 (() => {
   const text = document.body.innerText;
   return {
@@ -885,10 +892,10 @@ try {
   };
 })()
 '@
-    Check "bulk add offers one undo for the batch" ($undoOffered.row -and $undoOffered.undo) `
-        "row=$($undoOffered.row) undo=$($undoOffered.undo)"
+        Check "bulk add offers one undo for the batch" ($undoOffered.row -and $undoOffered.undo) `
+            "row=$($undoOffered.row) undo=$($undoOffered.undo)"
 
-    $undoClicked = Invoke-Eval -WebSocketUrl $main -Expression @'
+        $undoClicked = Invoke-Eval -WebSocketUrl $main -Expression @'
 (() => {
   const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Undo');
   if (!button) return false;
@@ -896,16 +903,26 @@ try {
   return true;
 })()
 '@
-    Start-Sleep -Seconds 2
-    $afterUndo = Invoke-Eval -WebSocketUrl $main -Expression @'
+        Start-Sleep -Seconds 2
+        $afterUndo = Invoke-Eval -WebSocketUrl $main -Expression @'
 (async () => {
   const state = await window.__TAURI_INTERNALS__.invoke('get_draft_state');
   return { bans: state.bans.length, available: state.available_heroes.length };
 })()
 '@
-    Check "one undo removes the whole batch" `
-        ($undoClicked -and [int]$afterUndo.bans -eq 0 -and [int]$afterUndo.available -gt 0) `
-        "clicked=$undoClicked bans=$($afterUndo.bans) available=$($afterUndo.available)"
+        Check "one undo removes the whole batch" `
+            ($undoClicked -and [int]$afterUndo.bans -eq 0 -and [int]$afterUndo.available -gt 0) `
+            "clicked=$undoClicked bans=$($afterUndo.bans) available=$($afterUndo.available)"
+    } else {
+        # Nothing was added, so these have nothing to assert. The preview check
+        # above already reports the missing ban data as the single failure.
+        foreach ($skipped in @(
+                "confirm adds the whole previewed batch in one action",
+                "bulk add offers one undo for the batch",
+                "one undo removes the whole batch")) {
+            Skip $skipped "no ban data for the active patch; fix the seeding failure above"
+        }
+    }
     Save-Screenshot -WebSocketUrl $main -Path (Join-Path $ArtifactsDir "main-all-pick.png")
 }
 catch {
