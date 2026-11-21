@@ -999,9 +999,16 @@ try {
 
     Write-Host "==> Recheck: ban rows seeded while the app is running"
     if (-not $python) {
-        Skip "missing ban data surfaces the seed notice" "no Python available to edit the scratch database"
-        Skip "recheck clears the notice after live seeding" "no Python available to edit the scratch database"
-        Skip "recheck exposes the newly seeded bans to the preview" "no Python available to edit the scratch database"
+        # Both CI jobs install Python explicitly; a missing interpreter means the
+        # coverage would vanish, so fail instead of reporting success with skips.
+        Check "Python is available for the Recheck scenario" $false `
+            "no python or py on PATH; the Recheck checks edit the scratch database"
+        foreach ($skipped in @(
+                "missing ban data surfaces the seed notice",
+                "recheck clears the notice after live seeding",
+                "recheck exposes the newly seeded bans to the preview")) {
+            Skip $skipped "no Python interpreter"
+        }
     } else {
         $pyPath = Join-Path $ArtifactsDir "recheck-db.py"
         Set-Content -LiteralPath $pyPath -Encoding UTF8 -Value @'
