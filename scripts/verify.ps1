@@ -103,6 +103,14 @@ if (-not $SkipSecrets) {
     }
 }
 
+if (-not $SkipPython) {
+    # The app activates the scoring seed's patch and reads bans from ban_seed;
+    # a mismatch leaves the ban list empty while every health count passes.
+    Invoke-Step -Name "Seed patch consistency" -Action {
+        & $pythonExe "scripts/check_seed_patch.py"
+    }
+}
+
 if (-not $SkipRust) {
     Invoke-Step -Name "Rust format (desktop)" -Action {
         cargo fmt --manifest-path $desktopManifest --all -- --check
