@@ -511,6 +511,15 @@ try {
             Write-Host "==> Building the desktop binary (dev profile)"
             cargo build --manifest-path (Join-Path $tauriDir "Cargo.toml") | Out-Host
             if ($LASTEXITCODE -ne 0) { throw "cargo build failed" }
+        } else {
+            # Reusing an old binary makes the smoke report yesterday's behavior.
+            $newestSource = (@(Get-ChildItem -LiteralPath (Join-Path $tauriDir "src") -Recurse -File -Include *.rs) +
+                (Get-Item -LiteralPath (Join-Path $tauriDir "Cargo.toml"))) |
+                Sort-Object LastWriteTime -Descending | Select-Object -First 1
+            $binaryTime = (Get-Item -LiteralPath $exePath).LastWriteTime
+            if ($newestSource -and $newestSource.LastWriteTime -gt $binaryTime) {
+                throw "Binary is older than $($newestSource.Name); rerun without -SkipBuild"
+            }
         }
     }
 
