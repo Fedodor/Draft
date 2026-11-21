@@ -754,6 +754,140 @@ try {
     Check "overlay toggle hides the overlay window" `
         ($toggleOff -and -not (Test-AppWindowVisible -ProcessId $appProcess.Id -Title "Draft Overlay")) `
         "toggleClicked=$toggleOff"
+
+    Write-Host "==> All Pick: no draft data, bulk bans and bulk undo"
+    # Leave the draft flow first: the engine only resets when hero selection
+    # follows a state outside the draft. Valve sends no `draft` component in All
+    # Pick, so this payload carries only the map.
+    $leaveDraft = @{
+        map = @{ game_state = "DOTA_GAMERULES_STATE_GAME_IN_PROGRESS"; game_time = 0; clock_time = 0 }
+    } | ConvertTo-Json -Depth 6 -Compress
+    Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$gsiPort/gsi" -Body $leaveDraft `
+        -ContentType "application/json" -TimeoutSec 10 | Out-Null
+
+    $allPickBody = @{
+        map     = @{ game_state = "DOTA_GAMERULES_STATE_HERO_SELECTION"; game_time = 0; clock_time = 0 }
+        player  = @{ team = "radiant" }
+        hero    = @{ id = 1; level = 1 }
+        players = @{}
+    } | ConvertTo-Json -Depth 6 -Compress
+    $allPickResponse = $null
+    try {
+        $allPickResponse = Invoke-RestMethod -Method Post -Uri "http://127.0.0.1:$gsiPort/gsi" `
+            -Body $allPickBody -ContentType "application/json" -TimeoutSec 10
+    } catch {
+        $allPickResponse = "error: $($_.Exception.Message)"
+    }
+    Check "All Pick payload accepted" ("$allPickResponse" -eq "OK") "response=$allPickResponse"
+    Start-Sleep -Seconds 2
+
+    $allPickPanel = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const text = document.body.innerText;
+  return {
+    hint: text.includes('All Pick: Dota sends no draft data'),
+    topPicks: text.includes('TOP PICKS'),
+    banHeading: text.includes('BAN SUGGESTIONS')
+  };
+})()
+'@
+    Check "All Pick points at manual entry instead of waiting for a draft" `
+        ($allPickPanel.hint -and $allPickPanel.topPicks) `
+        "hint=$($allPickPanel.hint) topPicks=$($allPickPanel.topPicks)"
+    Check "All Pick shows picks, not a ban phase" (-not $allPickPanel.banHeading) `
+        "banHeading=$($allPickPanel.banHeading)"
+
+    Invoke-Eval -WebSocketUrl $main -Expression ($jsClickTab.Replace("%TAB%", "Draft")) | Out-Null
+    Start-Sleep -Milliseconds 700
+
+    $draftPanel = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const text = document.body.innerText;
+  return {
+    manual: text.includes('MANUAL DRAFT CONTROL'),
+    bulkButton: !!([...document.querySelectorAll('button')].find(b => b.textContent.includes('most-banned')))
+  };
+})()
+'@
+    Check "All Pick offers the bulk ban add in manual control" `
+        ($draftPanel.manual -and $draftPanel.bulkButton) `
+        "manual=$($draftPanel.manual) bulk=$($draftPanel.bulkButton)"
+
+    $previewOpened = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const button = [...document.querySelectorAll('button')].find(b => b.textContent.includes('most-banned'));
+  if (!button) return false;
+  button.click();
+  return true;
+})()
+'@
+    Start-Sleep -Seconds 2
+    $preview = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const text = document.body.innerText;
+  return {
+    rows: text.split('\n').filter(line => /^\d+\. /.test(line.trim())).length,
+    summary: (text.match(/Top \d+ most-banned/) || [])[0] || '',
+    confirm: [...document.querySelectorAll('button')].some(b => {
+      const label = b.textContent.trim();
+      return label.startsWith('Add ') && label.endsWith(' bans') && !label.includes('most-banned');
+    })
+  };
+})()
+'@
+    Check "bulk preview lists the patch's most-banned heroes for review" `
+        ($previewOpened -and [int]$preview.rows -gt 0 -and $preview.summary -ne "" -and $preview.confirm) `
+        "opened=$previewOpened rows=$($preview.rows) summary='$($preview.summary)' confirm=$($preview.confirm)"
+
+    $confirmed = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const button = [...document.querySelectorAll('button')].find(b => {
+    const label = b.textContent.trim();
+    return label.startsWith('Add ') && label.endsWith(' bans') && !label.includes('most-banned');
+  });
+  if (!button) return false;
+  button.click();
+  return true;
+})()
+'@
+    Start-Sleep -Seconds 3
+    $bansAfterAdd = Invoke-Eval -WebSocketUrl $main `
+        -Expression "(async () => (await window.__TAURI_INTERNALS__.invoke('get_draft_state')).bans.length)()"
+    Check "confirm adds the whole previewed batch in one action" `
+        ($confirmed -and [int]$bansAfterAdd -eq [int]$preview.rows) `
+        "confirmed=$confirmed bans=$bansAfterAdd preview=$($preview.rows)"
+
+    $undoOffered = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const text = document.body.innerText;
+  return {
+    row: text.includes('Added ') && /Added \d+ bans/.test(text),
+    undo: !!([...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Undo'))
+  };
+})()
+'@
+    Check "bulk add offers one undo for the batch" ($undoOffered.row -and $undoOffered.undo) `
+        "row=$($undoOffered.row) undo=$($undoOffered.undo)"
+
+    $undoClicked = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Undo');
+  if (!button) return false;
+  button.click();
+  return true;
+})()
+'@
+    Start-Sleep -Seconds 2
+    $afterUndo = Invoke-Eval -WebSocketUrl $main -Expression @'
+(async () => {
+  const state = await window.__TAURI_INTERNALS__.invoke('get_draft_state');
+  return { bans: state.bans.length, available: state.available_heroes.length };
+})()
+'@
+    Check "one undo removes the whole batch" `
+        ($undoClicked -and [int]$afterUndo.bans -eq 0 -and [int]$afterUndo.available -gt 0) `
+        "clicked=$undoClicked bans=$($afterUndo.bans) available=$($afterUndo.available)"
+    Save-Screenshot -WebSocketUrl $main -Path (Join-Path $ArtifactsDir "main-all-pick.png")
 }
 catch {
     Write-Host ""
