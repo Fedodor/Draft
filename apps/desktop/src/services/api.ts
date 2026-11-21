@@ -72,6 +72,11 @@ class ApiService {
     return invoke('undo_last_action');
   }
 
+  /** Reverse the last `count` actions, newest first. */
+  async undoLastActions(count: number): Promise<DraftAction[]> {
+    return invoke('undo_last_actions', { count });
+  }
+
   async resetDraft(): Promise<void> {
     return invoke('reset_draft');
   }

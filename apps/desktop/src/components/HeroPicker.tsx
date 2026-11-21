@@ -20,6 +20,9 @@ export function HeroPicker() {
   const [isBusy, setIsBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [banPreview, setBanPreview] = useState<BanSuggestion[] | null>(null);
+  // Size of the batch just added, so it can be reversed without 16 clicks while
+  // it is still the newest thing in the undo stack.
+  const [bulkBansAdded, setBulkBansAdded] = useState<number | null>(null);
 
   const availableHeroes = draft.available_heroes;
 
@@ -68,21 +71,27 @@ export function HeroPicker() {
   };
 
   const handleHeroAction = (heroId: HeroId) => {
+    setBulkBansAdded(null);
     if (mode === 'pick') {
       return runAction(() => api.manualPick({ hero_id: heroId, team: selectedTeam }));
     }
     return runAction(() => api.manualBan({ hero_id: heroId, team: selectedTeam }));
   };
 
-  const handleUndo = () =>
-    runAction(async () => {
+  const handleUndo = () => {
+    setBulkBansAdded(null);
+    return runAction(async () => {
       const action = await api.undoLastAction();
       if (!action) {
         throw { kind: 'internal', message: 'Nothing to undo' };
       }
     });
+  };
 
-  const handleReset = () => runAction(() => api.resetDraft());
+  const handleReset = () => {
+    setBulkBansAdded(null);
+    return runAction(() => api.resetDraft());
+  };
 
   const previewTopBans = () =>
     runAction(async () => {
@@ -94,8 +103,15 @@ export function HeroPicker() {
       const heroIds = (banPreview ?? []).map((suggestion) => suggestion.hero_id);
       if (heroIds.length > 0) {
         await api.manualBanMany({ hero_ids: heroIds, team: selectedTeam });
+        setBulkBansAdded(heroIds.length);
       }
       setBanPreview(null);
+    });
+
+  const undoBulkBans = () =>
+    runAction(async () => {
+      await api.undoLastActions(bulkBansAdded ?? 0);
+      setBulkBansAdded(null);
     });
 
   const isCurrentTurn = draft.current_pick === selectedTeam;
@@ -170,7 +186,20 @@ export function HeroPicker() {
 
         {!draft.has_live_draft && (
           <div className="mb-3">
-            {banPreview === null ? (
+            {bulkBansAdded !== null ? (
+              <div className="flex items-center justify-between gap-2 rounded border border-dota-border px-2 py-1.5">
+                <span className="text-xs text-dota-textMuted">
+                  Added {bulkBansAdded} bans
+                </span>
+                <button
+                  onClick={undoBulkBans}
+                  disabled={isBusy}
+                  className="text-xs font-medium text-dota-textMuted underline-offset-2 hover:text-red-400 hover:underline disabled:opacity-40"
+                >
+                  Undo
+                </button>
+              </div>
+            ) : banPreview === null ? (
               <button
                 onClick={previewTopBans}
                 disabled={isBusy}

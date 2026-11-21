@@ -652,6 +652,12 @@ impl DraftEngine {
         Some(action)
     }
 
+    /// Reverse the last `count` actions, newest first. Stops when the stack
+    /// runs out, so a bulk undo can never fail halfway.
+    pub fn undo_last_actions(&self, count: usize) -> Vec<DraftAction> {
+        (0..count).filter_map(|_| self.undo_last_action()).collect()
+    }
+
     /// Whether the user manually undid this hero during the current match.
     pub fn is_suppressed(&self, hero_id: &HeroId) -> bool {
         self.suppressed_heroes.lock().contains(hero_id)
@@ -1487,6 +1493,26 @@ mod tests {
         engine.add_pick(radiant_pick(1, 1));
         let duplicate = engine.validate_pick(&radiant_pick(1, 2));
         assert_eq!(duplicate, Err(EngineError::HeroUnavailable { hero_id: 1 }));
+    }
+
+    #[test]
+    fn test_undo_last_actions_reverses_a_ban_batch() {
+        let engine = engine_with_heroes(3);
+        let bans: Vec<DraftBan> = (1..=3)
+            .map(|hero_id| DraftBan {
+                hero_id: HeroId(hero_id),
+                order: hero_id,
+                team: TeamSide::Radiant,
+            })
+            .collect();
+
+        assert!(engine.add_bans(&bans).is_ok());
+        assert_eq!(engine.undo_last_actions(3).len(), 3);
+
+        let state = engine.get_state();
+        assert!(state.bans.is_empty());
+        assert_eq!(state.available_heroes.len(), 3);
+        assert!(engine.undo_last_action().is_none());
     }
 
     #[test]

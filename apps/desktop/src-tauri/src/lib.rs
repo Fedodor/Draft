@@ -107,6 +107,7 @@ pub fn run() {
             commands::manual_ban,
             commands::manual_ban_many,
             commands::undo_last_action,
+            commands::undo_last_actions,
             commands::reset_draft,
             commands::get_hero_list,
             commands::get_hero_details,

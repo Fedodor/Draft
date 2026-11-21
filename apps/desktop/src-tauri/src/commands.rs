@@ -217,6 +217,15 @@ pub async fn undo_last_action(
 }
 
 #[command(rename_all = "snake_case")]
+pub async fn undo_last_actions(
+    engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
+    count: usize,
+) -> Result<Vec<DraftAction>, CommandError> {
+    let engine_guard = engine.lock().unwrap();
+    Ok((*engine_guard).undo_last_actions(count))
+}
+
+#[command(rename_all = "snake_case")]
 pub async fn reset_draft(
     engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
 ) -> Result<(), CommandError> {
