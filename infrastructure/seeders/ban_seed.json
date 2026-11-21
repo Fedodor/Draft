@@ -1,7 +1,69 @@
 {
- "source": "Captains Mode drafts exported by ml/backtest/export_drafts.py",
+ "source": "Captain's Mode drafts exported by ml/backtest/export_drafts.py",
  "generated_by": "ml/backtest/export_ban_prior.py",
  "matches": 90020,
+ "patches": {
+  "7.30": {
+   "drafts": 146,
+   "window_start": 1639600130,
+   "window_end": 1645236902
+  },
+  "7.31": {
+   "drafts": 650,
+   "window_start": 1645836551,
+   "window_end": 1661286726
+  },
+  "7.32": {
+   "drafts": 1362,
+   "window_start": 1661373375,
+   "window_end": 1681996843
+  },
+  "7.33": {
+   "drafts": 581,
+   "window_start": 1682100586,
+   "window_end": 1691456848
+  },
+  "7.34": {
+   "drafts": 1390,
+   "window_start": 1691544996,
+   "window_end": 1702592066
+  },
+  "7.35": {
+   "drafts": 3626,
+   "window_start": 1702606412,
+   "window_end": 1716418884
+  },
+  "7.36": {
+   "drafts": 1641,
+   "window_start": 1716422133,
+   "window_end": 1722465286
+  },
+  "7.37": {
+   "drafts": 19513,
+   "window_start": 1722470281,
+   "window_end": 1739919624
+  },
+  "7.38": {
+   "drafts": 16958,
+   "window_start": 1739921074,
+   "window_end": 1748560582
+  },
+  "7.39": {
+   "drafts": 28956,
+   "window_start": 1748560813,
+   "window_end": 1765841102
+  },
+  "7.40": {
+   "drafts": 11022,
+   "window_start": 1765840533,
+   "window_end": 1787903076
+  },
+  "7.41": {
+   "drafts": 4175,
+   "window_start": 1774314551,
+   "window_end": 1787315667
+  }
+ },
  "rows": [
   {
    "patch_version": "7.30",

@@ -11,7 +11,10 @@
 use anyhow::Result;
 use serde::Deserialize;
 use smart_draft_assistant::database::Database;
-use smart_draft_assistant::models::{BanStat, Hero, HeroId, HeroMatchup, HeroSynergy, MetaData};
+use smart_draft_assistant::models::{
+    BanSeedMeta, BanSeedPatchInfo, BanStat, Hero, HeroId, HeroMatchup, HeroSynergy, MetaData,
+    BAN_SEED_META_KEY,
+};
 use smart_draft_assistant::paths::app_data_dir;
 use std::env;
 use std::path::Path;
@@ -55,6 +58,12 @@ struct BanSeedRow {
 
 #[derive(Deserialize)]
 struct BanSeed {
+    #[serde(default)]
+    source: String,
+    #[serde(default)]
+    matches: i32,
+    #[serde(default)]
+    patches: std::collections::BTreeMap<String, BanSeedPatchInfo>,
     rows: Vec<BanSeedRow>,
 }
 
@@ -345,6 +354,16 @@ fn seed_bans(db: &Database) -> Result<()> {
     for (patch, rows) in &by_patch {
         db.bulk_upsert_ban_stats(rows, patch)?;
     }
+
+    // Persist where the counts came from. The panel otherwise has no way to
+    // tell these Captain's Mode bans from the All Pick bans the user records.
+    let meta = BanSeedMeta {
+        source: payload.source,
+        matches: payload.matches,
+        patches: payload.patches.into_iter().collect(),
+    };
+    db.set_setting(BAN_SEED_META_KEY, &serde_json::to_string(&meta)?)?;
+
     info!(
         "Seeded {} ban-count rows across {} patches",
         payload.rows.len(),
@@ -417,6 +436,10 @@ mod tests {
 
         assert!(payload.rows.len() > 500, "expected per-patch counts");
         assert!(payload.rows.iter().any(|row| row.patch_version == "7.41"));
+        assert!(payload.source.contains("Captain's Mode"));
+        let window = &payload.patches["7.41"];
+        assert!(window.drafts > 0);
+        assert!(window.window_start.unwrap() < window.window_end.unwrap());
         // A hero can be banned at most once per draft.
         assert!(payload
             .rows

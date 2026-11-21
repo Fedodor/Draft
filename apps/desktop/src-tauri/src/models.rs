@@ -414,6 +414,45 @@ pub struct BanStat {
     pub games: i32,
 }
 
+/// Settings key for the provenance of the ban-count seed, written by
+/// `infrastructure/seeders/seed_matchups.rs` and served to the ban panel.
+pub const BAN_SEED_META_KEY: &str = "ban_seed_meta";
+
+/// Which drafts one patch's ban counts came from.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BanSeedPatchInfo {
+    #[serde(default)]
+    pub drafts: i32,
+    #[serde(default)]
+    pub window_start: Option<i64>,
+    #[serde(default)]
+    pub window_end: Option<i64>,
+}
+
+/// Persisted description of the Captain's Mode corpus behind the ban counts.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BanSeedMeta {
+    #[serde(default)]
+    pub source: String,
+    #[serde(default)]
+    pub matches: i32,
+    #[serde(default)]
+    pub patches: HashMap<String, BanSeedPatchInfo>,
+}
+
+/// Provenance the ban panel shows for the active patch's list.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+pub struct BanDataInfo {
+    pub source: String,
+    pub patch_version: String,
+    /// Drafts counted on this patch (the sample size behind the rates).
+    pub drafts: i32,
+    /// Drafts counted across every exported patch.
+    pub total_matches: i32,
+    pub window_start: Option<i64>,
+    pub window_end: Option<i64>,
+}
+
 /// A hero offered for banning because teams ban it often on the active patch.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct BanSuggestion {

@@ -497,9 +497,9 @@ impl DraftEngine {
     ///
     /// The engine caches matchups, synergies, meta and bans for the patch it
     /// started on. A seeder run can move `active_patch` while the app is open,
-    /// so health/recheck must reload instead of scoring the new patch with the
-    /// old data. Ban rows are reloaded on every call so seeding for an
-    /// unchanged patch also takes effect.
+    /// and it can also replace rows for the patch already active (a re-export
+    /// after more drafts). Recheck is explicit, so reload all of it every call
+    /// rather than trying to detect which rows changed.
     pub fn sync_patch_data(&mut self) -> Result<()> {
         let Some(db) = self.database.clone() else {
             return Ok(());
@@ -510,41 +510,76 @@ impl DraftEngine {
                 "Active patch changed from {:?} to {:?}; reloading patch-scoped data",
                 self.active_patch, persisted
             );
-            self.active_patch = persisted;
-            self.matchup_data.clear();
-            self.synergy_data.clear();
-            self.meta_data = MetaData {
-                patch_version: self.active_patch.clone().unwrap_or_default(),
-                hero_meta_scores: HashMap::new(),
-                hero_pickrates: HashMap::new(),
-                hero_winrates: HashMap::new(),
-                updated_at: chrono::Utc::now().timestamp(),
-            };
-            self.load_matchup_data()?;
-            self.load_synergy_data()?;
-            self.load_meta_data()?;
-
-            let hero_names: HashMap<HeroId, String> = self
-                .hero_db
-                .iter()
-                .map(|h| (h.id.clone(), h.localized_name.clone()))
-                .collect();
-            self.scorer.set_data(
-                self.matchup_data.clone(),
-                self.synergy_data.clone(),
-                hero_names,
+        } else {
+            info!(
+                "Rechecking patch-scoped data for patch {:?}",
+                self.active_patch
             );
-            self.scorer.set_ml_scorer(MLScorer::new(
-                self.hero_semantics.clone(),
-                self.meta_data.clone(),
-                self.hero_db.clone(),
-                self.matchup_data.clone(),
-            ));
-            self.state.write().patch_version = self.active_patch.clone().unwrap_or_default();
         }
+        self.active_patch = persisted;
+
+        self.matchup_data.clear();
+        self.synergy_data.clear();
+        self.meta_data = MetaData {
+            patch_version: self.active_patch.clone().unwrap_or_default(),
+            hero_meta_scores: HashMap::new(),
+            hero_pickrates: HashMap::new(),
+            hero_winrates: HashMap::new(),
+            updated_at: chrono::Utc::now().timestamp(),
+        };
+        self.load_matchup_data()?;
+        self.load_synergy_data()?;
+        self.load_meta_data()?;
+
+        let hero_names: HashMap<HeroId, String> = self
+            .hero_db
+            .iter()
+            .map(|h| (h.id.clone(), h.localized_name.clone()))
+            .collect();
+        self.scorer.set_data(
+            self.matchup_data.clone(),
+            self.synergy_data.clone(),
+            hero_names,
+        );
+        self.scorer.set_ml_scorer(MLScorer::new(
+            self.hero_semantics.clone(),
+            self.meta_data.clone(),
+            self.hero_db.clone(),
+            self.matchup_data.clone(),
+        ));
+        self.state.write().patch_version = self.active_patch.clone().unwrap_or_default();
 
         self.ban_stats.clear();
-        self.load_ban_data()
+        self.load_ban_data()?;
+        self.invalidate_recommendation_cache();
+        Ok(())
+    }
+
+    /// Where the active patch's ban list comes from, for the panel's label.
+    pub fn ban_data_info(&self) -> Result<Option<BanDataInfo>, CommandError> {
+        let (Some(db), Some(patch)) = (&self.database, self.active_patch.clone()) else {
+            return Ok(None);
+        };
+        let Some(raw) = db
+            .get_setting(BAN_SEED_META_KEY)
+            .map_err(CommandError::from)?
+        else {
+            return Ok(None);
+        };
+        let meta: BanSeedMeta = serde_json::from_str(&raw).map_err(|e| CommandError::Internal {
+            message: format!("invalid {BAN_SEED_META_KEY} setting: {e}"),
+        })?;
+        let Some(info) = meta.patches.get(&patch) else {
+            return Ok(None);
+        };
+        Ok(Some(BanDataInfo {
+            source: meta.source,
+            patch_version: patch,
+            drafts: info.drafts,
+            total_matches: meta.matches,
+            window_start: info.window_start,
+            window_end: info.window_end,
+        }))
     }
 
     /// Heroes to offer during the ban phase, most-banned first on the active
@@ -1319,6 +1354,83 @@ mod tests {
             .issues
             .iter()
             .any(|issue| issue.contains("ban data")));
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_sync_patch_data_reloads_same_patch_seed_changes() {
+        let dir = std::env::temp_dir().join(format!("sd-reload-{}", uuid::Uuid::new_v4()));
+        let db = Arc::new(Database::new(dir.clone()).unwrap());
+
+        let heroes: Vec<Hero> = (1..=2)
+            .map(|id| {
+                let mut hero = DraftEngine::fallback_heroes().remove(0);
+                hero.id = HeroId(id);
+                hero.name = format!("npc_dota_hero_test{id}");
+                hero
+            })
+            .collect();
+        db.bulk_upsert_heroes(&heroes).unwrap();
+        db.set_active_patch("7.41").unwrap();
+
+        let mut engine = DraftEngine::new();
+        engine.set_database(db.clone());
+        engine.initialize().unwrap();
+        assert!(engine.matchup_data.is_empty());
+        assert!(engine.synergy_data.is_empty());
+        assert!(engine.meta_data.hero_meta_scores.is_empty());
+
+        db.set_setting(
+            BAN_SEED_META_KEY,
+            r#"{"source":"Captain's Mode drafts","matches":90020,"patches":{"7.41":{"drafts":4175,"window_start":1774314551,"window_end":1787315667}}}"#,
+        )
+        .unwrap();
+        let info = engine.ban_data_info().unwrap().unwrap();
+        assert_eq!(info.patch_version, "7.41");
+        assert_eq!(info.drafts, 4175);
+        assert_eq!(info.window_end, Some(1787315667));
+
+        // A re-export for the patch already active, without moving active_patch.
+        db.bulk_upsert_matchups(
+            &[HeroMatchup {
+                hero_id: HeroId(1),
+                vs_hero_id: HeroId(2),
+                advantage: 0.1,
+                winrate: 0.6,
+                games: 100,
+            }],
+            "7.41",
+        )
+        .unwrap();
+        db.bulk_upsert_synergies(
+            &[HeroSynergy {
+                hero_id: HeroId(1),
+                with_hero_id: HeroId(2),
+                synergy: 0.2,
+                winrate: 0.6,
+                games: 100,
+            }],
+            "7.41",
+        )
+        .unwrap();
+        db.upsert_meta(&MetaData {
+            patch_version: "7.41".to_string(),
+            hero_meta_scores: [(HeroId(1), 0.9)].into_iter().collect(),
+            hero_pickrates: HashMap::new(),
+            hero_winrates: HashMap::new(),
+            updated_at: chrono::Utc::now().timestamp(),
+        })
+        .unwrap();
+
+        engine.sync_patch_data().unwrap();
+
+        assert!(engine.matchup_data.contains_key(&HeroId(1)));
+        assert!(engine.synergy_data.contains_key(&HeroId(1)));
+        assert_eq!(
+            engine.meta_data.hero_meta_scores.get(&HeroId(1)),
+            Some(&0.9)
+        );
 
         let _ = std::fs::remove_dir_all(dir);
     }

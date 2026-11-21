@@ -71,6 +71,13 @@ pub async fn get_ban_suggestions(
 }
 
 #[command(rename_all = "snake_case")]
+pub fn get_ban_data_info(
+    engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
+) -> Result<Option<BanDataInfo>, CommandError> {
+    engine.lock().unwrap().ban_data_info()
+}
+
+#[command(rename_all = "snake_case")]
 pub async fn get_score_breakdown(
     engine: State<'_, Arc<std::sync::Mutex<DraftEngine>>>,
     hero_id: i32,

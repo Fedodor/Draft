@@ -5,6 +5,7 @@ import type {
   RecommendationSet,
   AppConfig,
   BanSuggestion,
+  BanDataInfo,
 } from '@shared';
 
 export interface GetRecommendationsParams {
@@ -32,6 +33,10 @@ class ApiService {
 
   async getBanSuggestions(limit = 10): Promise<BanSuggestion[]> {
     return invoke('get_ban_suggestions', { limit });
+  }
+
+  async getBanDataInfo(): Promise<BanDataInfo | null> {
+    return invoke('get_ban_data_info');
   }
 
   async getScoreBreakdown(

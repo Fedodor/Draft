@@ -100,6 +100,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::get_recommendations,
             commands::get_ban_suggestions,
+            commands::get_ban_data_info,
             commands::get_score_breakdown,
             commands::get_search_recommendations,
             commands::get_draft_state,

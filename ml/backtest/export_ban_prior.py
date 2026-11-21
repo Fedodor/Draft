@@ -26,6 +26,9 @@ def main() -> int:
     drafts_path = Path(args.drafts)
     games: Counter[str] = Counter()
     bans: dict[str, Counter[int]] = defaultdict(Counter)
+    # Export window per patch, so the UI can say which drafts the counts cover
+    # instead of implying they describe every All Pick ban on that patch.
+    windows: dict[str, list[int]] = {}
     matches = 0
 
     with drafts_path.open(encoding="utf-8") as handle:
@@ -37,6 +40,11 @@ def main() -> int:
             patch = str(record["patch"])
             games[patch] += 1
             matches += 1
+            start_time = record.get("start_time")
+            if start_time:
+                window = windows.setdefault(patch, [start_time, start_time])
+                window[0] = min(window[0], start_time)
+                window[1] = max(window[1], start_time)
             for action in record["actions"]:
                 if not action["pick"]:
                     bans[patch][int(action["hero_id"])] += 1
@@ -52,10 +60,20 @@ def main() -> int:
         for hero_id, count in sorted(bans[patch].items())
     ]
 
+    patch_info = {
+        patch: {
+            "drafts": games[patch],
+            "window_start": windows.get(patch, [None, None])[0],
+            "window_end": windows.get(patch, [None, None])[1],
+        }
+        for patch in sorted(games)
+    }
+
     payload = {
-        "source": "Captains Mode drafts exported by ml/backtest/export_drafts.py",
+        "source": "Captain's Mode drafts exported by ml/backtest/export_drafts.py",
         "generated_by": "ml/backtest/export_ban_prior.py",
         "matches": matches,
+        "patches": patch_info,
         "rows": rows,
     }
 

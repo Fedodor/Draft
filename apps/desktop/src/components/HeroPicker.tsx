@@ -4,9 +4,20 @@ import { HeroPortrait } from './HeroPortrait';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, Filter, RotateCcw, Trash2 } from 'lucide-react';
 import { useState, useMemo } from 'react';
-import type { BanSuggestion, Hero, HeroId } from '@shared';
+import type { BanDataInfo, BanSuggestion, Hero, HeroId } from '@shared';
 
 type DraftMode = 'pick' | 'ban';
+
+/** "Mar 2026 – Aug 2026", or null when the seed has no dates. */
+function formatBanWindow(info: BanDataInfo | null): string | null {
+  if (!info?.window_start || !info.window_end) return null;
+  const format = (seconds: number) =>
+    new Date(seconds * 1000).toLocaleDateString(undefined, {
+      month: 'short',
+      year: 'numeric',
+    });
+  return `${format(info.window_start)} – ${format(info.window_end)}`;
+}
 
 export function HeroPicker() {
   const { heroes, draft, getHero, setDraft, setRecommendations } = useEngineStore();
@@ -18,6 +29,7 @@ export function HeroPicker() {
   const [isBusy, setIsBusy] = useState(false);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [banPreview, setBanPreview] = useState<BanSuggestion[] | null>(null);
+  const [banDataInfo, setBanDataInfo] = useState<BanDataInfo | null>(null);
   // Size of the batch just added, so it can be reversed without 16 clicks while
   // it is still the newest thing in the undo stack.
   const [bulkBansAdded, setBulkBansAdded] = useState<number | null>(null);
@@ -93,7 +105,13 @@ export function HeroPicker() {
 
   const previewTopBans = () =>
     runAction(async () => {
-      setBanPreview(await api.getBanSuggestions(allPickBanCount));
+      const [suggestions, info] = await Promise.all([
+        api.getBanSuggestions(allPickBanCount),
+        // Provenance is a label, not a reason to fail the preview.
+        api.getBanDataInfo().catch(() => null),
+      ]);
+      setBanPreview(suggestions);
+      setBanDataInfo(info);
     });
 
   const confirmTopBans = () =>
@@ -203,7 +221,7 @@ export function HeroPicker() {
                 disabled={isBusy}
                 className="w-full rounded border border-dota-border py-1.5 text-xs font-medium text-dota-textMuted hover:bg-dota-border hover:text-dota-text disabled:opacity-40"
               >
-                Add most-banned heroes…
+                Add most-banned (CM) heroes…
               </button>
             ) : banPreview.length === 0 ? (
               <p className="text-xs text-dota-textMuted">
@@ -211,9 +229,16 @@ export function HeroPicker() {
               </p>
             ) : (
               <div className="rounded-lg border border-dota-border bg-dota-bg/60 p-2">
-                <p className="mb-1.5 text-xs text-dota-textMuted">
-                  Top {banPreview.length} most-banned on patch{' '}
-                  {banPreview[0].patch_version}. Review, then add them as bans.
+                <p className="mb-1 text-xs text-dota-textMuted">
+                  Top {banPreview.length} most-banned in Captain's Mode on patch{' '}
+                  {banPreview[0].patch_version}. Not All Pick bans.
+                </p>
+                <p className="mb-1.5 text-[11px] text-dota-textMuted/80">
+                  {banDataInfo?.drafts ?? banPreview[0].games} CM drafts
+                  {formatBanWindow(banDataInfo)
+                    ? `, exported ${formatBanWindow(banDataInfo)}`
+                    : ''}
+                  . Review, then add them as bans.
                 </p>
                 <div className="mb-2 max-h-40 space-y-1 overflow-y-auto">
                   {banPreview.map((suggestion, index) => (
