@@ -411,6 +411,8 @@ $jsClickTab = @'
 
 $appProcess = $null
 $viteProcess = $null
+$scratchDataDir = $null
+$previousDataDir = $env:SMART_DRAFT_DATA_DIR
 
 try {
     Write-Host "==> GUI smoke test" -ForegroundColor Cyan
@@ -424,8 +426,23 @@ try {
         }
     }
 
-    if (-not $NoSeed -and -not (Test-Path -LiteralPath $dbPath)) {
-        Write-Host "==> Seeding an empty database"
+    # The All Pick section saves a non-default ban count, so run the whole app
+    # against a scratch copy: the developer's saved settings stay untouched and
+    # the count is read back from a real database at startup.
+    $scratchDataDir = Join-Path ([IO.Path]::GetTempPath()) "sda-ui-smoke-data"
+    if (Test-Path -LiteralPath $scratchDataDir) {
+        Remove-Item -LiteralPath $scratchDataDir -Recurse -Force
+    }
+    New-Item -ItemType Directory -Force -Path $scratchDataDir | Out-Null
+    $scratchDbPath = Join-Path $scratchDataDir "smart_draft.db"
+    if (Test-Path -LiteralPath $dbPath) {
+        Copy-Item -Path "$dbPath*" -Destination $scratchDataDir -Force
+    }
+    $env:SMART_DRAFT_DATA_DIR = $scratchDataDir
+    Write-Host "    scratch db: $scratchDbPath"
+
+    if (-not $NoSeed -and -not (Test-Path -LiteralPath $scratchDbPath)) {
+        Write-Host "==> Seeding the scratch database"
         cargo build --release --manifest-path (Join-Path $seedersDir "Cargo.toml") | Out-Host
         if ($LASTEXITCODE -ne 0) { throw "seeder build failed" }
         $seedHeroes = Join-Path $seedersDir "target\release\seed_heroes.exe"
@@ -761,6 +778,39 @@ try {
         "toggleClicked=$toggleOff"
 
     Write-Host "==> All Pick: no draft data, bulk bans and bulk undo"
+    # Persist a non-default ban count through the app's own command, then reload
+    # so the UI hydrates it exactly as it would on the next launch. A preview
+    # that still reaches for a constant then reports the wrong row count.
+    $configuredBanCount = 7
+    $appliedBanCount = Invoke-Eval -WebSocketUrl $main -Expression @"
+(async () => {
+  const config = await window.__TAURI_INTERNALS__.invoke('get_config');
+  config.all_pick_ban_count = $configuredBanCount;
+  await window.__TAURI_INTERNALS__.invoke('set_config', { config });
+  const stored = await window.__TAURI_INTERNALS__.invoke('get_config');
+  return stored.all_pick_ban_count;
+})()
+"@
+    Check "All Pick ban count persists on the scratch database" `
+        ($appliedBanCount -eq $configuredBanCount) "stored=$appliedBanCount expected=$configuredBanCount"
+
+    Invoke-Eval -WebSocketUrl $main -Expression "(() => { location.reload(); return true; })()" | Out-Null
+    # Wait for the startup fetch to finish rather than guessing a duration:
+    # recommendation cards only render once React has re-initialized with data.
+    $reloaded = $false
+    for ($i = 0; $i -lt 40; $i++) {
+        Start-Sleep -Milliseconds 250
+        try {
+            $reloaded = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => document.readyState === 'complete'
+  && document.querySelectorAll('.recommendation-card').length > 0
+  && document.body.innerText.includes('TOP PICKS'))()
+'@
+        } catch { }
+        if ($reloaded) { break }
+    }
+    Check "main window re-initializes after the reload" $reloaded `
+        "recommendation cards did not reappear within 10s"
     # Leave the draft flow first: the engine only resets when hero selection
     # follows a state outside the draft. Valve sends no `draft` component in All
     # Pick, so this payload carries only the map.
@@ -841,7 +891,7 @@ try {
   };
 })()
 '@
-    $previewDetail = "opened=$previewOpened rows=$($preview.rows) summary='$($preview.summary)' confirm=$($preview.confirm) emptyCopy=$($preview.emptyCopy)"
+    $previewDetail = "opened=$previewOpened rows=$($preview.rows) expected=$configuredBanCount summary='$($preview.summary)' confirm=$($preview.confirm) emptyCopy=$($preview.emptyCopy)"
     if ($previewOpened -and [int]$preview.rows -eq 0) {
         # The preview is empty because the database has no ban rows for the
         # active patch, not because the feature broke. Say which command fixes it.
@@ -860,8 +910,9 @@ try {
         $previewDetail
     }
     $previewHasBans = $previewOpened -and [int]$preview.rows -gt 0
-    Check "bulk preview lists the patch's most-banned heroes for review" `
-        ($previewHasBans -and $preview.summary -ne "" -and $preview.confirm) `
+    Check "bulk preview lists the configured number of most-banned heroes" `
+        ($previewHasBans -and $preview.summary -ne "" -and $preview.confirm -and
+            [int]$preview.rows -eq $configuredBanCount) `
         $previewDetail
 
     if ($previewHasBans) {
@@ -958,6 +1009,14 @@ finally {
             Copy-Item -LiteralPath $appLog -Destination (Join-Path $ArtifactsDir "app-log.txt") -Force -ErrorAction Stop
         }
     } catch { }
+    if ($scratchDataDir -and (Test-Path -LiteralPath $scratchDataDir)) {
+        Remove-Item -LiteralPath $scratchDataDir -Recurse -Force -ErrorAction SilentlyContinue
+    }
+    if ($null -eq $previousDataDir) {
+        Remove-Item Env:\SMART_DRAFT_DATA_DIR -ErrorAction SilentlyContinue
+    } else {
+        $env:SMART_DRAFT_DATA_DIR = $previousDataDir
+    }
     if ($Bundle -and $installDir -and (Test-Path -LiteralPath $installDir)) {
         # Registered per-user by NSIS, so run the uninstaller before deleting the
         # directory; otherwise every run leaves an entry in Apps & features.
