@@ -111,11 +111,9 @@ pub struct DraftEngine {
     undo_stack: Arc<RwLock<Vec<DraftAction>>>,
     active_patch: Option<String>,
     /// Per-patch ban prevalence, loaded once at initialization. Empty when the
-    /// database has no ban counts, in which case no ban suggestions are shown.
+    /// active patch has no ban counts, in which case no ban suggestions are
+    /// shown.
     ban_stats: Vec<BanStat>,
-    /// Patch the loaded ban counts belong to; may lag `active_patch` when the
-    /// active patch has no counts yet.
-    ban_patch: Option<String>,
     /// Whether the ML component may contribute to the recommendation score.
     ///
     /// Wired from `AppConfig::ml_enabled`. It exists on the engine (not only in
@@ -203,7 +201,6 @@ impl DraftEngine {
             undo_stack: Arc::new(RwLock::new(Vec::new())),
             active_patch: None,
             ban_stats: Vec::new(),
-            ban_patch: None,
             // Defaults to enabled for library/test callers. `lib.rs` overrides
             // this from persisted config before serving any command.
             ml_enabled: true,
@@ -478,26 +475,21 @@ impl DraftEngine {
             return Ok(());
         };
 
-        let mut stats = db.get_ban_stats(&patch)?;
-        let mut resolved = patch.clone();
+        let stats = db.get_ban_stats(&patch)?;
         if stats.is_empty() {
-            if let Some(fallback) = db.latest_ban_patch()? {
-                warn!("No ban counts for patch {patch}; using {fallback}");
-                stats = db.get_ban_stats(&fallback)?;
-                resolved = fallback;
-            }
-        }
-        if stats.is_empty() {
-            warn!("No ban counts in database; ban suggestions are disabled");
+            // Another patch's table is not a substitute: ranking 7.41 bans with
+            // 7.40 counts scored 1.80% top-1 against 4.02% for a rolling prior
+            // (docs/DRAFT_SCORER_BACKTEST.md), so a stale list is worse than
+            // none.
+            warn!("No ban counts for patch {patch}; ban suggestions are disabled");
             return Ok(());
         }
 
         info!(
-            "Loaded ban counts for {} heroes (patch {resolved})",
+            "Loaded ban counts for {} heroes (patch {patch})",
             stats.len()
         );
         self.ban_stats = stats;
-        self.ban_patch = Some(resolved);
         Ok(())
     }
 
@@ -509,7 +501,7 @@ impl DraftEngine {
         rank_ban_suggestions(
             &self.ban_stats,
             &state.available_heroes,
-            self.ban_patch.as_deref(),
+            self.active_patch.as_deref(),
             limit,
         )
     }
@@ -1138,7 +1130,7 @@ mod tests {
     }
 
     #[test]
-    fn test_engine_serves_ban_suggestions_from_persisted_counts() {
+    fn test_engine_serves_ban_suggestions_only_for_the_active_patch() {
         let dir = std::env::temp_dir().join(format!("sd-ban-engine-{}", uuid::Uuid::new_v4()));
         let db = Arc::new(Database::new(dir.clone()).unwrap());
 
@@ -1151,9 +1143,6 @@ mod tests {
             })
             .collect();
         db.bulk_upsert_heroes(&heroes).unwrap();
-        // The active patch has no counts; the engine must fall back to the
-        // newest patch that does, instead of showing nothing.
-        db.set_active_patch("7.99").unwrap();
         db.bulk_upsert_ban_stats(
             &[
                 BanStat {
@@ -1170,15 +1159,25 @@ mod tests {
             "7.41",
         )
         .unwrap();
+        db.set_active_patch("7.41").unwrap();
 
         let mut engine = DraftEngine::new();
-        engine.set_database(db);
+        engine.set_database(db.clone());
         engine.initialize().unwrap();
 
         let suggestions = engine.get_ban_suggestions(5);
         assert_eq!(suggestions.len(), 2);
         assert_eq!(suggestions[0].hero_id, HeroId(2));
         assert_eq!(suggestions[0].patch_version, "7.41");
+
+        // A patch with no rows offers nothing: an older patch's table ranks
+        // 7.41 bans at 1.80% top-1, below a rolling prior, so it is not a
+        // substitute (see docs/DRAFT_SCORER_BACKTEST.md).
+        db.set_active_patch("7.99").unwrap();
+        let mut stale = DraftEngine::new();
+        stale.set_database(db);
+        stale.initialize().unwrap();
+        assert!(stale.get_ban_suggestions(5).is_empty());
 
         let _ = std::fs::remove_dir_all(dir);
     }

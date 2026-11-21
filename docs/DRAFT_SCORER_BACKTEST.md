@@ -223,11 +223,13 @@ How much of that depends on having the current patch's counts? Restricting to
 patch 7.41 (4,175 drafts, 57,925 ban actions) and ranking with 7.41's table
 gives 4.40% top-1 / 9.8% top-3 / 15.7% top-5. Ranking the same events with the
 previous patch's table (7.40, which contains no 7.41 drafts) — the one-patch-lag
-case, and what the app falls back to when the active patch has no rows — drops
-to **1.80% / 4.6% / 10.1%**, below the rolling prior on that slice (4.02% /
-10.2% / 15.5%). The shipped list therefore depends on counts for the patch being
-played, which only exist once that patch has accumulated drafts; a stale table
-is worse than a fresh rolling prior, not merely equal to it.</think>
+case — drops to **1.80% / 4.6% / 10.1%**, below the rolling prior on that slice
+(4.02% / 10.2% / 15.5%). The shipped list therefore depends on counts for the
+patch being played, which only exist once that patch has accumulated drafts; a
+stale table is worse than a fresh rolling prior, not merely equal to it. The
+engine used to show the newest available table in that situation; it now shows
+no list at all (`ban suggestions are disabled` in the log), because a ranking
+below the rolling prior misleads more than an empty panel does.</think>
 
 ## Component ablation
 
@@ -454,7 +456,8 @@ data is not the explanation.
   needs a counterfactual the corpus cannot provide. Its counts are full-patch,
   so its score is in-sample for the replayed patch; the rolling figure is the
   honest estimate, and a one-patch-stale table scores below it (1.80% vs 4.02%
-  top-1 on 7.41).
+  top-1 on 7.41), which is why the panel shows nothing instead of substituting
+  an older patch's table.
 - ML is disabled by default in the shipped config (`default_ml_enabled()`
   returns `false`, because the bundled model is near the 0.5 ROC-AUC baseline).
   The ML-on path was measured on a 3,000-draft matched sample rather than the

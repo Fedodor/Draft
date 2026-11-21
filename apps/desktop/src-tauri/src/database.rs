@@ -1000,21 +1000,6 @@ impl Database {
         Ok(rows)
     }
 
-    /// Newest patch that has ban counts, used when the active patch has none.
-    pub fn latest_ban_patch(&self) -> Result<Option<String>> {
-        let conn = self.conn.lock().unwrap();
-        let patch = conn
-            .query_row(
-                "SELECT patch_version FROM hero_ban_stats
-                 GROUP BY patch_version
-                 ORDER BY MAX(updated_at) DESC, patch_version DESC LIMIT 1",
-                [],
-                |row| row.get(0),
-            )
-            .optional()?;
-        Ok(patch)
-    }
-
     // === Player Profiles ===
 
     pub fn upsert_player_profile(&self, profile: &PlayerProfile) -> Result<()> {
@@ -1126,11 +1111,10 @@ mod tests {
     }
 
     #[test]
-    fn test_ban_stats_round_trip_and_latest_patch() {
+    fn test_ban_stats_round_trip() {
         let (db, dir) = temp_database();
 
         assert!(db.get_ban_stats("7.41").unwrap().is_empty());
-        assert!(db.latest_ban_patch().unwrap().is_none());
 
         db.bulk_upsert_ban_stats(
             &[
@@ -1155,7 +1139,6 @@ mod tests {
         assert_eq!(rows[0].hero_id, HeroId(80));
         assert_eq!(rows[0].bans, 1722);
         assert_eq!(rows[1].hero_id, HeroId(13));
-        assert!(db.latest_ban_patch().unwrap().as_deref() == Some("7.41"));
 
         // The seed is idempotent: re-running it updates instead of duplicating.
         db.bulk_upsert_ban_stats(
