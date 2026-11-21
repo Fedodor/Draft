@@ -477,9 +477,10 @@ pub async fn get_data_health(
     let engine = engine.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
         let mut engine_guard = engine.lock().unwrap();
-        // Recheck is how a user reacts to a seeding gap; pick up ban rows they
-        // just added instead of waiting for the next launch.
-        engine_guard.refresh_ban_data()?;
+        // Recheck is how a user reacts to a seeding gap; follow a moved active
+        // patch and pick up rows they just added instead of waiting for the
+        // next launch.
+        engine_guard.sync_patch_data()?;
         engine_guard.data_health()
     })
     .await

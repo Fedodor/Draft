@@ -375,15 +375,32 @@ impl Database {
         };
 
         let active_patch = self.get_active_patch()?;
+        // Row counts alone say nothing about the active patch: a database seeded
+        // for 7.40 and pointed at 7.41 has every table populated and would look
+        // healthy while the scorers read the wrong patch.
+        let (patch_matchups, patch_synergies, patch_bans) = match &active_patch {
+            Some(patch) => {
+                let conn = self.conn.lock().unwrap();
+                let count_for = |table: &str| -> Result<i64> {
+                    Ok(conn.query_row(
+                        &format!("SELECT COUNT(*) FROM {table} WHERE patch_version = ?"),
+                        params![patch],
+                        |row| row.get(0),
+                    )?)
+                };
+                (
+                    count_for("hero_matchups")?,
+                    count_for("hero_synergies")?,
+                    count_for("hero_ban_stats")?,
+                )
+            }
+            None => (0, 0, 0),
+        };
         let meta_hero_count = match &active_patch {
             Some(patch) => self
                 .get_meta(patch)?
                 .map(|meta| meta.hero_meta_scores.len() as i64)
                 .unwrap_or(0),
-            None => 0,
-        };
-        let ban_count = match &active_patch {
-            Some(patch) => self.get_ban_stats(patch)?.len() as i64,
             None => 0,
         };
         let mut issues = Vec::new();
@@ -395,22 +412,41 @@ impl Database {
         if hero_count == 0 {
             issues.push("no heroes seeded".to_string());
         }
-        if matchup_count == 0 {
-            issues.push("no matchups seeded".to_string());
-        }
-        if synergy_count == 0 {
-            issues.push("no synergies seeded".to_string());
-        }
-        if meta_hero_count == 0 {
-            issues.push("no meta scores seeded".to_string());
-        }
-        if active_patch.is_none() {
-            issues.push("active patch is not set".to_string());
-        } else if ban_count == 0 {
-            issues.push(format!(
-                "no ban data seeded for patch {}: run seed_matchups to populate hero_ban_stats",
-                active_patch.as_deref().unwrap_or("unset")
-            ));
+        match &active_patch {
+            Some(patch) => {
+                if patch_matchups == 0 {
+                    issues.push(format!(
+                        "no matchups seeded for patch {patch}: run seed_matchups"
+                    ));
+                }
+                if patch_synergies == 0 {
+                    issues.push(format!(
+                        "no synergies seeded for patch {patch}: run seed_matchups"
+                    ));
+                }
+                if meta_hero_count == 0 {
+                    issues.push(format!(
+                        "no meta scores seeded for patch {patch}: run seed_matchups"
+                    ));
+                }
+                if patch_bans == 0 {
+                    issues.push(format!(
+                        "no ban data seeded for patch {patch}: run seed_matchups to populate hero_ban_stats"
+                    ));
+                }
+            }
+            None => {
+                if matchup_count == 0 {
+                    issues.push("no matchups seeded".to_string());
+                }
+                if synergy_count == 0 {
+                    issues.push("no synergies seeded".to_string());
+                }
+                if meta_hero_count == 0 {
+                    issues.push("no meta scores seeded".to_string());
+                }
+                issues.push("active patch is not set".to_string());
+            }
         }
         if !wal_enabled {
             issues.push("SQLite is not in WAL mode".to_string());
@@ -1162,6 +1198,123 @@ mod tests {
         let rows = db.get_ban_stats("7.41").unwrap();
         assert_eq!(rows.len(), 2);
         assert_eq!(rows[1].bans, 100);
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_health_reports_data_from_another_patch() {
+        let (db, dir) = temp_database();
+        // Matchups and synergies reference heroes, so the roster must exist.
+        let mut hero = crate::engine::DraftEngine::fallback_heroes().remove(0);
+        hero.id = HeroId(1);
+        hero.name = "npc_dota_hero_test1".to_string();
+        let mut other = hero.clone();
+        other.id = HeroId(2);
+        other.name = "npc_dota_hero_test2".to_string();
+        db.bulk_upsert_heroes(&[hero, other]).unwrap();
+        db.set_active_patch("7.41").unwrap();
+
+        // Everything is seeded, but only for the previous patch.
+        db.bulk_upsert_matchups(
+            &[HeroMatchup {
+                hero_id: HeroId(1),
+                vs_hero_id: HeroId(2),
+                advantage: 0.1,
+                winrate: 0.55,
+                games: 100,
+            }],
+            "7.40",
+        )
+        .unwrap();
+        db.bulk_upsert_synergies(
+            &[HeroSynergy {
+                hero_id: HeroId(1),
+                with_hero_id: HeroId(2),
+                synergy: 0.2,
+                winrate: 0.55,
+                games: 100,
+            }],
+            "7.40",
+        )
+        .unwrap();
+        db.upsert_meta(&MetaData {
+            patch_version: "7.40".to_string(),
+            hero_meta_scores: [(HeroId(1), 0.6)].into_iter().collect(),
+            hero_pickrates: Default::default(),
+            hero_winrates: Default::default(),
+            updated_at: 123,
+        })
+        .unwrap();
+        db.bulk_upsert_ban_stats(
+            &[BanStat {
+                hero_id: HeroId(1),
+                bans: 10,
+                games: 100,
+            }],
+            "7.40",
+        )
+        .unwrap();
+
+        let stale = db.health().unwrap();
+        assert!(!stale.healthy);
+        for table in ["matchups", "synergies", "meta scores", "ban data"] {
+            assert!(
+                stale
+                    .issues
+                    .iter()
+                    .any(|issue| issue.contains(table) && issue.contains("patch 7.41")),
+                "missing issue for {table}: {:?}",
+                stale.issues
+            );
+        }
+
+        // Rows for the active patch clear the warnings.
+        db.bulk_upsert_matchups(
+            &[HeroMatchup {
+                hero_id: HeroId(1),
+                vs_hero_id: HeroId(2),
+                advantage: 0.1,
+                winrate: 0.55,
+                games: 100,
+            }],
+            "7.41",
+        )
+        .unwrap();
+        db.bulk_upsert_synergies(
+            &[HeroSynergy {
+                hero_id: HeroId(1),
+                with_hero_id: HeroId(2),
+                synergy: 0.2,
+                winrate: 0.55,
+                games: 100,
+            }],
+            "7.41",
+        )
+        .unwrap();
+        db.upsert_meta(&MetaData {
+            patch_version: "7.41".to_string(),
+            hero_meta_scores: [(HeroId(1), 0.6)].into_iter().collect(),
+            hero_pickrates: Default::default(),
+            hero_winrates: Default::default(),
+            updated_at: 123,
+        })
+        .unwrap();
+        db.bulk_upsert_ban_stats(
+            &[BanStat {
+                hero_id: HeroId(1),
+                bans: 10,
+                games: 100,
+            }],
+            "7.41",
+        )
+        .unwrap();
+
+        let fresh = db.health().unwrap();
+        assert!(!fresh
+            .issues
+            .iter()
+            .any(|issue| issue.contains("patch 7.41")));
 
         let _ = std::fs::remove_dir_all(dir);
     }

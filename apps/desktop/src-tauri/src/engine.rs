@@ -493,12 +493,56 @@ impl DraftEngine {
         Ok(())
     }
 
-    /// Reload the active patch's ban counts.
+    /// Re-read the persisted active patch and refresh patch-scoped data.
     ///
-    /// The engine caches them at startup; a user who seeds `hero_ban_stats`
-    /// afterwards would otherwise keep an empty All Pick preview until a
-    /// restart, even after the health notice reports the gap as fixed.
-    pub fn refresh_ban_data(&mut self) -> Result<()> {
+    /// The engine caches matchups, synergies, meta and bans for the patch it
+    /// started on. A seeder run can move `active_patch` while the app is open,
+    /// so health/recheck must reload instead of scoring the new patch with the
+    /// old data. Ban rows are reloaded on every call so seeding for an
+    /// unchanged patch also takes effect.
+    pub fn sync_patch_data(&mut self) -> Result<()> {
+        let Some(db) = self.database.clone() else {
+            return Ok(());
+        };
+        let persisted = db.get_active_patch()?;
+        if persisted != self.active_patch {
+            info!(
+                "Active patch changed from {:?} to {:?}; reloading patch-scoped data",
+                self.active_patch, persisted
+            );
+            self.active_patch = persisted;
+            self.matchup_data.clear();
+            self.synergy_data.clear();
+            self.meta_data = MetaData {
+                patch_version: self.active_patch.clone().unwrap_or_default(),
+                hero_meta_scores: HashMap::new(),
+                hero_pickrates: HashMap::new(),
+                hero_winrates: HashMap::new(),
+                updated_at: chrono::Utc::now().timestamp(),
+            };
+            self.load_matchup_data()?;
+            self.load_synergy_data()?;
+            self.load_meta_data()?;
+
+            let hero_names: HashMap<HeroId, String> = self
+                .hero_db
+                .iter()
+                .map(|h| (h.id.clone(), h.localized_name.clone()))
+                .collect();
+            self.scorer.set_data(
+                self.matchup_data.clone(),
+                self.synergy_data.clone(),
+                hero_names,
+            );
+            self.scorer.set_ml_scorer(MLScorer::new(
+                self.hero_semantics.clone(),
+                self.meta_data.clone(),
+                self.hero_db.clone(),
+                self.matchup_data.clone(),
+            ));
+            self.state.write().patch_version = self.active_patch.clone().unwrap_or_default();
+        }
+
         self.ban_stats.clear();
         self.load_ban_data()
     }
@@ -1215,15 +1259,25 @@ mod tests {
         // substitute (see docs/DRAFT_SCORER_BACKTEST.md).
         db.set_active_patch("7.99").unwrap();
         let mut stale = DraftEngine::new();
-        stale.set_database(db);
+        stale.set_database(db.clone());
         stale.initialize().unwrap();
         assert!(stale.get_ban_suggestions(5).is_empty());
+
+        // Seeding moves the persisted patch while the app is running; recheck
+        // has to follow it instead of continuing on 7.99 with 7.41's rows.
+        db.set_active_patch("7.41").unwrap();
+        stale.sync_patch_data().unwrap();
+        assert_eq!(stale.state.read().patch_version, "7.41");
+        assert_eq!(stale.meta_data.patch_version, "7.41");
+        let moved = stale.get_ban_suggestions(5);
+        assert_eq!(moved.len(), 2);
+        assert!(moved.iter().all(|row| row.patch_version == "7.41"));
 
         let _ = std::fs::remove_dir_all(dir);
     }
 
     #[test]
-    fn test_refresh_ban_data_picks_up_rows_seeded_after_startup() {
+    fn test_sync_patch_data_picks_up_rows_seeded_after_startup() {
         let dir = std::env::temp_dir().join(format!("sd-ban-refresh-{}", uuid::Uuid::new_v4()));
         let db = Arc::new(Database::new(dir.clone()).unwrap());
 
@@ -1254,7 +1308,7 @@ mod tests {
             "7.41",
         )
         .unwrap();
-        engine.refresh_ban_data().unwrap();
+        engine.sync_patch_data().unwrap();
 
         let suggestions = engine.get_ban_suggestions(5);
         assert_eq!(suggestions.len(), 1);
