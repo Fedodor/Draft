@@ -101,7 +101,9 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12.13"
+          # The 3.12.13 patch is not in setup-python's Windows manifest; the
+          # smoke only needs a 3.12 interpreter to edit SQLite.
+          python-version: "3.12"
 
       # Launches the real Tauri binary against the Vite dev server and drives the
       # WebView2 renderer over CDP: CSP assets, tabs, GSI ingestion, card layout at
@@ -151,7 +153,7 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: "3.12.13"
+          python-version: "3.12"
 
       # Builds the NSIS release bundle, installs it into a temporary directory and
       # drives the installed app over CDP. The frontend is embedded and the model
