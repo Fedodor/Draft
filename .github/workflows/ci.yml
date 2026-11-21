@@ -96,6 +96,13 @@ jobs:
         working-directory: apps/desktop
         run: npm ci
 
+      # The Recheck checks edit the scratch database through Python; make the
+      # interpreter explicit so they cannot silently turn into skips.
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.13"
+
       # Launches the real Tauri binary against the Vite dev server and drives the
       # WebView2 renderer over CDP: CSP assets, tabs, GSI ingestion, card layout at
       # 900 and 800 px, and the overlay toggle. Windows PowerShell (5.1) is the
@@ -140,6 +147,11 @@ jobs:
       - name: Install frontend dependencies
         working-directory: apps/desktop
         run: npm ci
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12.13"
 
       # Builds the NSIS release bundle, installs it into a temporary directory and
       # drives the installed app over CDP. The frontend is embedded and the model
