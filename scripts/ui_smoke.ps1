@@ -36,6 +36,18 @@ $seedersDir = Join-Path $repoRoot "infrastructure\seeders"
 $dbPath = Join-Path $env:APPDATA "com.smartdraftassistant.app\smart_draft.db"
 $bundleDir = Join-Path $tauriDir "target\release\bundle\nsis"
 $npm = (Get-Command npm.cmd -ErrorAction Stop).Source
+# The recheck scenario edits the scratch database directly; prefer the pinned
+# ML venv, then whatever Python the host offers.
+$venvPython = Join-Path $repoRoot "ml\venv\Scripts\python.exe"
+$python = if (Test-Path -LiteralPath $venvPython) {
+    $venvPython
+} elseif (Get-Command py -ErrorAction SilentlyContinue) {
+    (Get-Command py).Source
+} elseif (Get-Command python -ErrorAction SilentlyContinue) {
+    (Get-Command python).Source
+} else {
+    $null
+}
 
 if ($Bundle) {
     # The installer is silent (`/S`) and NSIS takes the target directory from an
@@ -984,6 +996,93 @@ try {
         }
     }
     Save-Screenshot -WebSocketUrl $main -Path (Join-Path $ArtifactsDir "main-all-pick.png")
+
+    Write-Host "==> Recheck: ban rows seeded while the app is running"
+    if (-not $python) {
+        Skip "missing ban data surfaces the seed notice" "no Python available to edit the scratch database"
+        Skip "recheck clears the notice after live seeding" "no Python available to edit the scratch database"
+        Skip "recheck exposes the newly seeded bans to the preview" "no Python available to edit the scratch database"
+    } else {
+        $pyPath = Join-Path $ArtifactsDir "recheck-db.py"
+        Set-Content -LiteralPath $pyPath -Encoding UTF8 -Value @'
+import sqlite3, sys
+c = sqlite3.connect(sys.argv[1])
+patch = c.execute("SELECT value FROM app_settings WHERE key='active_patch'").fetchone()[0]
+c.execute("DELETE FROM hero_ban_stats WHERE patch_version=?", (patch,))
+c.commit()
+'@
+        & $python $pyPath $scratchDbPath | Out-Null
+        Check "scratch ban rows removed for the recheck scenario" ($LASTEXITCODE -eq 0) "python exit=$LASTEXITCODE"
+
+        # Health only runs when the app initializes or Recheck is pressed. A
+        # reload gives the gap a notice to act on, as a user who starts the app
+        # before seeding would see.
+        Invoke-Eval -WebSocketUrl $main -Expression "(() => { location.reload(); return true; })()" | Out-Null
+        $noticeShown = $false
+        for ($i = 0; $i -lt 40; $i++) {
+            Start-Sleep -Milliseconds 250
+            try {
+                $noticeShown = Invoke-Eval -WebSocketUrl $main -Expression "document.body.innerText.includes('no ban data seeded')"
+            } catch { }
+            if ($noticeShown) { break }
+        }
+        Check "missing ban data surfaces the seed notice" $noticeShown "notice did not appear within 10s"
+
+        Set-Content -LiteralPath $pyPath -Encoding UTF8 -Value @'
+import sqlite3, sys
+c = sqlite3.connect(sys.argv[1])
+patch = c.execute("SELECT value FROM app_settings WHERE key='active_patch'").fetchone()[0]
+for hero_id in range(1, 6):
+    c.execute("INSERT OR REPLACE INTO hero_ban_stats (patch_version, hero_id, bans, games, updated_at) VALUES (?, ?, ?, 100, CURRENT_TIMESTAMP)", (patch, hero_id, 100 - hero_id * 10))
+c.commit()
+'@
+        & $python $pyPath $scratchDbPath | Out-Null
+        Check "ban rows seeded while the app is running" ($LASTEXITCODE -eq 0) "python exit=$LASTEXITCODE"
+
+        $recheckClicked = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Recheck');
+  if (!button) return false;
+  button.click();
+  return true;
+})()
+'@
+        $noticeCleared = $false
+        for ($i = 0; $i -lt 30; $i++) {
+            Start-Sleep -Milliseconds 250
+            try {
+                $noticeCleared = -not (Invoke-Eval -WebSocketUrl $main -Expression "document.body.innerText.includes('no ban data seeded')")
+            } catch { }
+            if ($noticeCleared) { break }
+        }
+        Check "recheck clears the notice after live seeding" ($recheckClicked -and $noticeCleared) `
+            "clicked=$recheckClicked cleared=$noticeCleared"
+
+        Invoke-Eval -WebSocketUrl $main -Expression ($jsClickTab.Replace("%TAB%", "Draft")) | Out-Null
+        Start-Sleep -Milliseconds 700
+        $recheckPreviewOpened = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const button = [...document.querySelectorAll('button')].find(b => b.textContent.includes('most-banned'));
+  if (!button) return false;
+  button.click();
+  return true;
+})()
+'@
+        Start-Sleep -Seconds 2
+        $recheckPreview = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const text = document.body.innerText;
+  return {
+    rows: text.split('\n').filter(line => /^\d+\. /.test(line.trim())).length,
+    summary: (text.match(/Top \d+ most-banned/) || [])[0] || ''
+  };
+})()
+'@
+        Check "recheck exposes the newly seeded bans to the preview" `
+            ($recheckPreviewOpened -and [int]$recheckPreview.rows -eq 5 -and $recheckPreview.summary -ne "") `
+            "opened=$recheckPreviewOpened rows=$($recheckPreview.rows) summary='$($recheckPreview.summary)'"
+        Save-Screenshot -WebSocketUrl $main -Path (Join-Path $ArtifactsDir "main-recheck.png")
+    }
 }
 catch {
     Write-Host ""
