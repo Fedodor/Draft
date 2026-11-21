@@ -1089,6 +1089,97 @@ c.commit()
             ($recheckPreviewOpened -and [int]$recheckPreview.rows -eq 5 -and $recheckPreview.summary -ne "") `
             "opened=$recheckPreviewOpened rows=$($recheckPreview.rows) summary='$($recheckPreview.summary)'"
         Save-Screenshot -WebSocketUrl $main -Path (Join-Path $ArtifactsDir "main-recheck.png")
+
+        Write-Host "==> Recheck: active patch changes while the app is running"
+        $originalPatch = Invoke-Eval -WebSocketUrl $main -Expression @'
+(async () => (await window.__TAURI_INTERNALS__.invoke('get_draft_state')).patch_version)()
+'@
+        Set-Content -LiteralPath $pyPath -Encoding UTF8 -Value @'
+import sqlite3, sys
+c = sqlite3.connect(sys.argv[1])
+for hero_id in range(6, 9):
+    c.execute("INSERT OR REPLACE INTO hero_ban_stats (patch_version, hero_id, bans, games, updated_at) VALUES ('9.99', ?, ?, 100, CURRENT_TIMESTAMP)", (hero_id, 90 - hero_id))
+c.execute("INSERT OR REPLACE INTO app_settings (key, value) VALUES ('active_patch', '9.99')")
+c.commit()
+'@
+        & $python $pyPath $scratchDbPath | Out-Null
+        Check "scratch active patch moved to 9.99" ($LASTEXITCODE -eq 0) "python exit=$LASTEXITCODE"
+
+        # Recheck is only offered while the notice is visible, so reload to let
+        # health observe the moved patch (only bans exist for 9.99).
+        Invoke-Eval -WebSocketUrl $main -Expression "(() => { location.reload(); return true; })()" | Out-Null
+        $patchNotice = $false
+        for ($i = 0; $i -lt 40; $i++) {
+            Start-Sleep -Milliseconds 250
+            try {
+                $patchNotice = Invoke-Eval -WebSocketUrl $main -Expression "document.body.innerText.includes('no matchups seeded for patch 9.99')"
+            } catch { }
+            if ($patchNotice) { break }
+        }
+        Check "health reports patch-scoped gaps for the new patch" $patchNotice `
+            "notice for patch 9.99 did not appear within 10s"
+
+        Set-Content -LiteralPath $pyPath -Encoding UTF8 -Value @'
+import sqlite3, sys
+c = sqlite3.connect(sys.argv[1])
+c.execute("UPDATE app_settings SET value=? WHERE key='active_patch'", (sys.argv[2],))
+c.commit()
+'@
+        & $python $pyPath $scratchDbPath $originalPatch | Out-Null
+        Check "scratch active patch restored to $originalPatch" ($LASTEXITCODE -eq 0) "python exit=$LASTEXITCODE"
+
+        $recheckMoved = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const button = [...document.querySelectorAll('button')].find(b => b.textContent.trim() === 'Recheck');
+  if (!button) return false;
+  button.click();
+  return true;
+})()
+'@
+        $followed = $null
+        for ($i = 0; $i -lt 40; $i++) {
+            Start-Sleep -Milliseconds 250
+            try {
+                $followed = Invoke-Eval -WebSocketUrl $main -Expression @'
+(async () => {
+  const state = await window.__TAURI_INTERNALS__.invoke('get_draft_state');
+  return {
+    patch: state.patch_version,
+    notice: document.body.innerText.includes('no matchups seeded for patch 9.99')
+  };
+})()
+'@
+            } catch { }
+            if ($followed -and $followed.patch -eq $originalPatch -and -not $followed.notice) { break }
+        }
+        Check "recheck follows the active patch change" `
+            ($recheckMoved -and $followed -and $followed.patch -eq $originalPatch -and -not $followed.notice) `
+            "clicked=$recheckMoved patch=$($followed.patch) notice=$($followed.notice)"
+
+        Invoke-Eval -WebSocketUrl $main -Expression ($jsClickTab.Replace("%TAB%", "Draft")) | Out-Null
+        Start-Sleep -Milliseconds 700
+        $movedPreviewOpened = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const button = [...document.querySelectorAll('button')].find(b => b.textContent.includes('most-banned'));
+  if (!button) return false;
+  button.click();
+  return true;
+})()
+'@
+        Start-Sleep -Seconds 2
+        $movedPreview = Invoke-Eval -WebSocketUrl $main -Expression @'
+(() => {
+  const text = document.body.innerText;
+  return {
+    rows: text.split('\n').filter(line => /^\d+\. /.test(line.trim())).length,
+    summary: (text.match(/Top \d+ most-banned/) || [])[0] || ''
+  };
+})()
+'@
+        Check "recheck previews the restored patch's bans" `
+            ($movedPreviewOpened -and [int]$movedPreview.rows -eq 5 -and $movedPreview.summary -ne "") `
+            "opened=$movedPreviewOpened rows=$($movedPreview.rows) summary='$($movedPreview.summary)'"
+        Save-Screenshot -WebSocketUrl $main -Path (Join-Path $ArtifactsDir "main-patch-change.png")
     }
 }
 catch {
