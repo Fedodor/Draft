@@ -130,6 +130,7 @@ export function HeroPicker() {
       setBulkBansAdded(null);
     });
 
+  const banWindow = formatBanWindow(banDataInfo);
   const isCurrentTurn = draft.current_pick === selectedTeam;
   const allyPicks = selectedTeam === 'radiant' ? draft.radiant_picks : draft.dire_picks;
   const enemyPicks = selectedTeam === 'radiant' ? draft.dire_picks : draft.radiant_picks;
@@ -234,11 +235,9 @@ export function HeroPicker() {
                   {banPreview[0].patch_version}. Not All Pick bans.
                 </p>
                 <p className="mb-1.5 text-[11px] text-dota-textMuted/80">
-                  {banDataInfo?.drafts ?? banPreview[0].games} CM drafts
-                  {formatBanWindow(banDataInfo)
-                    ? `, exported ${formatBanWindow(banDataInfo)}`
-                    : ''}
-                  . Review, then add them as bans.
+                  {`${banDataInfo?.drafts ?? banPreview[0].games} CM drafts${
+                    banWindow ? ` from ${banWindow}` : ''
+                  }. Review, then add them as bans.`}
                 </p>
                 <div className="mb-2 max-h-40 space-y-1 overflow-y-auto">
                   {banPreview.map((suggestion, index) => (

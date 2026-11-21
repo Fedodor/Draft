@@ -63,7 +63,7 @@ struct BanSeed {
     #[serde(default)]
     matches: i32,
     #[serde(default)]
-    patches: std::collections::BTreeMap<String, BanSeedPatchInfo>,
+    patches: std::collections::HashMap<String, BanSeedPatchInfo>,
     rows: Vec<BanSeedRow>,
 }
 
@@ -360,7 +360,7 @@ fn seed_bans(db: &Database) -> Result<()> {
     let meta = BanSeedMeta {
         source: payload.source,
         matches: payload.matches,
-        patches: payload.patches.into_iter().collect(),
+        patches: payload.patches,
     };
     db.set_setting(BAN_SEED_META_KEY, &serde_json::to_string(&meta)?)?;
 

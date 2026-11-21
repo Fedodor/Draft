@@ -510,11 +510,6 @@ impl DraftEngine {
                 "Active patch changed from {:?} to {:?}; reloading patch-scoped data",
                 self.active_patch, persisted
             );
-        } else {
-            info!(
-                "Rechecking patch-scoped data for patch {:?}",
-                self.active_patch
-            );
         }
         self.active_patch = persisted;
 
@@ -573,10 +568,8 @@ impl DraftEngine {
             return Ok(None);
         };
         Ok(Some(BanDataInfo {
-            source: meta.source,
             patch_version: patch,
             drafts: info.drafts,
-            total_matches: meta.matches,
             window_start: info.window_start,
             window_end: info.window_end,
         }))

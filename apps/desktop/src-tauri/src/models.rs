@@ -443,12 +443,9 @@ pub struct BanSeedMeta {
 /// Provenance the ban panel shows for the active patch's list.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct BanDataInfo {
-    pub source: String,
     pub patch_version: String,
     /// Drafts counted on this patch (the sample size behind the rates).
     pub drafts: i32,
-    /// Drafts counted across every exported patch.
-    pub total_matches: i32,
     pub window_start: Option<i64>,
     pub window_end: Option<i64>,
 }

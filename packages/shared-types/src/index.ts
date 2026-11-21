@@ -137,12 +137,9 @@ export interface BanSuggestion {
 
 /** Where the ban-count list came from (Captain's Mode drafts, not All Pick). */
 export interface BanDataInfo {
-  source: string;
   patch_version: string;
   /** Drafts counted on this patch; the sample size behind the rates. */
   drafts: number;
-  /** Drafts counted across every exported patch. */
-  total_matches: number;
   /** Unix seconds, or null when the export has no timestamp. */
   window_start: number | null;
   window_end: number | null;
