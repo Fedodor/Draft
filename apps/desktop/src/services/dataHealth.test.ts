@@ -48,6 +48,20 @@ describe('describeDataHealth', () => {
     expect(summary.command).toBe(SEED_COMMANDS);
   });
 
+  it('names seed_matchups when the active patch has no ban data', () => {
+    const summary = describeDataHealth(
+      health({
+        healthy: false,
+        issues: ['no ban data seeded for patch 7.41: run seed_matchups to populate hero_ban_stats'],
+      }),
+    );
+
+    expect(summary.level).toBe('warning');
+    expect(summary.detail).toContain('seed_matchups');
+    expect(summary.command).toBe(SEED_COMMANDS);
+    expect(summary.command).toContain('seed_matchups.exe');
+  });
+
   it('omits the seed command when seeding would not fix the issue', () => {
     const summary = describeDataHealth(
       health({ wal_enabled: false, healthy: false, issues: ['SQLite is not in WAL mode'] }),

@@ -382,6 +382,10 @@ impl Database {
                 .unwrap_or(0),
             None => 0,
         };
+        let ban_count = match &active_patch {
+            Some(patch) => self.get_ban_stats(patch)?.len() as i64,
+            None => 0,
+        };
         let mut issues = Vec::new();
         if schema_version < DB_VERSION {
             issues.push(format!(
@@ -402,6 +406,11 @@ impl Database {
         }
         if active_patch.is_none() {
             issues.push("active patch is not set".to_string());
+        } else if ban_count == 0 {
+            issues.push(format!(
+                "no ban data seeded for patch {}: run seed_matchups to populate hero_ban_stats",
+                active_patch.as_deref().unwrap_or("unset")
+            ));
         }
         if !wal_enabled {
             issues.push("SQLite is not in WAL mode".to_string());
@@ -1153,6 +1162,34 @@ mod tests {
         let rows = db.get_ban_stats("7.41").unwrap();
         assert_eq!(rows.len(), 2);
         assert_eq!(rows[1].bans, 100);
+
+        let _ = std::fs::remove_dir_all(dir);
+    }
+
+    #[test]
+    fn test_health_reports_missing_ban_data() {
+        let (db, dir) = temp_database();
+        db.set_active_patch("7.41").unwrap();
+
+        let missing = db.health().unwrap();
+        assert!(!missing.healthy);
+        assert!(missing
+            .issues
+            .iter()
+            .any(|issue| { issue.contains("no ban data") && issue.contains("seed_matchups") }));
+
+        db.bulk_upsert_ban_stats(
+            &[BanStat {
+                hero_id: HeroId(80),
+                bans: 1722,
+                games: 4175,
+            }],
+            "7.41",
+        )
+        .unwrap();
+
+        let seeded = db.health().unwrap();
+        assert!(!seeded.issues.iter().any(|issue| issue.contains("ban data")));
 
         let _ = std::fs::remove_dir_all(dir);
     }
