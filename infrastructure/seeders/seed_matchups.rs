@@ -384,6 +384,22 @@ fn main() -> Result<()> {
         seed_real(&db)?;
     }
 
+    // The active patch comes from the scoring seed, the ban counts from
+    // `ban_seed.json`; when their patch sets differ the panel would silently
+    // show no ban list, so surface the gap where the data is written.
+    if let Some(patch) = db.get_active_patch()? {
+        if db.get_ban_stats(&patch)?.is_empty() {
+            // stderr rather than `warn!`: the subscriber only shows warnings
+            // when RUST_LOG is set, and this gap must be visible on a plain run.
+            eprintln!(
+                "warning: active patch {patch} has no ban counts, so the ban-phase \
+                 list stays empty. {BAN_SEED_PATH} has no rows for it; re-export the \
+                 file with `python ml/backtest/export_ban_prior.py` once drafts exist \
+                 for {patch}"
+            );
+        }
+    }
+
     info!("Matchup/synergy seeding complete!");
     Ok(())
 }
