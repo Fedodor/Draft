@@ -831,13 +831,32 @@ try {
     confirm: [...document.querySelectorAll('button')].some(b => {
       const label = b.textContent.trim();
       return label.startsWith('Add ') && label.endsWith(' bans') && !label.includes('most-banned');
-    })
+    }),
+    emptyCopy: text.includes('No ban data for this patch')
   };
 })()
 '@
+    $previewDetail = "opened=$previewOpened rows=$($preview.rows) summary='$($preview.summary)' confirm=$($preview.confirm) emptyCopy=$($preview.emptyCopy)"
+    if ($previewOpened -and [int]$preview.rows -eq 0) {
+        # The preview is empty because the database has no ban rows for the
+        # active patch, not because the feature broke. Say which command fixes it.
+        $activePatch = Invoke-Eval -WebSocketUrl $main -Expression @'
+(async () => (await window.__TAURI_INTERNALS__.invoke('get_draft_state')).patch_version)()
+'@
+        # The app honours SMART_DRAFT_DATA_DIR; report the database it opened,
+        # not the default one this script seeds.
+        $activeDb = if ($env:SMART_DRAFT_DATA_DIR) {
+            Join-Path $env:SMART_DRAFT_DATA_DIR "smart_draft.db"
+        } else {
+            $dbPath
+        }
+        $previewDetail = "no ban counts for active patch '$activePatch' in $activeDb; " +
+        "run seed_matchups (infrastructure/seeders) to seed hero_ban_stats, then rerun this script. " +
+        $previewDetail
+    }
     Check "bulk preview lists the patch's most-banned heroes for review" `
         ($previewOpened -and [int]$preview.rows -gt 0 -and $preview.summary -ne "" -and $preview.confirm) `
-        "opened=$previewOpened rows=$($preview.rows) summary='$($preview.summary)' confirm=$($preview.confirm)"
+        $previewDetail
 
     $confirmed = Invoke-Eval -WebSocketUrl $main -Expression @'
 (() => {
