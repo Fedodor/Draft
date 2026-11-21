@@ -10,6 +10,7 @@ function draft(order: number): DraftState {
     current_pick: 'radiant',
     pick_number: order,
     is_picking_phase: true,
+    has_live_draft: true,
     available_heroes: [],
     patch_version: '7.41',
     timestamp: order,

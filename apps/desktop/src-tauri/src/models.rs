@@ -281,6 +281,10 @@ pub struct DraftState {
     pub current_pick: Option<TeamSide>,
     pub pick_number: i32,
     pub is_picking_phase: bool,
+    /// Whether GSI sent a `draft` component for this draft. False in All Pick,
+    /// where Valve exposes no draft data, and for hand-recorded drafts; the UI
+    /// uses it to skip ban suggestions that cannot describe a live ban turn.
+    pub has_live_draft: bool,
     pub available_heroes: Vec<HeroId>,
     pub patch_version: String,
     pub timestamp: i64,
@@ -295,6 +299,7 @@ impl Default for DraftState {
             current_pick: None,
             pick_number: 0,
             is_picking_phase: false,
+            has_live_draft: false,
             available_heroes: Vec::new(),
             patch_version: "7.41".to_string(),
             timestamp: chrono::Utc::now().timestamp(),

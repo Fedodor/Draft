@@ -193,7 +193,9 @@ export function OverlayWindow() {
             )
           ) : topPicks.length === 0 ? (
             <div className="text-xs text-dota-textMuted text-center py-2">
-              Waiting for draft…
+              {draft && !draft.has_live_draft
+                ? 'All Pick: record picks in the app'
+                : 'Waiting for draft…'}
             </div>
           ) : (
             <div className="space-y-1">

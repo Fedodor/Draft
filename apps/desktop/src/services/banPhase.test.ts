@@ -6,25 +6,57 @@ const ban = { hero_id: 1, order: 0, team: 'radiant' as const };
 describe('isBanPhase', () => {
   it('is false before the draft starts', () => {
     expect(
-      isBanPhase({ is_picking_phase: false, current_pick: null, bans: [] }),
+      isBanPhase({
+        has_live_draft: false,
+        is_picking_phase: false,
+        current_pick: null,
+        bans: [],
+      }),
     ).toBe(false);
   });
 
   it('is true on a ban turn, before any ban lands', () => {
     expect(
-      isBanPhase({ is_picking_phase: false, current_pick: 'radiant', bans: [] }),
+      isBanPhase({
+        has_live_draft: true,
+        is_picking_phase: false,
+        current_pick: 'radiant',
+        bans: [],
+      }),
     ).toBe(true);
   });
 
-  it('is true for hand-recorded bans without a live turn', () => {
+  it('is true for recorded bans without a live turn in Captain\'s Mode', () => {
     expect(
-      isBanPhase({ is_picking_phase: false, current_pick: null, bans: [ban] }),
+      isBanPhase({
+        has_live_draft: true,
+        is_picking_phase: false,
+        current_pick: null,
+        bans: [ban],
+      }),
     ).toBe(true);
+  });
+
+  it('is false for All Pick bans recorded by hand', () => {
+    // No GSI draft data means no ban turn: those bans only shrink the pool.
+    expect(
+      isBanPhase({
+        has_live_draft: false,
+        is_picking_phase: false,
+        current_pick: null,
+        bans: [ban],
+      }),
+    ).toBe(false);
   });
 
   it('is false once the draft moves to picks', () => {
     expect(
-      isBanPhase({ is_picking_phase: true, current_pick: 'radiant', bans: [ban] }),
+      isBanPhase({
+        has_live_draft: true,
+        is_picking_phase: true,
+        current_pick: 'radiant',
+        bans: [ban],
+      }),
     ).toBe(false);
   });
 });

@@ -153,6 +153,12 @@ export function RecommendationPanel() {
 
   return (
     <div className="flex-1 overflow-y-auto p-3 space-y-4">
+      {!draft.has_live_draft && (
+        <p className="px-2 text-xs text-dota-textMuted">
+          All Pick: Dota sends no draft data. Record bans and picks in Manual
+          Draft Control for suggestions on the live game.
+        </p>
+      )}
       <RecommendationCategory
         title="Top Picks"
         recommendations={topPicks}

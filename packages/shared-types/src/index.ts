@@ -98,6 +98,8 @@ export interface DraftState {
   current_pick: TeamSide | null;
   pick_number: number;
   is_picking_phase: boolean;
+  /** GSI sent a `draft` component for this draft (Captain's Mode, not All Pick). */
+  has_live_draft: boolean;
   available_heroes: HeroId[];
   patch_version: string;
   timestamp: number;

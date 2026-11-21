@@ -63,6 +63,7 @@ const initialDraftState: DraftState = {
   current_pick: null,
   pick_number: 0,
   is_picking_phase: false,
+  has_live_draft: false,
   available_heroes: [],
   patch_version: '7.41',
   timestamp: Date.now(),

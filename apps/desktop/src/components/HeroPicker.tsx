@@ -112,6 +112,13 @@ export function HeroPicker() {
           </div>
         </div>
 
+        {!draft.has_live_draft && (
+          <p className="mb-3 text-xs text-dota-textMuted">
+            All Pick: Dota sends no draft data, so record the pre-pick bans and
+            each pick here.
+          </p>
+        )}
+
         {/* Mode toggle + turn info */}
         <div className="flex items-center gap-2 mb-3">
           <div className="grid grid-cols-2 gap-1 p-0.5 bg-dota-bg border border-dota-border rounded-lg flex-1">

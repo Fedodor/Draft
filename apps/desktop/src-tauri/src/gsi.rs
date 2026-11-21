@@ -625,6 +625,7 @@ fn process_draft_update(
         }
     }
     state.pick_number = picks_count as i32;
+    state.has_live_draft = true;
     debug!(
         "Engine draft state: radiant_picks={}, dire_picks={}, bans={}, turn={:?}",
         state.radiant_picks.len(),
