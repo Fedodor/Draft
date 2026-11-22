@@ -98,7 +98,7 @@ The `database` module (public, in `src/database.rs`) provides:
 
 ## Machine Learning Integration
 
-The `MLScorer` loads a bundled ONNX model (`draft_model_xgboost_full.onnx`, XGBoost TreeEnsembleClassifier, 887 features) via the `ort` crate at startup. For each candidate it simulates the pick, builds the full feature vector (`build_feature_map`), and runs inference. The model outputs a Radiant win probability, which is flipped for Dire picks. When the model is unavailable, the scorer returns the neutral `0.5`.
+The `MLScorer` loads a bundled ONNX model (`draft_model_xgboost_full.onnx`, XGBoost TreeEnsembleClassifier, 887 features) via the `ort` crate at startup. For each candidate it simulates the pick, builds the feature vector (`build_feature_map`), and runs inference. A pool scan batches every row into one session call (`MLScorer::score_batch` / `OnnxModel::predict_batch`) and only builds rows for heroes that can still reach the requested positions: the ML term adds at most `(1 - POPULARITY_ORDER_SHARE) * W_ML` = 0.10 to a total, so a hero further below the cut cannot enter it. With a schema loaded, absent presence one-hots are omitted and resolve to the schema's 0.0 defaults instead of being written as zeros. The model outputs a Radiant win probability, which is flipped for Dire picks. When the model is unavailable, the scorer returns the neutral `0.5`.
 
 > [!IMPORTANT]
 > The system is designed to function perfectly even if the ML layer is disabled, ensuring explainability and reliability at all times.

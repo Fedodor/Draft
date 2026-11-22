@@ -291,6 +291,59 @@ impl OnnxModel {
         let pred = prediction.unwrap_or(0.5);
         Ok(pred.clamp(0.0, 1.0))
     }
+
+    /// Run inference for several rows in one session call. Rows are built with
+    /// the same schema defaults as [`Self::predict`]; batching exists because a
+    /// tree-ensemble session call costs far more than the extra rows in it.
+    pub fn predict_batch(&self, rows: &[HashMap<String, f32>]) -> Result<Vec<f32>> {
+        if rows.is_empty() {
+            return Ok(Vec::new());
+        }
+        let width = self.feature_names.len();
+        let mut flat = Vec::with_capacity(rows.len() * width);
+        for features in rows {
+            for name in &self.feature_names {
+                flat.push(
+                    features
+                        .get(name)
+                        .copied()
+                        .or_else(|| self.schema.default_for(name))
+                        .unwrap_or(0.0),
+                );
+            }
+        }
+        let array = ndarray::Array2::from_shape_vec((rows.len(), width), flat)?;
+        let value = ort::value::Value::from_array(array).map_err(ort_error)?;
+
+        let mut session = self.session.lock().unwrap();
+        let input_name = if session
+            .inputs()
+            .iter()
+            .any(|input| input.name() == self.schema.input_name)
+        {
+            self.schema.input_name.clone()
+        } else {
+            session
+                .inputs()
+                .first()
+                .map(|input| input.name().to_string())
+                .unwrap_or_else(|| "input".to_string())
+        };
+        let outputs = session.run(vec![(input_name, value)]).map_err(ort_error)?;
+
+        let row_count = rows.len();
+        let class = self.schema.positive_class_index;
+        outputs
+            .get(&self.schema.probability_output)
+            .and_then(|output| probabilities_of(output, row_count, class))
+            .or_else(|| {
+                outputs
+                    .values()
+                    .find_map(|output| probabilities_of(&output, row_count, class))
+            })
+            .map(|values| values.into_iter().map(|p| p.clamp(0.0, 1.0)).collect())
+            .ok_or_else(|| anyhow::anyhow!("model produced no usable probability output"))
+    }
 }
 
 /// Select the positive-class probability from a flat output tensor.
@@ -301,6 +354,38 @@ fn select_probability(data: &[f32], positive_class_index: usize) -> Option<f32> 
     data.get(positive_class_index)
         .copied()
         .or_else(|| data.first().copied())
+}
+
+/// [`select_probabilities`] applied to an ORT output tensor.
+fn probabilities_of(
+    output: &ort::value::Value,
+    rows: usize,
+    positive_class_index: usize,
+) -> Option<Vec<f32>> {
+    output
+        .try_extract_tensor::<f32>()
+        .ok()
+        .and_then(|(_shape, data)| select_probabilities(data, rows, positive_class_index))
+}
+
+/// Positive-class probability for every row of a `[batch, class]` output.
+fn select_probabilities(
+    data: &[f32],
+    rows: usize,
+    positive_class_index: usize,
+) -> Option<Vec<f32>> {
+    if rows == 0 || !data.len().is_multiple_of(rows) {
+        return None;
+    }
+    let classes = data.len() / rows;
+    if positive_class_index >= classes {
+        return None;
+    }
+    Some(
+        (0..rows)
+            .map(|row| data[row * classes + positive_class_index])
+            .collect(),
+    )
 }
 
 /// Convert an `ort` error into a `Send + Sync` anyhow error.
@@ -440,6 +525,23 @@ impl MLInferenceEngine {
             }
         }
     }
+
+    /// Batched variant of [`Self::predict`]: neutral 0.5 for every row when no
+    /// model is loaded, and a single error log rather than one per row.
+    pub fn predict_batch(&self, rows: &[HashMap<String, f32>]) -> Result<Vec<f32>> {
+        let model = match self.model.read().as_ref() {
+            Some(m) => m.clone(),
+            None => return Ok(vec![0.5; rows.len()]),
+        };
+
+        match model.predict_batch(rows) {
+            Ok(values) => Ok(values),
+            Err(e) => {
+                error!("ML batch inference failed: {}", e);
+                Ok(vec![0.5; rows.len()])
+            }
+        }
+    }
 }
 
 /// Build the ML feature map from the current draft state, mirroring
@@ -453,7 +555,9 @@ pub fn build_feature_map(
     matchups: &HashMap<HeroId, Vec<HeroMatchup>>,
     schema: Option<&FeatureSchema>,
 ) -> HashMap<String, f32> {
-    let mut f = HashMap::new();
+    // The presence one-hots alone are four keys per known hero; sizing the map
+    // up front avoids repeatedly rehashing the whole feature set.
+    let mut f = HashMap::with_capacity(256);
 
     let rad_pick_ids: std::collections::HashSet<i32> =
         state.radiant_picks.iter().map(|p| p.hero_id.0).collect();
@@ -472,41 +576,33 @@ pub fn build_feature_map(
         .map(|b| b.hero_id.0)
         .collect();
 
-    // Presence + bans (one-hot per known hero).
+    // Presence + bans (one-hot per known hero). With a schema, every hero not
+    // picked or banned stays at the schema's 0.0 default, so only set flags are
+    // written instead of four keys per known hero on every candidate's map.
+    // Without a schema the defaults are unknown, so the dense form is kept.
+    let include_absent = schema.is_none();
     for hero in heroes {
+        let id = hero.id.0;
+        let rad_picked = rad_pick_ids.contains(&id);
+        let dire_picked = dire_pick_ids.contains(&id);
+        let rad_banned = rad_ban_ids.contains(&id);
+        let dire_banned = dire_ban_ids.contains(&id);
+        if !(rad_picked || dire_picked || rad_banned || dire_banned) && !include_absent {
+            continue;
+        }
         let sn = safe_hero_name(hero);
-        f.insert(
-            format!("rad_has_{sn}"),
-            if rad_pick_ids.contains(&hero.id.0) {
-                1.0
-            } else {
-                0.0
-            },
-        );
-        f.insert(
-            format!("dire_has_{sn}"),
-            if dire_pick_ids.contains(&hero.id.0) {
-                1.0
-            } else {
-                0.0
-            },
-        );
-        f.insert(
-            format!("rad_ban_{sn}"),
-            if rad_ban_ids.contains(&hero.id.0) {
-                1.0
-            } else {
-                0.0
-            },
-        );
-        f.insert(
-            format!("dire_ban_{sn}"),
-            if dire_ban_ids.contains(&hero.id.0) {
-                1.0
-            } else {
-                0.0
-            },
-        );
+        for (prefix, active) in [
+            ("rad_has_", rad_picked),
+            ("dire_has_", dire_picked),
+            ("rad_ban_", rad_banned),
+            ("dire_ban_", dire_banned),
+        ] {
+            if active {
+                f.insert(format!("{prefix}{sn}"), 1.0);
+            } else if include_absent {
+                f.insert(format!("{prefix}{sn}"), 0.0);
+            }
+        }
     }
 
     // Pick order.

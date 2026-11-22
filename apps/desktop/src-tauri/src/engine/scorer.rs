@@ -400,6 +400,67 @@ impl MLScorer {
             matchup_data,
         }
     }
+
+    /// Score several candidates in one inference call, building each row the
+    /// same way [`Scorer::score`] does. Returns `None` when no model is loaded
+    /// so the caller can fall back to the per-candidate path.
+    pub fn score_batch(
+        &self,
+        heroes: &[&Hero],
+        state: &DraftState,
+        team: TeamSide,
+    ) -> Option<Vec<f32>> {
+        let ml_engine = crate::ml::get_ml_engine();
+        let engine_guard = ml_engine.read();
+        if !engine_guard.is_loaded() || heroes.is_empty() {
+            return None;
+        }
+        let is_radiant = matches!(team, TeamSide::Radiant);
+        let feature_schema = engine_guard.feature_schema();
+
+        let build_row = |hero: &Hero| {
+            let mut simulated_state = state.clone();
+            let pick = DraftPick {
+                hero_id: hero.id.clone(),
+                player_id: PlayerId(0),
+                order: simulated_state.pick_number + 1,
+                team,
+            };
+            simulated_state.available_heroes.retain(|h| h != &hero.id);
+            if is_radiant {
+                simulated_state.radiant_picks.push(pick);
+            } else {
+                simulated_state.dire_picks.push(pick);
+            }
+            build_feature_map(
+                &simulated_state,
+                &self.hero_db,
+                &self.hero_semantics,
+                &self.meta_data,
+                &self.matchup_data,
+                feature_schema.as_deref(),
+            )
+        };
+
+        // Build every row first, then pay for one session call for the pool.
+        let rows: Vec<HashMap<String, f32>> = heroes.iter().map(|hero| build_row(hero)).collect();
+
+        match engine_guard.predict_batch(&rows) {
+            Ok(values) if values.len() == heroes.len() => Some(
+                values
+                    .into_iter()
+                    .map(|prediction| {
+                        if is_radiant {
+                            prediction
+                        } else {
+                            1.0 - prediction
+                        }
+                    })
+                    .collect(),
+            ),
+            _ => None,
+        }
+    }
 }
 
 impl Scorer for MLScorer {

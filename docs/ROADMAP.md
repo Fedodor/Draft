@@ -639,17 +639,17 @@ What it establishes:
 
 - Test: `bench_recommendation_latency` in `src-tauri/src/engine.rs` (ignored by default).
 - Command: `cargo test --release --manifest-path apps/desktop/src-tauri/Cargo.toml --lib bench_recommendation_latency -- --ignored --nocapture`
-- Setup: 120 synthetic heroes, bundled `draft_model_xgboost_full.onnx` (887 features), empty matchup/synergy maps, 3 iterations after one warm-up, single Windows machine (no CPU pinning).
-- Results:
+- Setup: 120 synthetic heroes with seeded per-patch pick rates (so popularity has a real spread), bundled `draft_model_xgboost_full.onnx` (887 features), empty matchup/synergy maps, 3 iterations after one warm-up, single Windows machine (no CPU pinning).
+- Results (re-measured 2026-11-22 after batched inference):
 
 | Path | Release | Debug |
 | --- | --- | --- |
-| ML enabled, full recommendation | 23.2 ms/request | 158.7 ms/request |
-| ML disabled, full recommendation | 0.2 ms/request | 0.9 ms/request |
-| Cache hit (`get_recommendations_cached`) | 0.002 ms/request | 0.032 ms/request |
-| Single `MLScorer::score` (one candidate) | 0.144 ms | 1.447 ms |
+| ML enabled, full recommendation | 1.4 ms/request | 29.0 ms/request |
+| ML disabled, full recommendation | 0.2 ms/request | 1.5 ms/request |
+| Cache hit (`get_recommendations_cached`) | 0.002 ms/request | 0.011 ms/request |
+| Single `MLScorer::score` (one candidate) | 0.064 ms | 0.944 ms |
 
-Interpretation: inference dominates the ML-on path (~120 candidates × ~0.14 ms ≈ 17 ms) and is skipped entirely when ML is disabled. The cache makes the second window's identical request effectively free. Debug builds are 7-8× slower — do not quote debug numbers as user-facing latency.
+Interpretation: the ML-on path builds one feature map per hero that can still reach the returned positions, lets the schema's 0.0 defaults stand in for absent presence one-hots instead of writing four zero keys per known hero, and scores that set in one ONNX call. That is why a single score is 0.064 ms instead of 0.144 ms and the full recommendation is 1.4 ms instead of 23.2 ms. Inference is skipped entirely when ML is disabled, and the cache still makes the second window's identical request effectively free. Debug builds are ~15× slower — do not quote debug numbers as user-facing latency.
 
 ### Shipped ordering: popularity-first (2026-11-22)
 
@@ -683,6 +683,20 @@ scores no longer predicts the winner (it was already below the report's 0.55
 usability floor). Agreement with human picks is the measured objective; win
 probability is not. The rolling per-patch prior remains the stronger
 out-of-sample reference (3.38% top-1) and is not what the app serves.
+
+### Search benchmark (2026-11-22)
+
+- Test: `bench_search_recommendation_latency` in `src-tauri/src/engine.rs` (ignored by default).
+- Command: `cargo test --release --lib bench_search_recommendation_latency -- --ignored --nocapture`
+- Setup: 120 synthetic heroes with seeded per-patch pick rates, bundled model, beam width 5, candidates 15, 3 iterations after one warm-up, same machine as the recommendation benchmark.
+
+| Path | ML off | ML on |
+| --- | --- | --- |
+| shortlist only (`max_depth: 0`) | 0.3 ms | **2.8 ms** |
+| lookahead depth 2 | **0.4 ms** | **4.1 ms** |
+| recommendation list (reference) | 0.1 ms | 1.4 ms |
+
+Interpretation: ML-off search is unchanged. ML-on search now pays one batched inference per pool it needs instead of one inference per candidate: the root shortlist and the opponent shortlist are scored once per turn (the opponent beam is shared by all 15 branches, filtered to heroes still available), and only heroes that can still reach the requested positions are scored at all. ML adds at most `(1 - POPULARITY_ORDER_SHARE) * W_ML` = 0.10 to a total, so a hero more than 0.10 below the cut cannot enter it; on this seeded fixture that leaves about 35 of 120 heroes per pool. Lookahead is 4.1 ms, 77× faster than the 318 ms pre-batching measurement and close to the ML-off cost. Pruning is a provable bound rather than a heuristic, so the shortlist order is unchanged: `test_ml_pruning_preserves_the_top_of_the_pool` checks the pruned top against a full-pool sort, and the preselection-order test still passes. The fixture now seeds pick rates because without a spread every hero ties and nothing can be pruned (the unseeded worst case measured 7.9 ms shortlist / 15.2 ms lookahead before seeding).
 
 ### Not measured
 
@@ -1006,7 +1020,7 @@ Empty-result note: `docs/RefactorML.md` is an empty tracked file; it is listed h
 6. **CSP / capability regression (P2-1, P2-2):** the app has not been launched with the new CSP and split capabilities; a broken permission would only appear at runtime.
 7. **Semantics (P2-5):** the card no longer repeats the score as "Confidence", no longer attaches a score-threshold RISK chip, and the Analysis tab no longer shows the constant-0.5 lane bars. Still open: the category labels are semantics thresholds, and the payload keeps the constant `lane_balance` for compatibility.
 8. **Reproducibility (P1-5):** resolved for the data path — `process_all()` now processes files in canonical match-id order, reassembles by input index, writes an explicit column order, and records fingerprints + run statistics in `dataset_schema.json`; two full runs with different worker/chunk settings produced identical content. Still open: lane features are disabled, and matchup-data runs would emit seven extra names (the v2 run deliberately excludes them because `ml.rs` cannot rebuild them).
-9. **Latency (P0-4):** 23.2 ms is a harness number; in-app p95 and inference count per event are unmeasured.
+9. **Latency (P0-4):** the harness recommendation dropped from 23.2 ms to 1.4 ms and ML-on lookahead from 318 ms to 4.1 ms per search (§3) after batched inference and exact ML pruning; ML-off search stays at 0.3-0.4 ms. In-app p95, inferences per GSI event and cold-session startup remain unmeasured.
 10. **Data platform (P2-9):** 1.9 GB of loose dataset files with no versioning or retention.
 11. **Mode encoding (P1-7):** `game_mode` stores Captains Mode as 22 (All Pick) and every non-captain mode as 0, collapsing `CAPTAINS_MODE` with `CAPTAINS_DRAFT`. It does not affect the 871-feature candidate (the group is dropped), but the bundled 887-feature model trains on it and no mode-segmented analysis can be trusted until a v3 dataset fixes the mapping.
 12. **Target definition (P0-1 residual):** the corpus cannot identify next-pick effects (0 of 101,400 2-a-side contexts occur 50 times), and early-stage win AUC falls to 0.523 once ban timing is honest. Any recommendation that presents a win probability as the value of a pick overstates what the data supports. Session 10 adds the one signal that *is* measurable — next-pick imitation, from pick 2 onward —   but it is a behavioural target, not a value one, and it is *worse than a frequency table at the opening pick* (0.0744 vs 0.0990 top-1). Session 11 tested the phase-aware fix: no early-stage model beats the table there (−0.0416 at pick 0), the intercept-only diagnostic is level with it (+0.0012, CI −0.0018..+0.0041), and the recommendation is therefore the frequency fallback at picks 0-1 with the pooled model from pick 2 (hybrid 0.0599 overall).
@@ -1300,7 +1314,7 @@ changed to popularity-first. Read §0, §3a and risk 1 in §7.
 Start here, in this order:
 
 1. Read this file, then §4-§5 of [`AUDIT_2026-10-27.md`](AUDIT_2026-10-27.md) for the evidence behind each ID.
-2. Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1` to confirm the baseline still holds (Rust 84 / frontend 32 / Python 166, 14/14 steps).
+2. Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1` to confirm the baseline still holds (Rust 87 / frontend 32 / Python 166, 14/14 steps).
 3. Run `ml/venv/Scripts/python.exe ml/training/quality_gate.py`; expect exit 1 until a candidate replaces the bundled model. Use `--evaluation-mode as_trained` only to compare against the manifest, not to judge runtime quality.
 4. Pick the next task from §8 (currently finishing the honest surface, then the patch-rollover and replay work; the modelling questions are closed in ML_TRAINING §3e-3f until a fresh holdout exists). The task ID maps 1:1 to the audit finding, so no re-audit is needed.
 5. Update this file's status column and the verification log **after** running the check — never before.

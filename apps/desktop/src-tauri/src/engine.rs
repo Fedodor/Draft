@@ -102,6 +102,23 @@ fn blended_total(context: f32, popularity: f32) -> f32 {
     (POPULARITY_ORDER_SHARE * popularity + (1.0 - POPULARITY_ORDER_SHARE) * context).clamp(0.0, 1.0)
 }
 
+/// Indices of totals that can still reach the top `limit` when a component
+/// worth at most `max_swing` is added to each total. Returned in input order.
+///
+/// This makes ML pruning exact: a hero more than `max_swing` below the
+/// `limit`-th total cannot overtake the `limit` heroes ahead of it.
+fn within_top_with_swing(base_totals: &[f32], limit: usize, max_swing: f32) -> Vec<usize> {
+    if limit >= base_totals.len() {
+        return (0..base_totals.len()).collect();
+    }
+    let mut ranked: Vec<usize> = (0..base_totals.len()).collect();
+    ranked.sort_by(|a, b| base_totals[*b].total_cmp(&base_totals[*a]));
+    let cutoff = base_totals[ranked[limit - 1]] - max_swing;
+    (0..base_totals.len())
+        .filter(|index| base_totals[*index] >= cutoff)
+        .collect()
+}
+
 /// Main draft engine that maintains state and generates recommendations
 #[derive(Clone)]
 pub struct DraftEngine {
@@ -832,28 +849,84 @@ impl DraftEngine {
             .unwrap_or(0.5)
     }
 
-    /// Score every available hero for `team`, sharing one popularity ranking.
-    /// The recommendation list and the backtest harness both use this so the
-    /// ordering is computed identically in a single pass.
-    pub fn score_pool(&self, team: TeamSide) -> Vec<(HeroId, ScoreBreakdown)> {
-        let state = self.state.read();
-        let popularity = self.popularity_percentiles(&state);
-        state
+    /// Score available heroes in `state` for `team`, sharing one popularity
+    /// ranking and one batched ML call.
+    ///
+    /// `limit` is how many positions the caller needs. ML inference runs only
+    /// for heroes that can still reach those positions: the ML component adds
+    /// at most `(1 - POPULARITY_ORDER_SHARE) * W_ML` to a total, so a hero more
+    /// than that below the `limit`-th non-ML total cannot enter the top
+    /// `limit`. Surviving order is unchanged; the list is just shorter.
+    ///
+    /// When ML is enabled but batching is unavailable, survivors fall back to
+    /// the per-candidate path rather than silently scoring a neutral value.
+    fn score_pool_for_state(
+        &self,
+        state: &DraftState,
+        team: TeamSide,
+        limit: usize,
+    ) -> Vec<(HeroId, ScoreBreakdown)> {
+        let heroes: Vec<&Hero> = state
             .available_heroes
             .iter()
-            .filter_map(|hero_id| {
-                let hero = self.hero_db.iter().find(|h| h.id == *hero_id)?;
-                Some((
-                    hero_id.clone(),
-                    self.score_hero(
-                        hero,
-                        &state,
-                        team,
-                        popularity.get(hero_id).copied().unwrap_or(0.5),
-                    ),
-                ))
-            })
-            .collect()
+            .filter_map(|hero_id| self.hero_db.iter().find(|h| h.id == *hero_id))
+            .collect();
+        let popularity = self.popularity_percentiles(state);
+        let pop_for = |hero_id: &HeroId| popularity.get(hero_id).copied().unwrap_or(0.5);
+        let score_all = |pool: &[&Hero]| -> Vec<(HeroId, ScoreBreakdown)> {
+            pool.iter()
+                .map(|hero| {
+                    (
+                        hero.id.clone(),
+                        self.score_hero(hero, state, team, pop_for(&hero.id)),
+                    )
+                })
+                .collect()
+        };
+
+        let ml_scorer = match (self.ml_enabled, &self.scorer.ml_scorer) {
+            (true, Some(ml_scorer)) if !heroes.is_empty() => ml_scorer,
+            _ => return score_all(&heroes),
+        };
+
+        let take = limit.clamp(1, heroes.len());
+        let considered: Vec<&Hero> = if take >= heroes.len() {
+            heroes
+        } else {
+            let base: Vec<f32> = heroes
+                .iter()
+                .map(|hero| {
+                    self.assemble(hero, state, team, pop_for(&hero.id), 0.0)
+                        .total
+                })
+                .collect();
+            let swing = (1.0 - POPULARITY_ORDER_SHARE) * W_ML;
+            within_top_with_swing(&base, take, swing)
+                .into_iter()
+                .map(|index| heroes[index])
+                .collect()
+        };
+
+        match ml_scorer.score_batch(&considered, state, team) {
+            Some(values) if values.len() == considered.len() => considered
+                .iter()
+                .zip(values)
+                .map(|(hero, ml)| {
+                    (
+                        hero.id.clone(),
+                        self.assemble(hero, state, team, pop_for(&hero.id), ml),
+                    )
+                })
+                .collect(),
+            _ => score_all(&considered),
+        }
+    }
+
+    /// Score every available hero for `team` in the current draft.
+    pub fn score_pool(&self, team: TeamSide) -> Vec<(HeroId, ScoreBreakdown)> {
+        let state = self.state.read();
+        let limit = state.available_heroes.len();
+        self.score_pool_for_state(&state, team, limit)
     }
 
     /// Debug view: per-component scores for a candidate hero in the current
@@ -871,11 +944,6 @@ impl DraftEngine {
         team: TeamSide,
         popularity: f32,
     ) -> ScoreBreakdown {
-        let matchup = self.scorer.matchup_scorer.score(hero, state, team);
-        let synergy = self.scorer.synergy_scorer.score(hero, state, team);
-        let composition = self.scorer.composition_scorer.score(hero, state, team);
-        let meta = self.get_meta_score(&hero.id);
-        let comfort = self.get_comfort_score(&hero.id);
         let ml = if self.ml_enabled {
             match &self.scorer.ml_scorer {
                 Some(ml_scorer) => ml_scorer.score(hero, state, team),
@@ -886,6 +954,24 @@ impl DraftEngine {
             // still reported as neutral for a stable breakdown shape.
             0.5
         };
+        self.assemble(hero, state, team, popularity, ml)
+    }
+
+    /// Combine already-computed component values. `ml` is a parameter so the
+    /// pool path can fill it from one batched inference call.
+    fn assemble(
+        &self,
+        hero: &Hero,
+        state: &DraftState,
+        team: TeamSide,
+        popularity: f32,
+        ml: f32,
+    ) -> ScoreBreakdown {
+        let matchup = self.scorer.matchup_scorer.score(hero, state, team);
+        let synergy = self.scorer.synergy_scorer.score(hero, state, team);
+        let composition = self.scorer.composition_scorer.score(hero, state, team);
+        let meta = self.get_meta_score(&hero.id);
+        let comfort = self.get_comfort_score(&hero.id);
 
         let context = context_total(
             [matchup, synergy, composition, meta, comfort, ml],
@@ -986,39 +1072,31 @@ impl DraftEngine {
     pub fn get_recommendations(&self, team: TeamSide, limit: usize) -> RecommendationSet {
         let state = self.state.read();
         let is_radiant = matches!(team, TeamSide::Radiant);
-        let popularity = self.popularity_percentiles(&state);
 
         let mut scored_heroes: Vec<(HeroId, f32, Vec<String>)> = Vec::new();
 
-        for hero_id in &state.available_heroes {
-            let hero = match self.hero_db.iter().find(|h| h.id == *hero_id) {
+        // One pass scores the whole pool, sharing the popularity ranking and a
+        // single ML batch; explanations are added per hero afterwards.
+        for (hero_id, breakdown) in self.score_pool_for_state(&state, team, limit) {
+            let hero = match self.hero_db.iter().find(|h| h.id == hero_id) {
                 Some(h) => h,
                 None => continue,
             };
 
             let mut explanations = Vec::new();
-
-            // All scorer outputs are in [0, 1] with 0.5 neutral; weights sum
-            // to 1.0 so the combined score stays in [0, 1] without saturating.
-            let breakdown = self.score_hero(
-                hero,
-                &state,
-                team,
-                popularity.get(hero_id).copied().unwrap_or(0.5),
-            );
             explanations.extend(self.scorer.matchup_scorer.explain(hero, &state, team));
             explanations.extend(self.scorer.synergy_scorer.explain(hero, &state, team));
             explanations.extend(self.scorer.composition_scorer.explain(hero, &state, team));
 
             if breakdown.meta > 0.65 {
-                explanations.push(match self.meta_data.hero_winrates.get(hero_id) {
+                explanations.push(match self.meta_data.hero_winrates.get(&hero_id) {
                     Some(winrate) => {
                         format!("Strong in current meta ({:.0}% winrate)", winrate * 100.0)
                     }
                     None => "Strong in current meta".to_string(),
                 });
             } else if breakdown.meta < 0.35 {
-                explanations.push(match self.meta_data.hero_winrates.get(hero_id) {
+                explanations.push(match self.meta_data.hero_winrates.get(&hero_id) {
                     Some(winrate) => format!("Off-meta pick ({:.0}% winrate)", winrate * 100.0),
                     None => "Off-meta pick".to_string(),
                 });
@@ -1040,7 +1118,7 @@ impl DraftEngine {
                 ));
             }
 
-            scored_heroes.push((hero_id.clone(), breakdown.total, explanations));
+            scored_heroes.push((hero_id, breakdown.total, explanations));
         }
 
         // Sort by score descending. `total_cmp` gives a total order even if a
@@ -1280,6 +1358,57 @@ impl DraftEngine {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn test_swing_keeps_every_hero_that_can_reach_the_cut() {
+        let bases = [0.80, 0.72, 0.66, 0.60, 0.59, 0.30];
+        assert_eq!(
+            within_top_with_swing(&bases, 6, 0.1),
+            vec![0, 1, 2, 3, 4, 5]
+        );
+        assert_eq!(within_top_with_swing(&bases, 3, 0.1), vec![0, 1, 2, 3, 4]);
+        assert_eq!(within_top_with_swing(&bases, 2, 0.05), vec![0, 1]);
+        // A hero exactly one swing below the cut can still tie it: keep it.
+        let tie = [0.70, 0.60, 0.50];
+        assert_eq!(within_top_with_swing(&tie, 1, 0.1), vec![0, 1]);
+    }
+
+    #[test]
+    fn test_ml_pruning_preserves_the_top_of_the_pool() {
+        let mut engine = engine_with_heroes(4);
+        engine.meta_data.hero_pickrates = [
+            (HeroId(1), 0.40),
+            (HeroId(2), 0.30),
+            (HeroId(3), 0.20),
+            (HeroId(4), 0.10),
+        ]
+        .into_iter()
+        .collect();
+        engine.scorer.set_ml_scorer(MLScorer::new(
+            HashMap::new(),
+            engine.meta_data.clone(),
+            engine.hero_db.clone(),
+            HashMap::new(),
+        ));
+        engine.ml_enabled = true;
+        let state = engine.get_state();
+
+        let pruned = engine.score_pool_for_state(&state, TeamSide::Radiant, 2);
+        assert!(
+            pruned.len() < state.available_heroes.len(),
+            "heroes that cannot reach the cut should not be scored"
+        );
+
+        let mut pruned = pruned;
+        pruned.sort_by(|a, b| b.1.total.total_cmp(&a.1.total));
+        let listed: Vec<HeroId> = pruned.into_iter().take(2).map(|(id, _)| id).collect();
+
+        let mut full = engine.score_pool(TeamSide::Radiant);
+        full.sort_by(|a, b| b.1.total.total_cmp(&a.1.total));
+        let expected: Vec<HeroId> = full.into_iter().take(2).map(|(id, _)| id).collect();
+
+        assert_eq!(listed, expected);
+    }
 
     #[test]
     fn test_ban_suggestions_rank_by_prevalence_and_skip_unavailable() {
@@ -1733,32 +1862,14 @@ mod tests {
     #[test]
     #[ignore = "benchmark; requires bundled ONNX model"]
     fn bench_recommendation_latency() {
-        let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
-        let dll = manifest.join("resources/onnxruntime.dll");
-        let model = manifest.join("../../../ml/models/draft_model_xgboost_full.onnx");
-        if !dll.exists() || !model.exists() {
-            eprintln!("skipping benchmark: model or onnxruntime.dll missing");
+        let Some(mut engine) = bench_engine() else {
             return;
-        }
-        std::env::set_var("ORT_DYLIB_PATH", &dll);
-        crate::ml::get_ml_engine()
-            .write()
-            .load_model(&model.to_string_lossy())
-            .expect("load bundled model");
+        };
         eprintln!(
             "bench: ml status loaded={} features={}",
             crate::ml::get_ml_engine().read().status().loaded,
             crate::ml::get_ml_engine().read().status().feature_count
         );
-
-        let mut engine = engine_with_heroes(120);
-        let ml_scorer = MLScorer::new(
-            HashMap::new(),
-            engine.meta_data.clone(),
-            engine.hero_db.clone(),
-            HashMap::new(),
-        );
-        engine.scorer.set_ml_scorer(ml_scorer);
 
         // Warm-up (feature schema + ORT session).
         let _ = engine.get_recommendations(TeamSide::Radiant, 10);
@@ -1806,6 +1917,100 @@ mod tests {
             "bench: cache-hit avg={:.3} ms/request (100 iterations)",
             start.elapsed().as_secs_f64() * 10.0
         );
+    }
+
+    /// Beam search spends most of its time scoring the candidate shortlist, so
+    /// this isolates that cost from the lookahead and from the list itself.
+    ///
+    /// `cargo test --release --lib bench_search_recommendation_latency -- --ignored --nocapture`
+    #[test]
+    #[ignore = "benchmark; requires bundled ONNX model"]
+    fn bench_search_recommendation_latency() {
+        let Some(mut engine) = bench_engine() else {
+            return;
+        };
+
+        let preselect_only = simulation::SearchConfig {
+            max_depth: 0,
+            opponent_model_enabled: false,
+            ..Default::default()
+        };
+        let configs = [
+            ("shortlist-only", preselect_only),
+            ("lookahead-depth-2", simulation::SearchConfig::default()),
+        ];
+
+        for ml_enabled in [false, true] {
+            engine.ml_enabled = ml_enabled;
+            for (label, config) in &configs {
+                // Warm-up (feature schema + ORT session).
+                let _ =
+                    engine.get_recommendations_with_search(TeamSide::Radiant, 5, config.clone());
+
+                let iterations = 3;
+                let start = std::time::Instant::now();
+                for _ in 0..iterations {
+                    let _ = engine.get_recommendations_with_search(
+                        TeamSide::Radiant,
+                        5,
+                        config.clone(),
+                    );
+                }
+                let elapsed = start.elapsed();
+                eprintln!(
+                    "bench: search {} ml_enabled={} avg={:.1} ms/request ({} iterations)",
+                    label,
+                    ml_enabled,
+                    elapsed.as_secs_f64() * 1000.0 / iterations as f64,
+                    iterations
+                );
+            }
+
+            let _ = engine.get_recommendations(TeamSide::Radiant, 10);
+            let iterations = 3;
+            let start = std::time::Instant::now();
+            for _ in 0..iterations {
+                let _ = engine.get_recommendations(TeamSide::Radiant, 10);
+            }
+            let elapsed = start.elapsed();
+            eprintln!(
+                "bench: list ml_enabled={} avg={:.1} ms/request ({} iterations)",
+                ml_enabled,
+                elapsed.as_secs_f64() * 1000.0 / iterations as f64,
+                iterations
+            );
+        }
+    }
+
+    /// Benchmark fixture: the bundled model loaded into a 120-hero engine whose
+    /// per-patch pick rates are seeded. The spread matters — with every hero
+    /// tied, nothing can be pruned and the numbers measure a different path.
+    fn bench_engine() -> Option<DraftEngine> {
+        let manifest = std::path::Path::new(env!("CARGO_MANIFEST_DIR"));
+        let dll = manifest.join("resources/onnxruntime.dll");
+        let model = manifest.join("../../../ml/models/draft_model_xgboost_full.onnx");
+        if !dll.exists() || !model.exists() {
+            eprintln!("skipping benchmark: model or onnxruntime.dll missing");
+            return None;
+        }
+        std::env::set_var("ORT_DYLIB_PATH", &dll);
+        crate::ml::get_ml_engine()
+            .write()
+            .load_model(&model.to_string_lossy())
+            .expect("load bundled model");
+
+        let mut engine = engine_with_heroes(120);
+        engine.meta_data.hero_pickrates = (1..=120)
+            .map(|id| (HeroId(id), 0.5 - (id - 1) as f32 * 0.004))
+            .collect();
+        let ml_scorer = MLScorer::new(
+            HashMap::new(),
+            engine.meta_data.clone(),
+            engine.hero_db.clone(),
+            HashMap::new(),
+        );
+        engine.scorer.set_ml_scorer(ml_scorer);
+        Some(engine)
     }
 
     fn engine_with_heroes(count: i32) -> DraftEngine {

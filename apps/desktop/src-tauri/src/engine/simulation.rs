@@ -64,7 +64,14 @@ impl DraftSimulator {
         let state = self.engine.get_state();
         let is_radiant = matches!(team, TeamSide::Radiant);
 
-        // Get top candidates using heuristic scoring
+        // One opponent shortlist per turn, shared by every candidate branch.
+        // Recomputing it per branch meant a full pool scoring per candidate.
+        let opponent_beam = if self.config.max_depth > 0 && self.config.opponent_model_enabled {
+            self.get_top_candidates(&state, !is_radiant, self.config.beam_width)
+        } else {
+            Vec::new()
+        };
+
         let candidates = self.get_top_candidates(&state, is_radiant, self.config.max_candidates);
 
         let mut results = Vec::new();
@@ -78,7 +85,7 @@ impl DraftSimulator {
                 .expect("Candidate hero should exist");
 
             // Evaluate this candidate
-            let result = self.evaluate_pick(hero, &state, is_radiant, 0);
+            let result = self.evaluate_pick(hero, &state, is_radiant, 0, &opponent_beam);
             results.push(result);
         }
 
@@ -90,27 +97,18 @@ impl DraftSimulator {
 
     /// Get the top candidate heroes with the same popularity-first ordering the
     /// recommendation list uses, so the search starts from the shortlist the
-    /// user is looking at instead of a second, older set of weights.
+    /// user is looking at instead of a second, older set of weights. The pool
+    /// is scored in one pass, including one batched ML call per state.
     fn get_top_candidates(&self, state: &DraftState, is_radiant: bool, max: usize) -> Vec<HeroId> {
         let team = if is_radiant {
             TeamSide::Radiant
         } else {
             TeamSide::Dire
         };
-        let popularity = self.engine.popularity_percentiles(state);
-        let mut scored: Vec<(HeroId, f32)> = state
-            .available_heroes
-            .iter()
-            .filter_map(|hero_id| {
-                let hero = self.engine.hero_db.iter().find(|h| h.id == *hero_id)?;
-                let popularity = popularity.get(hero_id).copied().unwrap_or(0.5);
-                let breakdown = self.engine.score_hero(hero, state, team, popularity);
-                Some((hero_id.clone(), breakdown.total))
-            })
-            .collect();
+        let mut scored = self.engine.score_pool_for_state(state, team, max);
 
         // Score-only stable sort, matching `DraftEngine::get_recommendations`.
-        scored.sort_by(|a, b| b.1.total_cmp(&a.1));
+        scored.sort_by(|a, b| b.1.total.total_cmp(&a.1.total));
         scored.into_iter().take(max).map(|(id, _)| id).collect()
     }
 
@@ -121,6 +119,7 @@ impl DraftSimulator {
         state: &DraftState,
         is_radiant: bool,
         depth: usize,
+        opponent_beam: &[HeroId],
     ) -> SimulationResult {
         // Simulate the pick
         let mut simulated_state = state.clone();
@@ -155,7 +154,7 @@ impl DraftSimulator {
         // Opponent response value (if not at max depth)
         let opponent_response_value =
             if depth < self.config.max_depth && self.config.opponent_model_enabled {
-                self.evaluate_opponent_responses(&simulated_state, !is_radiant, depth + 1)
+                self.evaluate_opponent_responses(&simulated_state, opponent_beam, is_radiant)
             } else {
                 0.0
             };
@@ -193,27 +192,23 @@ impl DraftSimulator {
     fn evaluate_opponent_responses(
         &self,
         state: &DraftState,
-        opponent_is_radiant: bool,
-        _depth: usize,
+        opponent_beam: &[HeroId],
+        we_are_radiant: bool,
     ) -> f32 {
-        // Get opponent's best counter-picks
-        let opponent_candidates =
-            self.get_top_candidates(state, opponent_is_radiant, self.config.beam_width);
-
-        if opponent_candidates.is_empty() {
-            return 0.0;
-        }
-
+        let opponent_is_radiant = !we_are_radiant;
         // Opponent will pick the move that minimizes our value (maximizes theirs)
         let mut worst_case_value: f32 = 1.0;
+        let mut evaluated = false;
 
-        for opp_hero_id in opponent_candidates {
-            let opp_hero = self
-                .engine
-                .hero_db
-                .iter()
-                .find(|h| h.id == opp_hero_id)
-                .unwrap();
+        for opp_hero_id in opponent_beam {
+            // The shared shortlist was computed before our pick; a hero it
+            // named may be the one this branch picked.
+            if !state.available_heroes.contains(opp_hero_id) {
+                continue;
+            }
+            let Some(opp_hero) = self.engine.hero_db.iter().find(|h| h.id == *opp_hero_id) else {
+                continue;
+            };
 
             // Simulate opponent pick
             let mut opp_state = state.clone();
@@ -242,12 +237,16 @@ impl DraftSimulator {
             });
 
             // Evaluate from our perspective after opponent pick
-            let our_value =
-                self.calculate_our_value_after_opponent(&opp_state, !opponent_is_radiant);
+            let our_value = self.calculate_our_value_after_opponent(&opp_state, we_are_radiant);
+            evaluated = true;
             worst_case_value = worst_case_value.min(our_value);
         }
 
-        worst_case_value
+        if evaluated {
+            worst_case_value
+        } else {
+            0.0
+        }
     }
 
     /// Calculate our draft value after opponent has picked

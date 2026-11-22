@@ -120,7 +120,7 @@ baseline:
 
 | Check | Result |
 | --- | --- |
-| Rust library tests | 84 passed, 1 ignored (benchmark) |
+| Rust library tests | 87 passed, 2 ignored (benchmarks) |
 | Rust seeders | 2 passed |
 | Frontend tests | 32 passed (5 files) |
 | Python contract + gate tests | 14 passed |
