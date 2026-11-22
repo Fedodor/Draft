@@ -473,6 +473,43 @@ That is consistent with the model's own quality: `default_ml_enabled()`'s
 comment records it at ~0.539 test ROC-AUC, near the 0.5 baseline, which is why
 its weight is opt-in.
 
+### With the shipped popularity-first ordering (2026-11-22)
+
+The table above was measured before `POPULARITY_ORDER_SHARE = 0.60` landed. Both
+arms were rerun afterwards on the same paired 3,000-draft sample (1,200
+evaluation drafts, 11,969 pick events), ML off then ML on:
+
+| eval metric | ML off | ML on | difference |
+| --- | --- | --- | --- |
+| top-1 | 2.6736% | 2.7571% | +0.084 pp |
+| top-3 | 7.4860% | 7.4108% | −0.075 pp |
+| top-5 | 11.5214% | 11.6217% | +0.100 pp |
+| mean rank of pick | 38.914 | 38.884 | −0.030 |
+| mean percentile of pick | 0.6563 | 0.6566 | +0.0003 |
+| team AUC (score sum) | 0.494 | 0.495 | +0.001 |
+
+Paired McNemar over the same 11,969 events (discordant pairs, on-only /
+off-only, exact two-sided p):
+
+| metric | on-only | off-only | p |
+| --- | --- | --- | --- |
+| top-1 | 52 | 42 | 0.35 |
+| top-3 | 52 | 61 | 0.45 |
+| top-5 | 68 | 56 | 0.32 |
+
+A draft-clustered bootstrap puts the top-1 lift at **+0.084 pp, 95% CI −0.075
+to +0.243 pp**: the interval straddles zero with room on both sides, so the ML
+term's contribution is not outside sampling error. Both arms already beat the
+plain global prior on this slice (2.6736% and 2.7571% against 2.3561%), because
+the popularity-first total leads with the prior; the ML term moves that result by
+less than a tenth of a point. Per-patch popularity was not recomputed here, so
+these rows stay comparable with the global-prior column above, not with the
+rolling one.
+
+That is the evidence behind dropping the ML term rather than retraining it: it
+buys no measurable agreement under the shipped ordering, and any retrain would
+have to clear a 0.60 ROC-AUC floor that no candidate family came within 0.05 of.
+
 ## Why: the ordering is mostly the meta score
 
 The seeded meta score is not aligned with Captains Mode preference either:
