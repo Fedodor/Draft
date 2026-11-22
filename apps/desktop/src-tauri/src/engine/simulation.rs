@@ -3,11 +3,7 @@
 //! Implements the decision engine that evaluates candidate picks by simulating
 //! opponent responses and computing expected value (as described in UPDATEML.md)
 
-use crate::engine::scorer::{
-    CompositionScorer, MLScorer, MatchupScorer, Scorer, SynergyScorer, W_COMFORT, W_COMPOSITION,
-    W_MATCHUP, W_META, W_ML, W_SYNERGY,
-};
-use crate::engine::{blended_total, DraftEngine};
+use crate::engine::DraftEngine;
 use crate::models::*;
 
 /// Configuration for tree search
@@ -63,23 +59,6 @@ impl DraftSimulator {
         Self { engine, config }
     }
 
-    // Helper methods to access scorers from engine
-    fn matchup_scorer(&self) -> &MatchupScorer {
-        &self.engine.scorer.matchup_scorer
-    }
-
-    fn synergy_scorer(&self) -> &SynergyScorer {
-        &self.engine.scorer.synergy_scorer
-    }
-
-    fn composition_scorer(&self) -> &CompositionScorer {
-        &self.engine.scorer.composition_scorer
-    }
-
-    fn ml_scorer(&self) -> Option<&MLScorer> {
-        self.engine.scorer.ml_scorer.as_ref()
-    }
-
     /// Evaluate all candidate picks and return ranked results
     pub fn evaluate_candidates(&self, team: TeamSide, limit: usize) -> Vec<SimulationResult> {
         let state = self.engine.get_state();
@@ -109,44 +88,28 @@ impl DraftSimulator {
         results.into_iter().take(limit).collect()
     }
 
-    /// Get top candidate heroes using fast heuristic scoring
+    /// Get the top candidate heroes with the same popularity-first ordering the
+    /// recommendation list uses, so the search starts from the shortlist the
+    /// user is looking at instead of a second, older set of weights.
     fn get_top_candidates(&self, state: &DraftState, is_radiant: bool, max: usize) -> Vec<HeroId> {
         let team = if is_radiant {
             TeamSide::Radiant
         } else {
             TeamSide::Dire
         };
-        let mut scored: Vec<(HeroId, f32)> = Vec::new();
+        let popularity = self.engine.popularity_percentiles(state);
+        let mut scored: Vec<(HeroId, f32)> = state
+            .available_heroes
+            .iter()
+            .filter_map(|hero_id| {
+                let hero = self.engine.hero_db.iter().find(|h| h.id == *hero_id)?;
+                let popularity = popularity.get(hero_id).copied().unwrap_or(0.5);
+                let breakdown = self.engine.score_hero(hero, state, team, popularity);
+                Some((hero_id.clone(), breakdown.total))
+            })
+            .collect();
 
-        for hero_id in &state.available_heroes {
-            let hero = self
-                .engine
-                .hero_db
-                .iter()
-                .find(|h| h.id == *hero_id)
-                .unwrap();
-
-            // Fast heuristic score
-            let mut score = 0.0;
-
-            // Matchup
-            score += self.matchup_scorer().score(hero, state, team) * 0.3;
-
-            // Synergy
-            score += self.synergy_scorer().score(hero, state, team) * 0.3;
-
-            // Composition
-            score += self.composition_scorer().score(hero, state, team) * 0.2;
-
-            // Meta
-            score += self.engine.get_meta_score(hero_id) * 0.1;
-
-            // Comfort
-            score += self.engine.get_comfort_score(hero_id) * 0.1;
-
-            scored.push((hero_id.clone(), score));
-        }
-
+        // Score-only stable sort, matching `DraftEngine::get_recommendations`.
         scored.sort_by(|a, b| b.1.total_cmp(&a.1));
         scored.into_iter().take(max).map(|(id, _)| id).collect()
     }
@@ -213,50 +176,17 @@ impl DraftSimulator {
         }
     }
 
-    /// Calculate immediate value of a pick using all scorers
+    /// Immediate value of a pick: the shipped popularity-first score for the
+    /// simulated state, so search and recommendation agree on what a pick is
+    /// worth as well as on the order of the shortlist.
     fn calculate_immediate_value(&self, hero: &Hero, state: &DraftState, is_radiant: bool) -> f32 {
         let team = if is_radiant {
             TeamSide::Radiant
         } else {
             TeamSide::Dire
         };
-        let mut total: f32 = 0.0;
-
-        // Matchup
-        total += self.matchup_scorer().score(hero, state, team) * W_MATCHUP;
-
-        // Synergy
-        total += self.synergy_scorer().score(hero, state, team) * W_SYNERGY;
-
-        // Composition
-        total += self.composition_scorer().score(hero, state, team) * W_COMPOSITION;
-
-        // Meta
-        total += self.engine.get_meta_score(&hero.id) * W_META;
-
-        // Comfort
-        total += self.engine.get_comfort_score(&hero.id) * W_COMFORT;
-
-        // ML (if available and enabled)
-        let ml_enabled = self.engine.ml_enabled;
-        if ml_enabled {
-            if let Some(ml_scorer) = self.ml_scorer() {
-                total += ml_scorer.score(hero, state, team) * W_ML;
-            }
-        }
-
-        let context = if ml_enabled {
-            total
-        } else {
-            // Remove the absent ML weight and keep the score on a 0..1 scale.
-            let heuristic_sum = W_MATCHUP + W_SYNERGY + W_COMPOSITION + W_META + W_COMFORT;
-            total / heuristic_sum
-        }
-        .clamp(0.0, 1.0);
-
-        // The search path uses the same popularity-first ordering as the list,
-        // computed against the simulated pool.
-        blended_total(context, self.engine.popularity_score(state, &hero.id))
+        let popularity = self.engine.popularity_score(state, &hero.id);
+        self.engine.score_hero(hero, state, team, popularity).total
     }
 
     /// Evaluate opponent's likely responses (minimax-style)
@@ -374,3 +304,47 @@ impl DraftEngine {
 }
 
 use std::sync::Arc;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn engine_with_popularity() -> DraftEngine {
+        let mut engine = DraftEngine::new();
+        engine.hero_db = (1..=4)
+            .map(|id| {
+                let mut hero = DraftEngine::fallback_heroes().remove(0);
+                hero.id = HeroId(id);
+                hero
+            })
+            .collect();
+        engine.state.write().available_heroes =
+            engine.hero_db.iter().map(|hero| hero.id.clone()).collect();
+        engine.meta_data.hero_pickrates = [
+            (HeroId(1), 0.05),
+            (HeroId(2), 0.40),
+            (HeroId(3), 0.20),
+            (HeroId(4), 0.10),
+        ]
+        .into_iter()
+        .collect();
+        engine
+    }
+
+    #[test]
+    fn test_candidate_preselection_matches_the_recommendation_order() {
+        let engine = engine_with_popularity();
+        let simulator = DraftSimulator::new(Arc::new(engine.clone()), SearchConfig::default());
+        let state = engine.get_state();
+
+        let candidates = simulator.get_top_candidates(&state, true, 4);
+        let listed: Vec<HeroId> = engine
+            .get_recommendations(TeamSide::Radiant, 4)
+            .top_picks
+            .iter()
+            .map(|recommendation| recommendation.hero_id.clone())
+            .collect();
+
+        assert_eq!(candidates, listed);
+    }
+}
