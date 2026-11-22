@@ -690,18 +690,37 @@ out-of-sample reference (3.38% top-1) and is not what the app serves.
 - Command: `cargo test --release --lib bench_search_recommendation_latency -- --ignored --nocapture`
 - Setup: 120 synthetic heroes with seeded per-patch pick rates, bundled model, beam width 5, candidates 15, 3 iterations after one warm-up, same machine as the recommendation benchmark.
 
-| Path | ML off | ML on |
-| --- | --- | --- |
-| shortlist only (`max_depth: 0`) | 0.3 ms | **2.8 ms** |
-| lookahead depth 2 | **0.4 ms** | **4.1 ms** |
-| recommendation list (reference) | 0.1 ms | 1.4 ms |
+| Path | Release ML off | Release ML on | Debug ML off | Debug ML on |
+| --- | --- | --- | --- | --- |
+| shortlist only (`max_depth: 0`) | 0.3 ms | **2.8 ms** | 1.9 ms | 32.2 ms |
+| lookahead depth 2 | 0.4 ms | **4.1 ms** | 2.8 ms | 54.8 ms |
+| recommendation list (reference) | 0.1 ms | 1.4 ms | 0.9 ms | 18.3 ms |
+
+The debug column is the same test without `--release`: ~12x release, so only
+the release numbers describe user-facing latency. It is recorded because the
+GUI smoke test re-checks these two paths in the running debug app.
 
 Interpretation: ML-off search is unchanged. ML-on search now pays one batched inference per pool it needs instead of one inference per candidate: the root shortlist and the opponent shortlist are scored once per turn (the opponent beam is shared by all 15 branches, filtered to heroes still available), and only heroes that can still reach the requested positions are scored at all. ML adds at most `(1 - POPULARITY_ORDER_SHARE) * W_ML` = 0.10 to a total, so a hero more than 0.10 below the cut cannot enter it; on this seeded fixture that leaves about 35 of 120 heroes per pool. Lookahead is 4.1 ms, 77× faster than the 318 ms pre-batching measurement and close to the ML-off cost. Pruning is a provable bound rather than a heuristic, so the shortlist order is unchanged: `test_ml_pruning_preserves_the_top_of_the_pool` checks the pruned top against a full-pool sort, and the preselection-order test still passes. The fixture now seeds pick rates because without a spread every hero ties and nothing can be pruned (the unseeded worst case measured 7.9 ms shortlist / 15.2 ms lookahead before seeding).
+
+**In-app check.** `scripts/ui_smoke.ps1` times these two configs over IPC after
+the GSI draft arrives, toggling `ml_enabled` through `set_config` exactly as the
+Settings panel does (one warm-up, then 5 shortlist / 3 lookahead calls, median
+reported). Against the seeded 126-hero database (9052 matchups, 7381 synergies)
+the debug app measured 6.5-10.3 ms ML-off / 41.4-48.0 ms ML-on for the shortlist
+and 8.2-11.3 / 59.9-67.0 ms for the lookahead across four runs — 1.2-2.9x the
+build-scaled fixture, the difference being the IPC round trip and the
+matchup/synergy data the fixture leaves empty; divided by the ~12x debug factor
+that is the release 2.8 / 4.1 ms again.
+The check scales the release benchmark by 12 for the dev build, writes
+`recommendation-latency.json` beside the screenshots, prints `DRIFT` past 4x
+that expectation and fails past 10x, so the pre-batching 318 ms lookahead would
+have turned the smoke red.
 
 ### Not measured
 
 - Model quality on a fresh held-out set: **measured twice** — the bundled artifact (§ above) and the session-4 ablation candidate (single test run, §3). Neither passes the gate; the candidate was rejected.
-- In-app p95 latency, UI-thread responsiveness, or OGSI event rate.
+- In-app p95 latency (the GUI smoke test records point latency for the search
+  path in the debug build), UI-thread responsiveness, or OGSI event rate.
 - ONNX inferences per GSI event (expected ≤ 1 per coalesced request + cache hit for the second window, but not instrumented).
 - Memory use, startup time with a cold ONNX session, or dataset I/O throughput.
 

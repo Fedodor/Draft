@@ -3,7 +3,8 @@
 # Launches the real desktop binary against the Vite dev server, drives the
 # WebView2 renderer over the Chrome DevTools Protocol, and fails on the
 # regressions unit tests cannot see: blocked CSP assets, missing tabs, a broken
-# overlay toggle, GSI ingestion not reaching the UI, and layout overflow.
+# overlay toggle, GSI ingestion not reaching the UI, layout overflow, and search
+# latency that drifts past the benchmark envelope with ML on or off.
 #
 # Windows only (WebView2 + Win32 window probes). CI runs it on windows-latest;
 # run locally the same way:
@@ -419,6 +420,64 @@ $jsClickTab = @'
 })('%TAB%')
 '@
 
+# Times the beam search the app runs after a draft arrives, with ML toggled
+# through the same `set_config` path the Settings panel uses. The search path is
+# uncached, unlike `get_recommendations`, so every call does the real work. The
+# shortlist and lookahead configs mirror the ignored Rust benchmarks
+# (`bench_search_recommendation_latency`), so the numbers are comparable.
+$jsLatency = @'
+(async () => {
+  const invoke = window.__TAURI_INTERNALS__.invoke;
+  const original = await invoke('get_config');
+  const setMl = async (enabled) => {
+    const config = await invoke('get_config');
+    config.ml_enabled = enabled;
+    await invoke('set_config', { config });
+  };
+  const shortlist = { max_candidates: 15, max_depth: 0, beam_width: 5, opponent_model_enabled: false };
+  const lookahead = { max_candidates: 15, max_depth: 2, beam_width: 5, opponent_model_enabled: true };
+  const time = async (config, iterations) => {
+    // Warm-up: feature schema and the ONNX session are built on first use.
+    await invoke('get_search_recommendations', { team: 'radiant', limit: 5, config });
+    const samples = [];
+    let count = 0;
+    for (let i = 0; i < iterations; i += 1) {
+      const start = performance.now();
+      const results = await invoke('get_search_recommendations', { team: 'radiant', limit: 5, config });
+      samples.push(performance.now() - start);
+      count = results.length;
+    }
+    samples.sort((a, b) => a - b);
+    return {
+      median: samples[Math.floor(samples.length / 2)],
+      min: samples[0],
+      max: samples[samples.length - 1],
+      results: count
+    };
+  };
+  const runs = {};
+  try {
+    for (const ml of [false, true]) {
+      await setMl(ml);
+      runs[ml ? 'on' : 'off'] = {
+        shortlist: await time(shortlist, 5),
+        lookahead: await time(lookahead, 3)
+      };
+    }
+  } finally {
+    // Leave the app on the setting it started with.
+    await setMl(original.ml_enabled);
+  }
+  const state = await invoke('get_draft_state');
+  return {
+    mlLoaded: (await invoke('get_ml_status')).loaded,
+    restoredMl: (await invoke('get_config')).ml_enabled === original.ml_enabled,
+    picks: state.radiant_picks.length + state.dire_picks.length,
+    runs
+  };
+})()
+'@
+
 # --- Setup ------------------------------------------------------------------
 
 $appProcess = $null
@@ -717,6 +776,72 @@ try {
     $picks = Invoke-Eval -WebSocketUrl $main -Expression $jsPicks
     Check "draft reached the UI" ($picks.ally -eq "3" -and $picks.enemy -eq "3") "ally=$($picks.ally) enemy=$($picks.enemy)"
     Check "turn indicator followed the payload" ($picks.turn -like "Pick #7*") "turn=$($picks.turn)"
+
+    Write-Host "==> In-app search latency after the draft (ML on vs off)"
+    # A failed probe costs one check, not the rest of the smoke: the assertions
+    # after it still say whether the draft, layout and All Pick flows survived.
+    $latency = $null
+    try {
+        $latency = Invoke-Eval -WebSocketUrl $main -Expression $jsLatency
+        Check "latency probe ran the real search and restored the ML setting" `
+            ([int]$latency.picks -ge 6 -and [bool]$latency.mlLoaded -and [bool]$latency.restoredMl) `
+            "picks=$($latency.picks) mlLoaded=$($latency.mlLoaded) restoredMl=$($latency.restoredMl)"
+    }
+    catch {
+        Check "latency probe ran the real search and restored the ML setting" $false $_.Exception.Message
+    }
+
+    if (-not $latency) {
+        foreach ($skipped in @("shortlist with ML off", "shortlist with ML on",
+                "lookahead with ML off", "lookahead with ML on")) {
+            Skip "in-app $skipped search stays in the batched envelope" "latency probe failed"
+        }
+    } else {
+        # Reference: docs/ROADMAP.md "Search benchmark" (release, 2026-11-22). The
+        # dev build is a debug binary and measures ~12x the release numbers with the
+        # same benchmark, so expectations are scaled instead of compared directly.
+        $benchSearch = @{
+            shortlist = @{ off = 0.3; on = 2.8 }
+            lookahead = @{ off = 0.4; on = 4.1 }
+        }
+        $buildScale = if ($Bundle) { 1.0 } else { 12.0 }
+        # The probe pays an IPC round trip and scores the seeded 126-hero database
+        # (9052 matchups, 7381 synergies) where the benchmark uses empty maps, so
+        # ~2x the fixture is normal; a noisier runner adds more. Drift is therefore
+        # reported from 4x, and only a structural regression (the pre-batching
+        # lookahead was 318 ms) fails the smoke.
+        $driftAt = 4.0
+        $failAt = 10.0
+        $measurements = @(
+            @{ Path = 'shortlist'; Ml = 'off'; Run = $latency.runs.off.shortlist },
+            @{ Path = 'shortlist'; Ml = 'on'; Run = $latency.runs.on.shortlist },
+            @{ Path = 'lookahead'; Ml = 'off'; Run = $latency.runs.off.lookahead },
+            @{ Path = 'lookahead'; Ml = 'on'; Run = $latency.runs.on.lookahead }
+        )
+        $drift = New-Object System.Collections.Generic.List[string]
+        foreach ($measurement in $measurements) {
+            # A release ML-off search benchmarks below 1 ms, where a single timer
+            # tick is the noise floor; floor the expectation so it cannot flag jitter.
+            $expected = [math]::Max(
+                $benchSearch[$measurement.Path][$measurement.Ml] * $buildScale, 1.0)
+            $ratio = [double]$measurement.Run.median / $expected
+            $detail = ("{0} ml={1}: {2:N1} ms median vs {3:N1} ms expected " +
+                "(bench {4:N1} ms release x {5:N0} build) = {6:N1}x; {7} results") -f
+                $measurement.Path, $measurement.Ml, [double]$measurement.Run.median, $expected,
+                $benchSearch[$measurement.Path][$measurement.Ml], $buildScale, $ratio,
+                [int]$measurement.Run.results
+            Write-Host "    $detail"
+            Check "in-app $($measurement.Path) search with ML $($measurement.Ml) stays in the batched envelope" `
+                ($ratio -le $failAt) $detail
+            if ($ratio -gt $driftAt) { $drift.Add($detail) }
+        }
+        if ($drift.Count -gt 0) {
+            Write-Host "    DRIFT past the benchmark envelope (bench x build):" -ForegroundColor Yellow
+            foreach ($line in $drift) { Write-Host "      $line" -ForegroundColor Yellow }
+        }
+        $latency | ConvertTo-Json -Depth 6 |
+            Set-Content -LiteralPath (Join-Path $ArtifactsDir "recommendation-latency.json") -Encoding UTF8
+    }
 
     # Portraits only exist once recommendation cards render, so this runs after
     # the draft arrives. It still fails on a CSP that blocks the Steam CDN, on

@@ -22,7 +22,7 @@ ONNX model.
 | Patch meta | Working | Patch-scoped meta snapshot from seeded data |
 | ML scoring | **Experimental, opt-in** | 887-input ONNX model; fails the promotion gate |
 | Live GSI replay | Not verified | Payload-level tests exist; no captured real session was replayed in CI |
-| Tauri runtime smoke test | Automated in CI | `scripts/ui_smoke.ps1` drives the dev build (`gui-smoke`) and the installed NSIS bundle (`gui-smoke-bundle`) over WebView2 CDP: CSP assets, four tabs, GSI→UI, card/header layout at 900 and 800 px, overlay toggle, embedded-asset origin, and model/DLL resource resolution |
+| Tauri runtime smoke test | Automated in CI | `scripts/ui_smoke.ps1` drives the dev build (`gui-smoke`) and the installed NSIS bundle (`gui-smoke-bundle`) over WebView2 CDP: CSP assets, four tabs, GSI→UI, card/header layout at 900 and 800 px, overlay toggle, embedded-asset origin, model/DLL resource resolution, and in-app search latency with ML on and off |
 | First-run state | Working | An unseeded database shows a notice with the seeder commands instead of an empty-looking draft |
 
 ## Quick start
@@ -141,7 +141,11 @@ It builds the debug binary, starts Vite, drives the WebView2 renderer over CDP,
 and fails on a blocked CSP asset, a missing tab, a broken overlay toggle, GSI
 payloads that never reach the UI, card/header layout regressions at the default
 and minimum window widths, or an ONNX model that does not load from the app's
-resources. Screenshots and logs land in `.ui-smoke/`. CI runs it twice:
+resources, or search latency that drifts past the benchmarked envelope. The
+latency probe toggles `ml_enabled` through the Settings command, times the
+shortlist and lookahead searches over IPC after the GSI draft arrives, restores
+the original setting, and writes `recommendation-latency.json` next to the
+screenshots. Screenshots and logs land in `.ui-smoke/`. CI runs it twice:
 `gui-smoke` against the dev build and `gui-smoke-bundle` against the packaged
 release bundle, both on `windows-latest`.
 
