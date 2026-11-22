@@ -1,0 +1,311 @@
+{
+  "description": "Paired ML-on vs ML-off run of the shipping popularity-first ordering (POPULARITY_ORDER_SHARE = 0.60) on one 3,000-draft sample. Committed so the numbers survive deletion of the ML scorer, the ONNX runtime bundle and the harness's --ml arm; the two raw reports are untracked and reproducible only from the tagged commit.",
+  "recorded_at": "2026-11-22",
+  "git": {
+    "tag": "pre-ml-removal",
+    "note": "Annotated tag on the commit that adds this file: the last commit with the ML scorer, ONNX runtime bundle and harness --ml arm."
+  },
+  "sample": {
+    "drafts": 3000,
+    "evaluation_drafts": 1200,
+    "warmup_drafts": 1800,
+    "warmup_fraction": 0.6,
+    "paired_pick_events": 11969,
+    "join_key": "(match_id, pick_ordinal, hero_id)",
+    "drafts_source": "ml\\backtest\\data\\drafts_cm_manifest.json",
+    "drafts_manifest_sha256": "bf80ced8925ff09f7257c7ee55f60b336016260c96522b7146929a88c01fa4aa",
+    "drafts_jsonl_sha256": "571fd7274f49c9fac6a35f685c485949c5960d7283dd03450c528df88af4bb3d",
+    "sampler": "backtest_scorer --sample 3000 (evenly spaced over 90,020 Captains Mode drafts)",
+    "prior": "global_warmup",
+    "popularity_order_share": 0.6
+  },
+  "model": {
+    "path": "ml\\models\\draft_model_xgboost_full.onnx",
+    "sha256": "2c9f93057ebb5c3f67deaaeede6e8ae476c65c7be14c8c97dfdcfb5072733314",
+    "bytes": 508004,
+    "features": 887
+  },
+  "runtime": {
+    "path": "apps\\desktop\\src-tauri\\resources\\onnxruntime.dll",
+    "sha256": "18370c375f07357fa5874344a9d9ac17e6b6fe1eb18b1dd209d79483b4470257",
+    "bytes": 15809848,
+    "file_version": "1.28.0.20260724.14.da9b5e3",
+    "ort_crate": "2.0.0-rc.13"
+  },
+  "arms": {
+    "ml_off": {
+      "raw_report": "ml\\backtest\\results\\backtest_pf_ml_off_3000.json",
+      "raw_report_sha256": "1aeb7a3125cd08d61d354e38d4edfd7485ddc2a8a61494791922ae6f494bf3aa",
+      "generated_at": "2026-11-22T15:45:13.442805900+00:00",
+      "ml_enabled": false,
+      "prior": "global_warmup",
+      "ml_model": null,
+      "database": {
+        "path": "ml/backtest/data/seed_copy.db",
+        "heroes": 126,
+        "matchups": 120,
+        "synergies": 122,
+        "patch": "7.41"
+      },
+      "dataset": {
+        "drafts": "ml/backtest/data/drafts_cm.jsonl",
+        "matches_total": 3000,
+        "matches_evaluated": 1200,
+        "matches_available": 90020,
+        "warmup_matches": 1800,
+        "warmup_fraction": 0.6,
+        "first_start_time": 1639600130,
+        "last_start_time": 1787853328,
+        "patches": [
+          [
+            "7.39",
+            965
+          ],
+          [
+            "7.37",
+            650
+          ],
+          [
+            "7.38",
+            565
+          ],
+          [
+            "7.40",
+            367
+          ],
+          [
+            "7.41",
+            139
+          ],
+          [
+            "7.35",
+            121
+          ],
+          [
+            "7.36",
+            55
+          ],
+          [
+            "7.34",
+            46
+          ],
+          [
+            "7.32",
+            45
+          ],
+          [
+            "7.31",
+            22
+          ],
+          [
+            "7.33",
+            20
+          ],
+          [
+            "7.30",
+            5
+          ]
+        ]
+      },
+      "eval_agreement": {
+        "events": 11969,
+        "top1": 0.026735733979446903,
+        "top3": 0.07486005514245134,
+        "top5": 0.11521430361767901,
+        "random_top1": 0.008996132725834138,
+        "mean_rank": 38.91386080708497,
+        "mean_percentile": 0.6563286201492972
+      },
+      "frequency_baseline_eval": {
+        "events": 11969,
+        "top1": 0.023560865569387586,
+        "top3": 0.06475060573147297,
+        "top5": 0.1043529116885287,
+        "random_top1": 0.008996132725834138,
+        "mean_rank": 39.93324421422007,
+        "mean_percentile": 0.6463169685877365
+      },
+      "team_score_auc": 0.4940647967891049,
+      "team_percentile_auc": 0.4934660772021303,
+      "matches_for_auc": 2736,
+      "skipped": {
+        "picks": 75,
+        "bans": 189,
+        "matches_missing_heroes": 264
+      },
+      "ordering_verify": {
+        "checked": 0,
+        "top5_mismatches": 0
+      }
+    },
+    "ml_on": {
+      "raw_report": "ml\\backtest\\results\\backtest_pf_ml_on_3000.json",
+      "raw_report_sha256": "befcddcde3e7656fc228ca60e97481a6ecd69c4abb087466b8e976cb3ef943e9",
+      "generated_at": "2026-11-22T15:55:18.536786+00:00",
+      "ml_enabled": true,
+      "prior": "global_warmup",
+      "ml_model": {
+        "path": "ml/models/draft_model_xgboost_full.onnx",
+        "features": 887
+      },
+      "database": {
+        "path": "ml/backtest/data/seed_copy.db",
+        "heroes": 126,
+        "matchups": 120,
+        "synergies": 122,
+        "patch": "7.41"
+      },
+      "dataset": {
+        "drafts": "ml/backtest/data/drafts_cm.jsonl",
+        "matches_total": 3000,
+        "matches_evaluated": 1200,
+        "matches_available": 90020,
+        "warmup_matches": 1800,
+        "warmup_fraction": 0.6,
+        "first_start_time": 1639600130,
+        "last_start_time": 1787853328,
+        "patches": [
+          [
+            "7.39",
+            965
+          ],
+          [
+            "7.37",
+            650
+          ],
+          [
+            "7.38",
+            565
+          ],
+          [
+            "7.40",
+            367
+          ],
+          [
+            "7.41",
+            139
+          ],
+          [
+            "7.35",
+            121
+          ],
+          [
+            "7.36",
+            55
+          ],
+          [
+            "7.34",
+            46
+          ],
+          [
+            "7.32",
+            45
+          ],
+          [
+            "7.31",
+            22
+          ],
+          [
+            "7.33",
+            20
+          ],
+          [
+            "7.30",
+            5
+          ]
+        ]
+      },
+      "eval_agreement": {
+        "events": 11969,
+        "top1": 0.02757122566630462,
+        "top3": 0.07410811262427938,
+        "top5": 0.11621689364190826,
+        "random_top1": 0.008996132725834138,
+        "mean_rank": 38.88411730303284,
+        "mean_percentile": 0.6565873863678038
+      },
+      "frequency_baseline_eval": {
+        "events": 11969,
+        "top1": 0.023560865569387586,
+        "top3": 0.06475060573147297,
+        "top5": 0.1043529116885287,
+        "random_top1": 0.008996132725834138,
+        "mean_rank": 39.93324421422007,
+        "mean_percentile": 0.6463169685877365
+      },
+      "team_score_auc": 0.4948034141488641,
+      "team_percentile_auc": 0.4931970017924067,
+      "matches_for_auc": 2736,
+      "skipped": {
+        "picks": 75,
+        "bans": 189,
+        "matches_missing_heroes": 264
+      },
+      "ordering_verify": {
+        "checked": 0,
+        "top5_mismatches": 0
+      }
+    }
+  },
+  "paired": {
+    "top1": {
+      "events": 11969,
+      "ml_off_rate": 0.026735733979446903,
+      "ml_on_rate": 0.02757122566630462,
+      "lift_pp": 0.08354916868577172,
+      "discordant": {
+        "on_only": 52,
+        "off_only": 42,
+        "both": 278,
+        "neither": 11597
+      },
+      "mcnemar_exact_p": 0.3533280324715825,
+      "draft_clustered_95ci_pp": [
+        -0.07521938988717092,
+        0.24261691625533338
+      ]
+    },
+    "top3": {
+      "events": 11969,
+      "ml_off_rate": 0.07486005514245134,
+      "ml_on_rate": 0.07410811262427938,
+      "lift_pp": -0.07519425181719552,
+      "discordant": {
+        "on_only": 52,
+        "off_only": 61,
+        "both": 835,
+        "neither": 11021
+      },
+      "mcnemar_exact_p": 0.4518532686657422,
+      "draft_clustered_95ci_pp": [
+        -0.2424343755224879,
+        0.10017530678687703
+      ]
+    },
+    "top5": {
+      "events": 11969,
+      "ml_off_rate": 0.11521430361767901,
+      "ml_on_rate": 0.11621689364190826,
+      "lift_pp": 0.10025900242292551,
+      "discordant": {
+        "on_only": 68,
+        "off_only": 56,
+        "both": 1323,
+        "neither": 10522
+      },
+      "mcnemar_exact_p": 0.3232476471849839,
+      "draft_clustered_95ci_pp": [
+        -0.07525083612040133,
+        0.275827482447342
+      ]
+    }
+  },
+  "method": {
+    "mcnemar": "exact two-sided binomial on discordant pairs",
+    "bootstrap": "10,000 draft-clustered percentile resamples, seed 7"
+  },
+  "caveats": [
+    "ordering_verify.checked is 0 in both runs: the harness was not asked to compare its top-5 against get_recommendations for this pair, so the 'harness matches the UI list' check comes from the separate 20,000-draft run.",
+    "The popularity prior is the full-patch seed and has seen the replayed drafts; the rolling per-patch prior is the out-of-sample reference."
+  ]
+}
