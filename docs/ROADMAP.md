@@ -1,9 +1,9 @@
 # Roadmap & Live Status: Smart Draft Assistant
 
-- Updated: 2026-11-19 (session 15)
+- Updated: 2026-11-22 (session 16)
 - Source audit: [`AUDIT_2026-11-19.md`](AUDIT_2026-11-19.md) (current pass), [`AUDIT_2026-10-27.md`](AUDIT_2026-10-27.md) (historical findings, preserved)
 - Predecessor audit: [`AUDIT.md`](AUDIT.md) (2026-10-22)
-- Branch: `master`, HEAD `3922a1c`; session 4-13 audit and ML work is committed and pushed, and the Python 3.12 Actions gate is green
+- Branch: `master`, HEAD `a2b7bd9`; sessions 14-16 (All Pick drafts, ban suggestions, patch-scoped counts, popularity-first ordering) are committed on top of the session-13 audit
 - Purpose: single source of truth for what is fixed, what is verified, and what is next.
 
 Status vocabulary:
@@ -18,6 +18,29 @@ Status vocabulary:
 | `not_reproducible` | Re-checked against the current tree and the finding does not hold. |
 
 > Rule used here: a finding is never marked `verified_fixed` on the strength of the edit alone. The evidence column names the actual check.
+
+---
+
+## 0. Current state (2026-11-22, session 16)
+
+- HEAD `a2b7bd9`. The All Pick work (hand-recorded drafts, one-action bulk bans
+  with undo, configurable ban count), the per-patch ban suggestion list, the
+  patch-scoped seed consistency check, and the extended GUI smoke test all
+  landed after the session-13 audit note.
+- Measured this session by `scripts/verify.ps1`: Rust lib **84 passed** / 1
+  ignored, seeders **2 passed**, frontend **32 passed** (5 files), Python **166**
+  (14 contract/gate + 152), 14/14 steps, clippy and frontend lint/build clean.
+- **The deterministic ordering is popularity-first.** [`DRAFT_SCORER_BACKTEST.md`](DRAFT_SCORER_BACKTEST.md)
+  measured the previous context-only ordering at 0.94% top-1 agreement against
+  2.21% for a global popularity prior. The shipped score now gives the seeded
+  per-patch pick rate 60% and the contextual components 40%
+  (`POPULARITY_ORDER_SHARE` in `engine/scorer.rs`). Re-run on the same 20,000
+  draft sample: top-1 **2.46%**, top-3 **6.71%**, top-5 **10.49%**, mean
+  percentile **0.649** (was 0.94% / 3.19% / 5.98% / 0.527), 0/200 ordering
+  mismatches against the list the UI shows.
+- The same run is a caution, not a win: the team-level outcome proxy fell from
+  0.528 to **0.489** AUC. The priority score is a popularity-led ordering, not a
+  win-probability estimate, and the UI must not present it as one.
 
 ---
 
@@ -221,7 +244,7 @@ Notes:
 | P2-2 | Overlay has main-window privileges | `fixed_unverified` | New least-privilege `capabilities/overlay.json`; `default.json` restricted to `main`. Needs launch validation that drag/hide still work. |
 | P2-3 | Arbitrary model path (DLL sideloading) | `fixed_unverified` | `canonical_model_path()` requires an existing file under app-data, resource dir, repo `ml/models`, or the dev fallback. No test yet. |
 | P2-4 | GSI auth optional | `closed_by_design` | Auth remains optional but the Settings UI now warns that any local process can post a draft. |
-| P2-5 | Misleading confidence / risk / lane semantics | `open` | `confidence == score`, `lane_balance` constant `0.5`, risk = score thresholds. Not changed (would be a UI semantics change requiring product input). |
+| P2-5 | Misleading confidence / risk / lane semantics | `in_progress` | 2026-11-22: the duplicated "Confidence: N%" line, the score-threshold RISK chip and the constant-0.5 Lane Balance panel are gone; the card labels the number "Priority". Still open: the category labels are semantics thresholds, and `lane_balance` stays constant `0.5` in the payload (no longer rendered). The backtest re-run is why this is not cosmetic (ROADMAP §3a). |
 | P2-6 | `partial_cmp().unwrap()` | `verified_fixed` | Replaced with `total_cmp` in `engine.rs` and both `simulation.rs` call sites. |
 | P2-7 | Sync mutex in async commands, lock order | `in_progress` | `get_recommendations`, `get_score_breakdown`, `predict_draft_value` moved to `spawn_blocking`; predict lock order fixed (engine → ML). Other small commands still lock `std::sync::Mutex` briefly. |
 | P2-8 | No log rotation, per-request info logs | `verified_fixed` | `rotate_log_if_needed` at 5 MB with one backup + test; per-recommendation and per-GSI-update logs dropped to `debug!`. |
@@ -628,6 +651,39 @@ What it establishes:
 
 Interpretation: inference dominates the ML-on path (~120 candidates × ~0.14 ms ≈ 17 ms) and is skipped entirely when ML is disabled. The cache makes the second window's identical request effectively free. Debug builds are 7-8× slower — do not quote debug numbers as user-facing latency.
 
+### Shipped ordering: popularity-first (2026-11-22)
+
+- Policy: `POPULARITY_ORDER_SHARE = 0.60` — the seeded per-patch pick-rate
+  percentile carries 60% of the score, the five contextual components 40%.
+- Harness: same 20,000-draft sample, same seeded database and flags as the
+  committed run; the run writes a local report to
+  `ml/backtest/results/backtest_popularity_first.json` and is not committed.
+- The pick-rate prior is the full-corpus seeded table, so like the shipped ban
+  table it is in-sample with respect to the replay; it is the ranking the app
+  actually serves, not an out-of-sample estimate.
+
+| Agreement (evaluation slice, 79,764 pick events) | before | after | global prior |
+| --- | --- | --- | --- |
+| top-1 | 0.94% | **2.46%** | 2.21% |
+| top-3 | 3.19% | **6.71%** | 5.98% |
+| top-5 | 5.98% | **10.49%** | 9.75% |
+| mean rank of pick | 53.2 | **39.7** | 40.2 |
+| mean percentile | 0.527 | **0.649** | 0.644 |
+
+What moved the other way:
+
+| Metric (whole sample) | before | after |
+| --- | --- | --- |
+| team-level AUC (sum of per-pick scores) | 0.528 | **0.489** |
+| rank-1 bucket win rate | 49.7% (CI 47.5-52.0) | **51.7%** (CI 50.1-53.3) |
+
+Interpretation: the popularity-first order tracks what captains do far better
+and no longer has a rank-1 bucket that contains 50%, but summing those priority
+scores no longer predicts the winner (it was already below the report's 0.55
+usability floor). Agreement with human picks is the measured objective; win
+probability is not. The rolling per-patch prior remains the stronger
+out-of-sample reference (3.38% top-1) and is not what the app serves.
+
 ### Not measured
 
 - Model quality on a fresh held-out set: **measured twice** — the bundled artifact (§ above) and the session-4 ablation candidate (single test run, §3). Neither passes the gate; the candidate was rejected.
@@ -942,25 +998,26 @@ Empty-result note: `docs/RefactorML.md` is an empty tracked file; it is listed h
 
 ## 7. Open risks (ranked)
 
-1. **Evaluation validity (P0-1):** the corrected dataset exists, but its chronological holdout (2026-04-05 → 2026-08-28) is the same window the session-5 ablation already scored, so any number produced on it is a regression reference, not a fresh held-out result. A defensible final claim needs newly collected matches (nothing newer than 2026-08-28 exists in the corpus).
-2. **Training-data integrity (P1-6 / P1-5):** the encoding defect is fixed at the data level (v2: 0 rows with 12 presence flags, bans populated for 92.1%). Remaining, and *not* fixable in the parser: 3,870 rows (3.8%) contain a hero twice in the same source draft, 8,031 rows (7.9%) have all ban slots unrevealed in the source, and 9,795 matches were rejected by the documented rules. Every metric in §3 — including the session-4 ablation — still refers to the corrupt v1 parquet, so the near-baseline result cannot yet be attributed to the features rather than the data.
-2. **Model trust (P0-1 / P1-6):** ML is off by default and automatic promotion is gated, but a user can still opt in and get a weak 25% term. Bundled inference-mode AUC 0.5122 / Brier 0.2495. On the corrected dataset the best validation candidate reaches 0.5479 ± 0.0004 (A) / 0.5481 ± 0.0012 (B) with Brier 0.2473, i.e. it finally beats the constant prior — but it is still ~9 standard errors below the 0.60 floor and has no fresh test number. The session-8 family comparison rules out learner capacity as the cause: a regularised linear model on the same features is statistically indistinguishable on AUC and better at the early-draft stages where recommendations are actually produced. Nothing was promoted.
-3. **Lifecycle confidence (P0-2):** ingestion is now covered by 18 payload-level tests (consecutive matches, duplicates, undo, attribution, 300-payload invariants), but never driven through a real multi-match GSI stream. The warp status mapping and event emission are not executed by tests, and an out-of-order second stale hero-selection snapshot is still indistinguishable from a new draft.
-4. **CSP / capability regression (P2-1, P2-2):** the app has not been launched with the new CSP and split capabilities; a broken permission would only appear at runtime.
-5. **Semantics (P2-5):** confidence is the score, lane balance is constant, and risk is a score threshold. The UI can still imply more certainty than the engine has.
-6. **Reproducibility (P1-5):** resolved for the data path — `process_all()` now processes files in canonical match-id order, reassembles by input index, writes an explicit column order, and records fingerprints + run statistics in `dataset_schema.json`; two full runs with different worker/chunk settings produced identical content. Still open: lane features are disabled, and matchup-data runs would emit seven extra names (the v2 run deliberately excludes them because `ml.rs` cannot rebuild them).
-7. **Latency (P0-4):** 23.2 ms is a harness number; in-app p95 and inference count per event are unmeasured.
-8. **Data platform (P2-9):** 1.9 GB of loose dataset files with no versioning or retention.
-9. **Mode encoding (P1-7):** `game_mode` stores Captains Mode as 22 (All Pick) and every non-captain mode as 0, collapsing `CAPTAINS_MODE` with `CAPTAINS_DRAFT`. It does not affect the 871-feature candidate (the group is dropped), but the bundled 887-feature model trains on it and no mode-segmented analysis can be trusted until a v3 dataset fixes the mapping.
-10. **Target definition (P0-1 residual):** the corpus cannot identify next-pick effects (0 of 101,400 2-a-side contexts occur 50 times), and early-stage win AUC falls to 0.523 once ban timing is honest. Any recommendation that presents a win probability as the value of a pick overstates what the data supports. Session 10 adds the one signal that *is* measurable — next-pick imitation, from pick 2 onward —   but it is a behavioural target, not a value one, and it is *worse than a frequency table at the opening pick* (0.0744 vs 0.0990 top-1). Session 11 tested the phase-aware fix: no early-stage model beats the table there (−0.0416 at pick 0), the intercept-only diagnostic is level with it (+0.0012, CI −0.0018..+0.0041), and the recommendation is therefore the frequency fallback at picks 0-1 with the pooled model from pick 2 (hybrid 0.0599 overall).
+1. **Recommendation quality (DRAFT_SCORER_BACKTEST, new 2026-11-22):** the popularity-first ordering lifts top-1 agreement from 0.94% to 2.46% and top-5 from 6.0% to 10.5% (random 0.90% / 4.5%), which is progress but still far from a solved ranking, and the rolling per-patch prior measured 3.38% top-1. The same run shows the team-level outcome proxy **fell** from 0.528 to 0.489 AUC: the score is a popularity-led priority order, not a win-probability estimate, and any UI or doc that implies otherwise is wrong.
+2. **Evaluation validity (P0-1):** the corrected dataset exists, but its chronological holdout (2026-04-05 → 2026-08-28) is the same window the session-5 ablation already scored, so any number produced on it is a regression reference, not a fresh held-out result. A defensible final claim needs newly collected matches (nothing newer than 2026-08-28 exists in the corpus).
+3. **Training-data integrity (P1-6 / P1-5):** the encoding defect is fixed at the data level (v2: 0 rows with 12 presence flags, bans populated for 92.1%). Remaining, and *not* fixable in the parser: 3,870 rows (3.8%) contain a hero twice in the same source draft, 8,031 rows (7.9%) have all ban slots unrevealed in the source, and 9,795 matches were rejected by the documented rules. Every metric in §3 — including the session-4 ablation — still refers to the corrupt v1 parquet, so the near-baseline result cannot yet be attributed to the features rather than the data.
+4. **Model trust (P0-1 / P1-6):** ML is off by default and automatic promotion is gated, but a user can still opt in and get a weak 25% term. Bundled inference-mode AUC 0.5122 / Brier 0.2495. On the corrected dataset the best validation candidate reaches 0.5479 ± 0.0004 (A) / 0.5481 ± 0.0012 (B) with Brier 0.2473, i.e. it finally beats the constant prior — but it is still ~9 standard errors below the 0.60 floor and has no fresh test number. The session-8 family comparison rules out learner capacity as the cause: a regularised linear model on the same features is statistically indistinguishable on AUC and better at the early-draft stages where recommendations are actually produced. Nothing was promoted.
+5. **Lifecycle confidence (P0-2):** ingestion is now covered by 18 payload-level tests (consecutive matches, duplicates, undo, attribution, 300-payload invariants), but never driven through a real multi-match GSI stream. The warp status mapping and event emission are not executed by tests, and an out-of-order second stale hero-selection snapshot is still indistinguishable from a new draft.
+6. **CSP / capability regression (P2-1, P2-2):** the app has not been launched with the new CSP and split capabilities; a broken permission would only appear at runtime.
+7. **Semantics (P2-5):** the card no longer repeats the score as "Confidence", no longer attaches a score-threshold RISK chip, and the Analysis tab no longer shows the constant-0.5 lane bars. Still open: the category labels are semantics thresholds, and the payload keeps the constant `lane_balance` for compatibility.
+8. **Reproducibility (P1-5):** resolved for the data path — `process_all()` now processes files in canonical match-id order, reassembles by input index, writes an explicit column order, and records fingerprints + run statistics in `dataset_schema.json`; two full runs with different worker/chunk settings produced identical content. Still open: lane features are disabled, and matchup-data runs would emit seven extra names (the v2 run deliberately excludes them because `ml.rs` cannot rebuild them).
+9. **Latency (P0-4):** 23.2 ms is a harness number; in-app p95 and inference count per event are unmeasured.
+10. **Data platform (P2-9):** 1.9 GB of loose dataset files with no versioning or retention.
+11. **Mode encoding (P1-7):** `game_mode` stores Captains Mode as 22 (All Pick) and every non-captain mode as 0, collapsing `CAPTAINS_MODE` with `CAPTAINS_DRAFT`. It does not affect the 871-feature candidate (the group is dropped), but the bundled 887-feature model trains on it and no mode-segmented analysis can be trusted until a v3 dataset fixes the mapping.
+12. **Target definition (P0-1 residual):** the corpus cannot identify next-pick effects (0 of 101,400 2-a-side contexts occur 50 times), and early-stage win AUC falls to 0.523 once ban timing is honest. Any recommendation that presents a win probability as the value of a pick overstates what the data supports. Session 10 adds the one signal that *is* measurable — next-pick imitation, from pick 2 onward —   but it is a behavioural target, not a value one, and it is *worse than a frequency table at the opening pick* (0.0744 vs 0.0990 top-1). Session 11 tested the phase-aware fix: no early-stage model beats the table there (−0.0416 at pick 0), the intercept-only diagnostic is level with it (+0.0012, CI −0.0018..+0.0041), and the recommendation is therefore the frequency fallback at picks 0-1 with the pooled model from pick 2 (hybrid 0.0599 overall).
 
 ---
 
 ## 8. Next three tasks
 
-1. **Run the usability gate for the phase-aware list (P0-1).** Session 12 built the honest surface and measured its churn; the remaining question is comprehension and usefulness, which needs 5-8 players and the protocol in [`HYBRID_PRODUCT_SPIKE.md`](HYBRID_PRODUCT_SPIKE.md) §4. Do not ship anything before it passes, and do not treat a pass as evidence of win-rate value. After that, a fresh chronological window (matches after 2026-08-28) is required before any final metric — see §5 of the same document. Do **not** report a counterfactual win delta from this corpus.
-2. **Live GSI replay + Tauri runtime validation (P0-2 residual, P2-1, P2-2, P1-2, P1-3).** Replay a captured multi-match GSI stream through the running app, then launch with the new CSP/split capabilities and confirm overlay show/hide/drag and the missing-model fallback. This is the only way to close the runtime assumptions the tests cannot cover.
-3. **Fresh evaluation window + in-app latency (P0-1, P0-4).** Collect matches newer than 2026-08-28 and freeze them before any final model claim; the current holdout has already been inspected. Then measure in-app p95 over ≥100 GSI-driven requests.
+1. **Finish the honest surface, then re-run the usability gate (P2-5, P0-1).** The backtest re-run settled the framing: the score is a popularity-led priority order, not a win probability. This session removed the duplicated "Confidence" line, the score-threshold RISK chip and the constant-0.5 lane bars. Next: label each list with its source (popularity vs context) and re-derive the category tags, then run the 5-8 player comprehension protocol in [`HYBRID_PRODUCT_SPIKE.md`](HYBRID_PRODUCT_SPIKE.md) §4 against the new ordering. A pass is still not evidence of win-rate value.
+2. **Patch rollover and a fresh evaluation window (P2-11, P0-1).** Ban counts, meta and the popularity prior are all patch-scoped, so a new patch starts empty until the seeders run: surface the patch's data age in `DataHealthNotice` (the ban seed already records its date range) and collect matches after 2026-08-28, the only source of a fresh holdout for any model claim.
+3. **Replay a captured GSI stream through the packaged app (P0-2, A-10).** CI now drives both the dev build and the installed NSIS bundle, but ingestion is still synthetic. A real multi-match replay is the remaining runtime gap; in-app p95 over ≥100 GSI-driven requests belongs in the same run (P0-4).
 
 ### Continuation note (2026-10-28, session 4)
 
@@ -1210,6 +1267,32 @@ now staged, so CI covers them after the next commit. Still open and ranked in
 the report: unpinned Python dependencies, unused Tauri plugins/permissions,
 numeric hero ids in explanations, and the unlaunched GUI/GSI runtime check.
 
+### Continuation note (2026-11-22, session 16)
+
+The roadmap was refreshed to HEAD `a2b7bd9` and the deterministic ordering was
+changed to popularity-first. Read §0, §3a and risk 1 in §7.
+
+1. `DRAFT_SCORER_BACKTEST.md` is now a source of product truth, not a side
+   experiment: the context-only ordering agreed with 0.94% of human picks at
+   top-1, against 2.21% for a global popularity prior.
+2. The shipped score is `0.60 × popularity + 0.40 × context`
+   (`POPULARITY_ORDER_SHARE`), where popularity is the seeded per-patch
+   pick-rate percentile inside the current pool. Re-run on the same sample:
+   top-1 2.46%, top-5 10.49%, mean percentile 0.649; 0/200 mismatches against
+   the list the UI shows.
+3. **The team-outcome proxy regressed** (0.528 → 0.489 AUC) while pick agreement
+   roughly tripled. Do not quote the score as a win probability, and do not
+   "fix" the AUC by lowering the popularity share — that metric was already
+   below the report's 0.55 usability floor, and optimising it would undo the
+   ordering change.
+4. The prior behind those numbers is the full-corpus seed, i.e. in-sample for
+   the replay, exactly like the shipped ban table. The rolling per-patch prior
+   (3.38% top-1) remains the honest out-of-sample reference and is not what the
+   app serves.
+5. Make the harness a scheduled job before the next ordering change: a re-run
+   whose top-1 falls below the global prior should fail rather than be
+   discovered in a doc.
+
 ---
 
 ## 9. Resume instructions
@@ -1217,9 +1300,9 @@ numeric hero ids in explanations, and the unlaunched GUI/GSI runtime check.
 Start here, in this order:
 
 1. Read this file, then §4-§5 of [`AUDIT_2026-10-27.md`](AUDIT_2026-10-27.md) for the evidence behind each ID.
-2. Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1` to confirm the baseline still holds (Rust 69 / frontend 19 / Python 163, 13/13 steps).
+2. Run `powershell -NoProfile -ExecutionPolicy Bypass -File scripts/verify.ps1` to confirm the baseline still holds (Rust 84 / frontend 32 / Python 166, 14/14 steps).
 3. Run `ml/venv/Scripts/python.exe ml/training/quality_gate.py`; expect exit 1 until a candidate replaces the bundled model. Use `--evaluation-mode as_trained` only to compare against the manifest, not to judge runtime quality.
-4. Pick the next task from §8 (currently the P0-1 usability gate for the phase-aware list, then a fresh chronological holdout; the modelling questions are closed in ML_TRAINING §3e-3f). The task ID maps 1:1 to the audit finding, so no re-audit is needed.
+4. Pick the next task from §8 (currently finishing the honest surface, then the patch-rollover and replay work; the modelling questions are closed in ML_TRAINING §3e-3f until a fresh holdout exists). The task ID maps 1:1 to the audit finding, so no re-audit is needed.
 5. Update this file's status column and the verification log **after** running the check — never before.
 6. Leave changes uncommitted unless the user explicitly authorizes a commit.
 

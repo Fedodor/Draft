@@ -1,6 +1,6 @@
 import { useTeamAnalysis, useEngineStore } from '../stores';
 import { 
-  Shield, Sword, Zap, Heart, 
+  Shield, Sword, Zap, 
   ArrowUpRight, 
   Timer, Target
 } from 'lucide-react';
@@ -20,7 +20,7 @@ export function TeamAnalysisPanel() {
     );
   }
 
-  const { missing, strong, composition_score, lane_balance, tempo } = teamAnalysis;
+  const { missing, strong, composition_score, tempo } = teamAnalysis;
 
   const tempoIcons = {
     early: <Zap className="w-5 h-5 text-yellow-400" />,
@@ -68,15 +68,8 @@ export function TeamAnalysisPanel() {
         </div>
       </div>
 
-      {/* Lane Balance */}
-      <div className="dota-panel p-4">
-        <h3 className="font-semibold text-dota-text mb-3">Lane Balance</h3>
-        <div className="space-y-3">
-          <LaneBar label="Safe Lane" value={lane_balance.safe_lane} icon={<Heart className="w-4 h-4" />} />
-          <LaneBar label="Mid Lane" value={lane_balance.mid_lane} icon={<Target className="w-4 h-4" />} />
-          <LaneBar label="Offlane" value={lane_balance.offlane} icon={<Shield className="w-4 h-4" />} />
-        </div>
-      </div>
+      {/* No lane panel: the engine only ever reports a constant 0.5 per lane,
+          so showing bars would invent a lane assessment it does not make. */}
 
       {/* Strong Points */}
       {strong.length > 0 && (
@@ -146,28 +139,6 @@ export function TeamAnalysisPanel() {
             </div>
           )}
         </div>
-      </div>
-    </div>
-  );
-}
-
-function LaneBar({ label, value, icon }: { label: string; value: number; icon: React.ReactNode }) {
-  const percent = Math.round(value * 100);
-  const color = percent >= 60 ? 'bg-green-500' : percent >= 40 ? 'bg-yellow-500' : 'bg-red-500';
-
-  return (
-    <div>
-      <div className="flex items-center justify-between mb-1">
-        <div className="flex items-center gap-2 text-sm">
-          <span className="text-dota-textMuted">{icon}</span>
-          <span className="font-medium text-dota-text">{label}</span>
-        </div>
-        <span className={`text-sm font-mono ${percent >= 60 ? 'text-green-400' : percent >= 40 ? 'text-yellow-400' : 'text-red-400'}`}>
-          {percent}%
-        </span>
-      </div>
-      <div className="h-1.5 bg-dota-border rounded-full overflow-hidden">
-        <div className={`h-full ${color} rounded-full transition-all duration-500`} style={{ width: `${percent}%` }} />
       </div>
     </div>
   );

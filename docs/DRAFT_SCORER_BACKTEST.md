@@ -5,6 +5,13 @@ false`) on every Captains Mode draft with a usable pick/ban order in
 `ml/datasets/raw/`. No model weights, thresholds, seed data or engine code were
 changed to produce these numbers.
 
+> **Update 2026-11-22:** the measurement below changed the product. The
+> deterministic ordering now ships popularity-first (`0.60 × popularity +
+> 0.40 × context`), and a re-run of this harness reports 2.46% top-1 / 10.49%
+> top-5 with 0/200 ordering mismatches against the UI. See
+> [Shipped ordering change](#shipped-ordering-change-2026-11-22). The numbers in
+> the tables below are the pre-change baseline and stay as the record of why.
+
 The short version: **the deterministic scorer does not beat chance at predicting
 human picks.** A plain popularity baseline is already ~2.3x better at top-1 with
 a single prior fitted on the warm-up window, and ~3.6x better with the prior
@@ -104,6 +111,45 @@ one.
 Whole sample (all 20,000 drafts) is the same story: top-1 0.96%, top-3 3.0%,
 top-5 5.5%, mean percentile 0.520. The engine's top-1 lift over random is
 +0.06 percentage points; the global popularity prior's is +1.31.
+
+## Shipped ordering change (2026-11-22)
+
+The tables above measured the ordering as it was when this report was written:
+five contextual components, with meta diluted to 10%. `engine/scorer.rs` now
+ships `POPULARITY_ORDER_SHARE = 0.60`, where popularity is the seeded per-patch
+pick-rate percentile inside the current available pool and the contextual
+components keep the remaining 40%.
+
+Re-run of this harness with the same 20,000-draft sample, database and flags
+(`ml/backtest/results/backtest_popularity_first.json`, gitignored):
+
+| agreement, evaluation slice (79,764 picks) | before | after | global prior |
+| --- | --- | --- | --- |
+| top-1 | 0.94% | **2.46%** | 2.21% |
+| top-3 | 3.19% | **6.71%** | 5.98% |
+| top-5 | 5.98% | **10.49%** | 9.75% |
+| mean rank of pick | 53.2 | **39.7** | 40.2 |
+| mean percentile | 0.527 | **0.649** | 0.644 |
+
+Ordering correctness: 0 of 200 sampled pick events disagreed between the
+harness pool and `get_recommendations(team, 5)`, i.e. the numbers describe the
+list the app shows.
+
+Two caveats, both measured:
+
+- **The prior is in-sample.** The app ranks on the seeded full-corpus pick-rate
+  table, so like the shipped ban table it has seen the drafts being replayed.
+  The rolling per-patch prior in this report (3.38% top-1) remains the honest
+  out-of-sample reference and the app does not serve it.
+- **The team-outcome proxy got worse.** Summing per-pick priority scores predicts
+the match winner at **0.489** AUC, down from 0.528 (already below this report's
+0.55 usability floor), while the rank-1 bucket's win rate rose from 49.7% to
+51.7% (95% CI 50.1-53.3). A popularity-led ordering agrees with captains; it is
+not a win-probability model, and the UI labels it "Priority" for that reason.
+
+The rolling-prior variant of the shipped ordering is the next measurement worth
+taking (per-patch counts as the replay advances rather than the full-patch seed),
+because that is the version a player would get on a fresh patch.
 
 ## By draft phase
 

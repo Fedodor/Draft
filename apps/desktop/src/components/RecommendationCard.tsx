@@ -45,7 +45,6 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
   }, [showBreakdown, recommendation.hero_id, selectedTeam]);
 
   const scorePercent = Math.round(recommendation.score * 100);
-  const confidencePercent = Math.round(recommendation.confidence * 100);
   const breakdownRowData = breakdown ? breakdownRows(breakdown) : [];
 
   const getScoreColor = (score: number) => {
@@ -53,14 +52,6 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
     if (score >= 0.5) return 'bg-yellow-500';
     if (score >= 0.3) return 'bg-orange-500';
     return 'bg-red-500';
-  };
-
-  const getRiskColor = (risk: 'low' | 'medium' | 'high') => {
-    switch (risk) {
-      case 'low': return 'bg-green-500/20 text-green-400';
-      case 'medium': return 'bg-yellow-500/20 text-yellow-400';
-      case 'high': return 'bg-red-500/20 text-red-400';
-    }
   };
 
   return (
@@ -89,16 +80,15 @@ export function RecommendationCard({ recommendation }: RecommendationCardProps) 
                 <span className={`tag ${getCategoryClass(recommendation.category)} text-xs`}>
                   {formatCategory(recommendation.category)}
                 </span>
-                <span className={`px-1.5 py-0.5 text-xs font-medium rounded ${getRiskColor(recommendation.risk_level)}`}>
-                  {recommendation.risk_level.toUpperCase()}
-                </span>
               </div>
             </div>
           </div>
           
           <div className="text-right flex-shrink-0">
             <div className="text-lg font-bold text-dota-text">{scorePercent}%</div>
-            <div className="text-xs text-dota-textMuted">Confidence: {confidencePercent}%</div>
+            {/* The backtest measured this number as an ordering priority, not a
+                win probability, so the card does not dress it up as certainty. */}
+            <div className="text-xs text-dota-textMuted">Priority</div>
           </div>
         </div>
 

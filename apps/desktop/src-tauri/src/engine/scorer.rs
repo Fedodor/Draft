@@ -52,6 +52,18 @@ pub const W_META: f32 = 0.10;
 pub const W_COMFORT: f32 = 0.05;
 pub const W_ML: f32 = 0.25;
 
+/// Share of the shipped ordering given to popularity (the seeded per-patch
+/// pick rate) rather than the contextual components.
+///
+/// `docs/DRAFT_SCORER_BACKTEST.md` measured the previous context-only ordering
+/// at 0.94% top-1 agreement with human picks, against 2.21% for a global
+/// popularity prior and 2.48% for an equal-weight blend of the two.
+/// Popularity therefore carries the majority of the ordering and the
+/// contextual components refine it. The measured sweep is flat from 0.2 to 1.0
+/// (all values beat the old ordering; 0.6-0.8 are within 0.05 pp of the peak),
+/// so 0.6 is a round value inside that region, not a tuned peak.
+pub const POPULARITY_ORDER_SHARE: f32 = 0.60;
+
 /// Trait for all scorers in the recommendation pipeline
 pub trait Scorer: Send + Sync {
     fn score(&self, hero: &Hero, state: &DraftState, team: TeamSide) -> f32;

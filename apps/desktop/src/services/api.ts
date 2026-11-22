@@ -170,6 +170,7 @@ export interface MlStatus {
 }
 
 export interface ScoreBreakdown {
+  popularity: number;
   matchup: number;
   synergy: number;
   composition: number;

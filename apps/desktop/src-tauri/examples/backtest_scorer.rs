@@ -437,14 +437,10 @@ impl Ranking {
 /// Every available hero scored once for `team`, with all components kept so the
 /// ablation can re-rank the same pool without re-scoring.
 fn score_pool(engine: &DraftEngine, team: TeamSide) -> Vec<(i32, ScoreBreakdown)> {
-    let available = engine.get_state().available_heroes;
-    available
-        .iter()
-        .filter_map(|hero| {
-            engine
-                .score_breakdown(hero, team)
-                .map(|breakdown| (hero.0, breakdown))
-        })
+    engine
+        .score_pool(team)
+        .into_iter()
+        .map(|(hero_id, breakdown)| (hero_id.0, breakdown))
         .collect()
 }
 

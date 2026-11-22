@@ -113,18 +113,19 @@ The single quality gate mirrors CI:
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts\verify.ps1
 ```
 
-It runs 13 steps: secret scan, Rust format/clippy/tests (desktop and seeders),
-frontend lint/typecheck/build/tests, Python byte-compile, the ML
-contract/quality-gate tests, and the remaining Python suite. Current baseline:
+It runs 14 steps: secret scan, seed-patch consistency, Rust format/clippy/tests
+(desktop and seeders), frontend lint/typecheck/build/tests, Python byte-compile,
+the ML contract/quality-gate tests, and the remaining Python suite. Current
+baseline:
 
 | Check | Result |
 | --- | --- |
-| Rust library tests | 71 passed, 1 ignored (benchmark) |
-| Rust seeders | 1 passed |
-| Frontend tests | 24 passed (4 files) |
+| Rust library tests | 84 passed, 1 ignored (benchmark) |
+| Rust seeders | 2 passed |
+| Frontend tests | 32 passed (5 files) |
 | Python contract + gate tests | 14 passed |
-| Remaining Python suite | 149 passed |
-| Full gate | 13/13 steps |
+| Remaining Python suite | 152 passed |
+| Full gate | 14/14 steps |
 
 `pwsh` is not installed in the verified environment; use Windows PowerShell as
 above.

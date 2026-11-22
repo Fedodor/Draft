@@ -7,7 +7,7 @@ use crate::engine::scorer::{
     CompositionScorer, MLScorer, MatchupScorer, Scorer, SynergyScorer, W_COMFORT, W_COMPOSITION,
     W_MATCHUP, W_META, W_ML, W_SYNERGY,
 };
-use crate::engine::DraftEngine;
+use crate::engine::{blended_total, DraftEngine};
 use crate::models::*;
 
 /// Configuration for tree search
@@ -245,13 +245,18 @@ impl DraftSimulator {
             }
         }
 
-        if !ml_enabled {
+        let context = if ml_enabled {
+            total
+        } else {
             // Remove the absent ML weight and keep the score on a 0..1 scale.
             let heuristic_sum = W_MATCHUP + W_SYNERGY + W_COMPOSITION + W_META + W_COMFORT;
-            total /= heuristic_sum;
+            total / heuristic_sum
         }
+        .clamp(0.0, 1.0);
 
-        total.clamp(0.0, 1.0)
+        // The search path uses the same popularity-first ordering as the list,
+        // computed against the simulated pool.
+        blended_total(context, self.engine.popularity_score(state, &hero.id))
     }
 
     /// Evaluate opponent's likely responses (minimax-style)

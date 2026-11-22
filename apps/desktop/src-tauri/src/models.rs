@@ -319,9 +319,13 @@ pub struct Recommendation {
 }
 
 /// Per-component scores behind a recommendation. All values are in [0, 1]
-/// with 0.5 neutral; `total` is the weighted combination.
+/// with 0.5 neutral. `popularity` is the seeded per-patch pick-rate percentile
+/// within the current pool; it carries the majority of the ordering and the
+/// contextual components refine it, so `total` is the popularity-first blend
+/// rather than a plain weighted sum of the five heuristics.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct ScoreBreakdown {
+    pub popularity: f32,
     pub matchup: f32,
     pub synergy: f32,
     pub composition: f32,

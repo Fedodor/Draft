@@ -16,8 +16,8 @@ pub mod scorer;
 pub mod simulation;
 
 use scorer::{
-    CompositionScorer, MLScorer, MatchupScorer, Scorer, SynergyScorer, W_COMFORT, W_COMPOSITION,
-    W_MATCHUP, W_META, W_ML, W_SYNERGY,
+    CompositionScorer, MLScorer, MatchupScorer, Scorer, SynergyScorer, POPULARITY_ORDER_SHARE,
+    W_COMFORT, W_COMPOSITION, W_MATCHUP, W_META, W_ML, W_SYNERGY,
 };
 
 /// Rank available heroes by how often teams banned them on `patch`.
@@ -85,8 +85,8 @@ fn active_weights(ml_enabled: bool) -> [f32; 6] {
     ]
 }
 
-/// Weighted sum of the six components, clamped to [0, 1].
-fn weighted_total(values: [f32; 6], ml_enabled: bool) -> f32 {
+/// Weighted sum of the six contextual components, clamped to [0, 1].
+fn context_total(values: [f32; 6], ml_enabled: bool) -> f32 {
     let weights = active_weights(ml_enabled);
     values
         .iter()
@@ -94,6 +94,12 @@ fn weighted_total(values: [f32; 6], ml_enabled: bool) -> f32 {
         .map(|(value, weight)| value * weight)
         .sum::<f32>()
         .clamp(0.0, 1.0)
+}
+
+/// Final ordering score: popularity carries [`POPULARITY_ORDER_SHARE`], the
+/// contextual components the remainder. Both inputs are in [0, 1].
+fn blended_total(context: f32, popularity: f32) -> f32 {
+    (POPULARITY_ORDER_SHARE * popularity + (1.0 - POPULARITY_ORDER_SHARE) * context).clamp(0.0, 1.0)
 }
 
 /// Main draft engine that maintains state and generates recommendations
@@ -780,15 +786,91 @@ impl DraftEngine {
         self.state.read().clone()
     }
 
+    /// Popularity percentile of every available hero on the active patch, in
+    /// [0, 1] where 1 is the most-picked hero in the current pool.
+    ///
+    /// The shipped ordering is popularity-first: the seeded per-patch pick rate
+    /// is the primary signal and the contextual components refine it. Ranks are
+    /// computed inside the current pool so the value is scale-free. A hero with
+    /// no seeded pick rate keeps the neutral 0.5 instead of being treated as
+    /// never picked, because a hero added after the meta snapshot has no row.
+    fn popularity_percentiles(&self, state: &DraftState) -> HashMap<HeroId, f32> {
+        let mut known: Vec<(&HeroId, f32)> = state
+            .available_heroes
+            .iter()
+            .filter_map(|hero_id| {
+                self.meta_data
+                    .hero_pickrates
+                    .get(hero_id)
+                    .copied()
+                    .map(|rate| (hero_id, rate))
+            })
+            .collect();
+
+        let mut percentiles: HashMap<HeroId, f32> = state
+            .available_heroes
+            .iter()
+            .map(|hero_id| (hero_id.clone(), 0.5))
+            .collect();
+        if known.len() > 1 {
+            known.sort_by(|a, b| b.1.total_cmp(&a.1).then(a.0 .0.cmp(&b.0 .0)));
+            let last = (known.len() - 1) as f32;
+            for (rank, (hero_id, _)) in known.iter().enumerate() {
+                percentiles.insert((*hero_id).clone(), 1.0 - rank as f32 / last);
+            }
+        }
+        percentiles
+    }
+
+    /// Popularity percentile for one hero in `state`'s pool. The debug and
+    /// search paths use this; bulk callers share one map via
+    /// [`Self::popularity_percentiles`].
+    fn popularity_score(&self, state: &DraftState, hero_id: &HeroId) -> f32 {
+        self.popularity_percentiles(state)
+            .get(hero_id)
+            .copied()
+            .unwrap_or(0.5)
+    }
+
+    /// Score every available hero for `team`, sharing one popularity ranking.
+    /// The recommendation list and the backtest harness both use this so the
+    /// ordering is computed identically in a single pass.
+    pub fn score_pool(&self, team: TeamSide) -> Vec<(HeroId, ScoreBreakdown)> {
+        let state = self.state.read();
+        let popularity = self.popularity_percentiles(&state);
+        state
+            .available_heroes
+            .iter()
+            .filter_map(|hero_id| {
+                let hero = self.hero_db.iter().find(|h| h.id == *hero_id)?;
+                Some((
+                    hero_id.clone(),
+                    self.score_hero(
+                        hero,
+                        &state,
+                        team,
+                        popularity.get(hero_id).copied().unwrap_or(0.5),
+                    ),
+                ))
+            })
+            .collect()
+    }
+
     /// Debug view: per-component scores for a candidate hero in the current
     /// draft. Returns `None` when the hero is not in the loaded hero database.
     pub fn score_breakdown(&self, hero_id: &HeroId, team: TeamSide) -> Option<ScoreBreakdown> {
         let state = self.state.read();
         let hero = self.hero_db.iter().find(|h| h.id == *hero_id)?;
-        Some(self.score_hero(hero, &state, team))
+        Some(self.score_hero(hero, &state, team, self.popularity_score(&state, hero_id)))
     }
 
-    fn score_hero(&self, hero: &Hero, state: &DraftState, team: TeamSide) -> ScoreBreakdown {
+    fn score_hero(
+        &self,
+        hero: &Hero,
+        state: &DraftState,
+        team: TeamSide,
+        popularity: f32,
+    ) -> ScoreBreakdown {
         let matchup = self.scorer.matchup_scorer.score(hero, state, team);
         let synergy = self.scorer.synergy_scorer.score(hero, state, team);
         let composition = self.scorer.composition_scorer.score(hero, state, team);
@@ -805,12 +887,14 @@ impl DraftEngine {
             0.5
         };
 
-        let total = weighted_total(
+        let context = context_total(
             [matchup, synergy, composition, meta, comfort, ml],
             self.ml_enabled,
         );
+        let total = blended_total(context, popularity);
 
         ScoreBreakdown {
+            popularity,
             matchup,
             synergy,
             composition,
@@ -902,6 +986,7 @@ impl DraftEngine {
     pub fn get_recommendations(&self, team: TeamSide, limit: usize) -> RecommendationSet {
         let state = self.state.read();
         let is_radiant = matches!(team, TeamSide::Radiant);
+        let popularity = self.popularity_percentiles(&state);
 
         let mut scored_heroes: Vec<(HeroId, f32, Vec<String>)> = Vec::new();
 
@@ -915,7 +1000,12 @@ impl DraftEngine {
 
             // All scorer outputs are in [0, 1] with 0.5 neutral; weights sum
             // to 1.0 so the combined score stays in [0, 1] without saturating.
-            let breakdown = self.score_hero(hero, &state, team);
+            let breakdown = self.score_hero(
+                hero,
+                &state,
+                team,
+                popularity.get(hero_id).copied().unwrap_or(0.5),
+            );
             explanations.extend(self.scorer.matchup_scorer.explain(hero, &state, team));
             explanations.extend(self.scorer.synergy_scorer.explain(hero, &state, team));
             explanations.extend(self.scorer.composition_scorer.explain(hero, &state, team));
@@ -1507,13 +1597,18 @@ mod tests {
             .score_breakdown(&HeroId(1), TeamSide::Radiant)
             .unwrap();
         assert!((breakdown.matchup - 0.55).abs() < 1e-5);
-        let expected_total = (breakdown.matchup * W_MATCHUP
-            + breakdown.synergy * W_SYNERGY
-            + breakdown.composition * W_COMPOSITION
-            + breakdown.meta * W_META
-            + breakdown.comfort * W_COMFORT
-            + breakdown.ml * W_ML)
-            .clamp(0.0, 1.0);
+        let context = context_total(
+            [
+                breakdown.matchup,
+                breakdown.synergy,
+                breakdown.composition,
+                breakdown.meta,
+                breakdown.comfort,
+                breakdown.ml,
+            ],
+            engine.ml_enabled,
+        );
+        let expected_total = blended_total(context, breakdown.popularity);
         assert!((breakdown.total - expected_total).abs() < 1e-6);
         assert!(engine
             .score_breakdown(&HeroId(999), TeamSide::Radiant)
@@ -1531,8 +1626,42 @@ mod tests {
 
         // A neutral vector scores 0.5 in both modes, so disabling ML does not
         // shift the scale for untouched components.
-        assert!((weighted_total([0.5; 6], true) - 0.5).abs() < 1e-6);
-        assert!((weighted_total([0.5; 6], false) - 0.5).abs() < 1e-6);
+        assert!((context_total([0.5; 6], true) - 0.5).abs() < 1e-6);
+        assert!((context_total([0.5; 6], false) - 0.5).abs() < 1e-6);
+
+        // A neutral context with the neutral popularity percentile keeps the
+        // blend at the same neutral 0.5.
+        assert!((blended_total(0.5, 0.5) - 0.5).abs() < 1e-6);
+    }
+
+    #[test]
+    fn test_popularity_orders_the_recommendations_first() {
+        // No matchup/synergy/composition data, so every hero has the same
+        // neutral context and only the seeded pick rate can order the list.
+        let mut engine = engine_with_heroes(3);
+        engine.meta_data.hero_pickrates = [(HeroId(1), 0.05), (HeroId(2), 0.40), (HeroId(3), 0.20)]
+            .into_iter()
+            .collect();
+
+        let set = engine.get_recommendations(TeamSide::Radiant, 3);
+        let order: Vec<i32> = set
+            .top_picks
+            .iter()
+            .map(|recommendation| recommendation.hero_id.0)
+            .collect();
+        assert_eq!(order, vec![2, 3, 1]);
+        assert!(set.top_picks[0].score > set.top_picks[2].score);
+    }
+
+    #[test]
+    fn test_popularity_outweighs_a_full_context_swing() {
+        // Popularity carries the majority of the score, so the most a context
+        // change can move it is the remaining share.
+        let popularity_swing = blended_total(0.0, 1.0) - blended_total(0.0, 0.0);
+        let context_swing = blended_total(1.0, 0.0) - blended_total(0.0, 0.0);
+        assert!((popularity_swing - POPULARITY_ORDER_SHARE).abs() < 1e-6);
+        assert!((context_swing - (1.0 - POPULARITY_ORDER_SHARE)).abs() < 1e-6);
+        assert!(popularity_swing > context_swing);
     }
 
     #[test]
@@ -1552,15 +1681,18 @@ mod tests {
         assert!((with_ml.ml - without_ml.ml).abs() < 1e-6);
         // Disabling ML removes its neutral 0.5 contribution and renormalizes
         // the remaining weights.
-        let heuristic_sum = W_MATCHUP + W_SYNERGY + W_COMPOSITION + W_META + W_COMFORT;
-        let expected_without = (with_ml.matchup * W_MATCHUP
-            + with_ml.synergy * W_SYNERGY
-            + with_ml.composition * W_COMPOSITION
-            + with_ml.meta * W_META
-            + with_ml.comfort * W_COMFORT)
-            / heuristic_sum;
+        let components = [
+            with_ml.matchup,
+            with_ml.synergy,
+            with_ml.composition,
+            with_ml.meta,
+            with_ml.comfort,
+            with_ml.ml,
+        ];
+        let expected_without =
+            blended_total(context_total(components, false), without_ml.popularity);
         assert!((without_ml.total - expected_without).abs() < 1e-5);
-        let expected_with = expected_without * heuristic_sum + with_ml.ml * W_ML;
+        let expected_with = blended_total(context_total(components, true), with_ml.popularity);
         assert!((with_ml.total - expected_with).abs() < 1e-5);
     }
 

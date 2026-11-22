@@ -1,16 +1,19 @@
 import type { ScoreBreakdown } from './api';
 
 /**
- * The recommendation weights. These mirror the `W_*` constants in
- * `apps/desktop/src-tauri/src/engine/scorer.rs`; keep them in sync.
+ * The shipped ordering. Popularity keeps the majority of the score and the
+ * contextual components refine it; these weights mirror `POPULARITY_ORDER_SHARE`
+ * and the `W_*` constants in `apps/desktop/src-tauri/src/engine/scorer.rs` after
+ * the popularity share has been applied. Keep them in sync.
  */
 export const SCORE_COMPONENTS = [
-  { key: 'matchup', label: 'Matchup', weight: 0.25 },
-  { key: 'synergy', label: 'Synergy', weight: 0.2 },
-  { key: 'composition', label: 'Composition', weight: 0.15 },
-  { key: 'meta', label: 'Meta', weight: 0.1 },
-  { key: 'comfort', label: 'Comfort', weight: 0.05 },
-  { key: 'ml', label: 'ML', weight: 0.25 },
+  { key: 'popularity', label: 'Popularity', weight: 0.6 },
+  { key: 'matchup', label: 'Matchup', weight: 0.1 },
+  { key: 'synergy', label: 'Synergy', weight: 0.08 },
+  { key: 'composition', label: 'Composition', weight: 0.06 },
+  { key: 'meta', label: 'Meta', weight: 0.04 },
+  { key: 'comfort', label: 'Comfort', weight: 0.02 },
+  { key: 'ml', label: 'ML', weight: 0.1 },
 ] as const;
 
 export type ScoreComponentKey = (typeof SCORE_COMPONENTS)[number]['key'];
