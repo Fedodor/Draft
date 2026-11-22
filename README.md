@@ -145,7 +145,9 @@ resources, or search latency that drifts past the benchmarked envelope. The
 latency probe toggles `ml_enabled` through the Settings command, times the
 shortlist and lookahead searches over IPC after the GSI draft arrives, restores
 the original setting, and writes `recommendation-latency.json` next to the
-screenshots. Screenshots and logs land in `.ui-smoke/`. CI runs it twice:
+screenshots. Under GitHub Actions the same table also goes to the job summary
+with a pass/drift marker per row, so the numbers are visible without the
+artifact. Screenshots and logs land in `.ui-smoke/`. CI runs it twice:
 `gui-smoke` against the dev build and `gui-smoke-bundle` against the packaged
 release bundle, both on `windows-latest`.
 

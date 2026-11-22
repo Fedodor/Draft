@@ -121,6 +121,20 @@ function Skip {
     Write-Host "SKIP  $Name :: $Reason" -ForegroundColor Yellow
 }
 
+# Appends Markdown to the GitHub Actions job summary when one is configured, so
+# numbers that otherwise only exist in uploaded artifacts show on the run page.
+# Locally the variable is unset and this writes nothing.
+function Write-StepSummary {
+    param([string[]]$Lines)
+    if (-not $env:GITHUB_STEP_SUMMARY) { return }
+    $text = ($Lines -join [Environment]::NewLine) + [Environment]::NewLine
+    [IO.File]::AppendAllText(
+        $env:GITHUB_STEP_SUMMARY,
+        $text,
+        (New-Object System.Text.UTF8Encoding($false))
+    )
+}
+
 function Test-PortInUse {
     param([int]$Port)
     $listener = Get-NetTCPConnection -LocalPort $Port -State Listen -ErrorAction SilentlyContinue
@@ -796,6 +810,12 @@ try {
                 "lookahead with ML off", "lookahead with ML on")) {
             Skip "in-app $skipped search stays in the batched envelope" "latency probe failed"
         }
+        Write-StepSummary @(
+            "### Recommendation latency",
+            "",
+            "The in-app search latency probe failed, so its four measurements were skipped.",
+            ""
+        )
     } else {
         # Reference: docs/ROADMAP.md "Search benchmark" (release, 2026-11-22). The
         # dev build is a debug binary and measures ~12x the release numbers with the
@@ -818,6 +838,16 @@ try {
             @{ Path = 'lookahead'; Ml = 'off'; Run = $latency.runs.off.lookahead },
             @{ Path = 'lookahead'; Ml = 'on'; Run = $latency.runs.on.lookahead }
         )
+        $mode = if ($Bundle) { "packaged release" } else { "debug dev build" }
+        $summaryRows = New-Object System.Collections.Generic.List[string]
+        $summaryRows.Add("### In-app recommendation latency - $mode")
+        $summaryRows.Add("")
+        $summaryRows.Add('Beam search timed over IPC after the GSI draft arrives, with `ml_enabled` ' +
+            'toggled through `set_config`. Expectation is the ROADMAP search benchmark scaled by ' +
+            "$buildScale for this build; **drift** from ${driftAt}x, **fail** from ${failAt}x.")
+        $summaryRows.Add("")
+        $summaryRows.Add("| Search | ML | Median | Expected | vs benchmark | Status |")
+        $summaryRows.Add("| --- | --- | --- | --- | --- | --- |")
         $drift = New-Object System.Collections.Generic.List[string]
         foreach ($measurement in $measurements) {
             # A release ML-off search benchmarks below 1 ms, where a single timer
@@ -833,12 +863,17 @@ try {
             Write-Host "    $detail"
             Check "in-app $($measurement.Path) search with ML $($measurement.Ml) stays in the batched envelope" `
                 ($ratio -le $failAt) $detail
+            $status = if ($ratio -gt $failAt) { "fail" } elseif ($ratio -gt $driftAt) { "drift" } else { "pass" }
+            $summaryRows.Add(("| {0} | {1} | {2:N1} ms | {3:N1} ms | {4:N1}x | {5} |" -f $measurement.Path, $measurement.Ml, [double]$measurement.Run.median, $expected, $ratio, $status))
             if ($ratio -gt $driftAt) { $drift.Add($detail) }
         }
         if ($drift.Count -gt 0) {
             Write-Host "    DRIFT past the benchmark envelope (bench x build):" -ForegroundColor Yellow
             foreach ($line in $drift) { Write-Host "      $line" -ForegroundColor Yellow }
         }
+        $summaryRows.Add("")
+        $summaryRows.Add("Raw samples and spread: recommendation-latency.json in the uploaded GUI smoke artifact.")
+        Write-StepSummary -Lines $summaryRows.ToArray()
         $latency | ConvertTo-Json -Depth 6 |
             Set-Content -LiteralPath (Join-Path $ArtifactsDir "recommendation-latency.json") -Encoding UTF8
     }

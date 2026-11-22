@@ -712,7 +712,8 @@ build-scaled fixture, the difference being the IPC round trip and the
 matchup/synergy data the fixture leaves empty; divided by the ~12x debug factor
 that is the release 2.8 / 4.1 ms again.
 The check scales the release benchmark by 12 for the dev build, writes
-`recommendation-latency.json` beside the screenshots, prints `DRIFT` past 4x
+`recommendation-latency.json` beside the screenshots, puts the same table in the
+GitHub Actions job summary with a pass/drift/fail marker per row, prints `DRIFT` past 4x
 that expectation and fails past 10x, so the pre-batching 318 ms lookahead would
 have turned the smoke red.
 
