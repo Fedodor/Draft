@@ -173,6 +173,12 @@ event count), then the process prints the comparison and exits **1**. Pass
 `--min-top1 0` for exploratory samples, whose 40% evaluation slice is too small
 for the comparison to mean anything.
 
+`scripts/verify.ps1` runs this same gate after the Rust steps whenever
+`ml/backtest/data/drafts_cm.jsonl` and a seeded runtime database are both
+present, writing its report to `%TEMP%` so the committed artifact is not
+rewritten; otherwise it lists the step as `SKIP` with the missing input. `-SkipBacktest`
+leaves the gate out of a run, since it adds a release build and a full replay.
+
 ## By draft phase
 
 Engine, whole sample (opening = picks 1–2, early = 3–4, mid = 5–6, late = 7–8,
