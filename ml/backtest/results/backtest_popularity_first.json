@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-11-22T10:31:16.959212400+00:00",
+  "generated_at": "2026-11-25T17:06:14.280783900+00:00",
   "db": {
     "path": "ml/backtest/data/seed_copy.db",
     "heroes": 126,
@@ -1167,5 +1167,12 @@
   "verify": {
     "checked": 200,
     "top5_mismatches": 0
+  },
+  "top1_gate": {
+    "floor": 0.0221,
+    "measured": 0.024622636778496566,
+    "global_prior": 0.022052555037360214,
+    "events": 79764,
+    "passed": true
   }
 }
