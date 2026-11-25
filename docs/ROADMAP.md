@@ -658,7 +658,8 @@ Interpretation: the ML-on path builds one feature map per hero that can still re
   percentile carries 60% of the score, the five contextual components 40%.
 - Harness: same 20,000-draft sample, same seeded database and flags as the
   committed run; the run writes a local report to
-  `ml/backtest/results/backtest_popularity_first.json` and is not committed.
+  `ml/backtest/results/backtest_popularity_first.json` and the report is
+  committed with it.
 - The pick-rate prior is the full-corpus seeded table, so like the shipped ban
   table it is in-sample with respect to the replay; it is the ranking the app
   actually serves, not an out-of-sample estimate.
@@ -1326,7 +1327,8 @@ changed to popularity-first. Read §0, §3a and risk 1 in §7.
    app serves.
 5. Make the harness a scheduled job before the next ordering change: a re-run
    whose top-1 falls below the global prior should fail rather than be
-   discovered in a doc.
+   discovered in a doc. `backtest_scorer` now enforces that itself (`--min-top1`,
+   default 2.21%), so a regression exits 1 instead of only showing up in a table.
 
 ---
 

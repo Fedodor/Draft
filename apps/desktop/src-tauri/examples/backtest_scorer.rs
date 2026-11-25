@@ -25,6 +25,12 @@
 //!     --db "%APPDATA%\com.smartdraftassistant.app\smart_draft.db" \
 //!     --out ml/backtest/results/backtest.json \
 //!     --picks-csv ml/backtest/results/picks.csv
+//!
+//! `--min-top1` (default 2.21%, the global popularity prior's top-1 on the
+//! 20,000-draft sample) turns the run into a regression gate: the report is
+//! still written, then the process exits 1 when the shipped ordering's
+//! evaluation top-1 falls below the floor. Pass `--min-top1 0` for exploratory
+//! samples, where the evaluation slice is too small for the comparison.
 
 use std::collections::HashMap;
 use std::fs;
@@ -245,6 +251,22 @@ struct VerifySummary {
     top5_mismatches: usize,
 }
 
+/// Floor the shipped ordering has to clear on the standard sample. 2.21% is the
+/// global popularity prior's top-1 there: ranking below a single pick-rate table
+/// means the contextual blend has stopped paying for itself.
+const DEFAULT_MIN_TOP1: f64 = 0.0221;
+
+/// Console and artifact verdict for the `--min-top1` regression gate.
+#[derive(Debug, Serialize)]
+struct Top1Gate {
+    floor: f64,
+    measured: f64,
+    /// The global popularity prior measured on the same evaluation slice.
+    global_prior: f64,
+    events: u64,
+    passed: bool,
+}
+
 #[derive(Debug, Serialize)]
 struct DbInfo {
     path: String,
@@ -292,6 +314,8 @@ struct Report {
     /// How the ban phase scores under the engine and under ban prevalence.
     ban_phase: BanPhase,
     verify: VerifySummary,
+    /// `--min-top1` verdict, recorded so a failing run keeps its evidence.
+    top1_gate: Top1Gate,
 }
 
 #[derive(Debug, Default, Serialize)]
@@ -726,6 +750,19 @@ fn main() -> Result<(), String> {
     let prior_mode = match args.get("prior").map(String::as_str) {
         Some("per-patch") | Some("per_patch") => PriorMode::PerPatch,
         _ => PriorMode::Global,
+    };
+    let min_top1: f64 = match args.get("min-top1") {
+        Some(value) => {
+            let parsed: f64 = value.parse().map_err(|_| {
+                format!("--min-top1 expects a fraction (0.0221) or a percent (2.21), got {value}")
+            })?;
+            if parsed > 1.0 {
+                parsed / 100.0
+            } else {
+                parsed
+            }
+        }
+        None => DEFAULT_MIN_TOP1,
     };
 
     let mut drafts = load_drafts(&drafts_path)?;
@@ -1262,6 +1299,14 @@ fn main() -> Result<(), String> {
         .collect();
     bans_by_picks_before.sort_by_key(|(index, _)| *index);
 
+    let top1_gate = Top1Gate {
+        floor: min_top1,
+        measured: engine_eval_counts.agreement().top1,
+        global_prior: freq_eval.agreement().top1,
+        events: engine_eval_counts.events,
+        passed: engine_eval_counts.agreement().top1 >= min_top1,
+    };
+
     let report = Report {
         generated_at: chrono::Utc::now().to_rfc3339(),
         db: db_info,
@@ -1372,6 +1417,7 @@ fn main() -> Result<(), String> {
             checked: verified,
             top5_mismatches: verify_mismatches,
         },
+        top1_gate,
     };
 
     if let Some(path) = picks_csv {
@@ -1408,6 +1454,30 @@ fn main() -> Result<(), String> {
     }
     let json = serde_json::to_string_pretty(&report).map_err(|error| error.to_string())?;
     fs::write(&out_path, format!("{json}\n")).map_err(|error| error.to_string())?;
+
+    println!(
+        "top-1 gate: engine {:.4}% vs floor {:.4}% over {} evaluated picks \
+         (this run's global popularity prior: {:.4}%): {}",
+        report.top1_gate.measured * 100.0,
+        report.top1_gate.floor * 100.0,
+        report.top1_gate.events,
+        report.top1_gate.global_prior * 100.0,
+        if report.top1_gate.passed {
+            "PASS"
+        } else {
+            "FAIL"
+        }
+    );
+    if !report.top1_gate.passed {
+        eprintln!(
+            "top-1 agreement fell below the {:.2}% global-popularity floor: the shipped ordering \
+             has regressed. Fix the contextual blend or POPULARITY_ORDER_SHARE; do not adopt this \
+             run, and re-check on --sample 20000.",
+            report.top1_gate.floor * 100.0
+        );
+        let _ = fs::remove_dir_all(&temp_dir);
+        std::process::exit(1);
+    }
 
     println!("{}", json);
     println!("commit: {}", github_commit());

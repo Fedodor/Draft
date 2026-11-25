@@ -121,7 +121,7 @@ pick-rate percentile inside the current available pool and the contextual
 components keep the remaining 40%.
 
 Re-run of this harness with the same 20,000-draft sample, database and flags
-(`ml/backtest/results/backtest_popularity_first.json`, gitignored):
+(`ml/backtest/results/backtest_popularity_first.json`, committed):
 
 | agreement, evaluation slice (79,764 picks) | before | after | global prior |
 | --- | --- | --- | --- |
@@ -150,6 +150,28 @@ not a win-probability model, and the UI labels it "Priority" for that reason.
 The rolling-prior variant of the shipped ordering is the next measurement worth
 taking (per-patch counts as the replay advances rather than the full-patch seed),
 because that is the version a player would get on a fresh patch.
+
+### Regression gate
+
+The ordering must not slip back below the popularity prior it replaced, so the
+harness itself refuses a run that does:
+
+```bash
+cargo run --release --example backtest_scorer -- \
+  --drafts ml/backtest/data/drafts_cm.jsonl \
+  --db "%APPDATA%\com.smartdraftassistant.app\smart_draft.db" \
+  --sample 20000 \
+  --out ml/backtest/results/backtest_popularity_first.json \
+  --min-top1 0.0221
+```
+
+`--min-top1` defaults to `0.0221`, the global popularity prior's top-1 on this
+sample, and accepts a fraction or a percent. When `engine_agreement_eval.top1`
+falls below it the report is still written (with a `top1_gate` block recording
+the floor, the measured value, this run's own global-prior baseline, and the
+event count), then the process prints the comparison and exits **1**. Pass
+`--min-top1 0` for exploratory samples, whose 40% evaluation slice is too small
+for the comparison to mean anything.
 
 ## By draft phase
 
