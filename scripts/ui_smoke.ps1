@@ -532,10 +532,19 @@ try {
         if ($LASTEXITCODE -ne 0) { throw "seeder build failed" }
         $seedHeroes = Join-Path $seedersDir "target\release\seed_heroes.exe"
         $seedMatchups = Join-Path $seedersDir "target\release\seed_matchups.exe"
-        & $seedHeroes | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw "seed_heroes failed" }
-        & $seedMatchups --synthetic | Out-Host
-        if ($LASTEXITCODE -ne 0) { throw "seed_matchups --synthetic failed" }
+        # Real seed files rather than `--synthetic`: the committed ban export also
+        # persists the Captain's Mode provenance the preview copy is checked
+        # against below. The seeder resolves those files from the repo root.
+        Push-Location $repoRoot
+        try {
+            & $seedHeroes | Out-Host
+            if ($LASTEXITCODE -ne 0) { throw "seed_heroes failed" }
+            & $seedMatchups | Out-Host
+            if ($LASTEXITCODE -ne 0) { throw "seed_matchups failed" }
+        }
+        finally {
+            Pop-Location
+        }
     }
 
     if ($Bundle) {
@@ -1095,6 +1104,46 @@ try {
         ($previewHasBans -and $preview.summary -ne "" -and $preview.confirm -and
             [int]$preview.rows -eq $configuredBanCount) `
         $previewDetail
+
+    # The copy has to keep saying these are Captain's Mode bans (not the All Pick
+    # bans the user records) and since when the sampled drafts were played. The
+    # expected window comes from the command the panel reads, so a mismatch is a
+    # copy regression rather than a locale or formatting assumption.
+    $previewCopy = Invoke-Eval -WebSocketUrl $main -Expression @'
+(async () => {
+  const info = await window.__TAURI_INTERNALS__.invoke('get_ban_data_info');
+  const format = (seconds) => new Date(seconds * 1000)
+    .toLocaleDateString(undefined, { month: 'short', year: 'numeric' });
+  const range = info && info.window_start && info.window_end
+    ? `${format(info.window_start)} \u2013 ${format(info.window_end)}`
+    : '';
+  const sample = [...document.querySelectorAll('p')]
+    .map(p => p.textContent.replace(/\s+/g, ' ').trim())
+    .find(t => t.includes(' CM drafts')) || '';
+  return {
+    summary: (document.body.innerText.match(/Top \d+ most-banned in Captain's Mode on patch \S+\. Not All Pick bans\./) || [])[0] || '',
+    drafts: info ? info.drafts : null,
+    range,
+    sample
+  };
+})()
+'@
+    $expectedSample = if ($previewCopy.range -and $previewCopy.drafts) {
+        "$($previewCopy.drafts) CM drafts from $($previewCopy.range). Review, then add them as bans."
+    } else {
+        ""
+    }
+    $copyDetail = if (-not $previewCopy.range) {
+        "get_ban_data_info returned no window; the scratch database has no ban_seed_meta for the active patch (run seed_matchups against it)"
+    } else {
+        "sample='$($previewCopy.sample)' expected='$expectedSample'"
+    }
+    Check "ban preview labels the sample Captain's Mode, not All Pick" `
+        ($previewCopy.summary -ne "") `
+        "summary='$($previewCopy.summary)'"
+    Check "ban preview dates the drafts from the seeded window" `
+        ($expectedSample -ne "" -and $previewCopy.sample -eq $expectedSample) `
+        $copyDetail
 
     if ($previewHasBans) {
         $confirmed = Invoke-Eval -WebSocketUrl $main -Expression @'
