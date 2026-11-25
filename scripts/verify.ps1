@@ -205,13 +205,13 @@ if (-not $SkipRust) {
         cargo clippy --manifest-path $desktopManifest --all-targets -- -D warnings
     }
     Invoke-Step -Name "Rust clippy (seeders)" -Action {
-        cargo clippy --manifest-path $seedersManifest --all-targets -- -D warnings
+        cargo clippy --locked --manifest-path $seedersManifest --all-targets -- -D warnings
     }
     Invoke-Step -Name "Rust tests (desktop lib)" -Action {
         cargo test --manifest-path $desktopManifest --lib
     }
     Invoke-Step -Name "Rust tests (seeders)" -Action {
-        cargo test --manifest-path $seedersManifest
+        cargo test --locked --manifest-path $seedersManifest
     }
 }
 
