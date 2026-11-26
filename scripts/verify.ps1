@@ -10,6 +10,8 @@
     runs after them. When the drafts export and a seeded runtime database are
     present, the scorer's top-1 regression gate replays the corpus through the
     engine as well; without them that step is reported as SKIP with the reason.
+    Every cargo step is pinned with --locked, and a Rust step after the build
+    fails when one of them rewrote a tracked Cargo.lock.
     Any failure is reported at the end and makes the script exit non-zero.
 
 .PARAMETER Python
@@ -132,7 +134,7 @@ function Invoke-ScorerGate {
     # redirected stderr into error records, which ErrorActionPreference=Stop would
     # turn into a terminating error and hide the gate's exit code.
     $arguments = @(
-        "run", "--release", "--manifest-path", "`"$desktopManifest`"",
+        "run", "--release", "--locked", "--manifest-path", "`"$desktopManifest`"",
         "--example", "backtest_scorer", "--",
         "--drafts", "`"$drafts`"",
         "--db", "`"$runtimeDb`"",
@@ -202,16 +204,31 @@ if (-not $SkipRust) {
         cargo fmt --manifest-path $seedersManifest --all -- --check
     }
     Invoke-Step -Name "Rust clippy (desktop)" -Action {
-        cargo clippy --manifest-path $desktopManifest --all-targets -- -D warnings
+        cargo clippy --locked --manifest-path $desktopManifest --all-targets -- -D warnings
     }
     Invoke-Step -Name "Rust clippy (seeders)" -Action {
         cargo clippy --locked --manifest-path $seedersManifest --all-targets -- -D warnings
     }
     Invoke-Step -Name "Rust tests (desktop lib)" -Action {
-        cargo test --manifest-path $desktopManifest --lib
+        cargo test --locked --manifest-path $desktopManifest --lib
     }
     Invoke-Step -Name "Rust tests (seeders)" -Action {
         cargo test --locked --manifest-path $seedersManifest
+    }
+    # A build without --locked resolves, rewrites its lockfile and still exits 0,
+    # so the change only surfaces later as an unexplained diff. Every cargo step
+    # above is pinned; this catches a crate that gains an unpinned step, or a
+    # lockfile that was already stale before the run.
+    Invoke-Step -Name "Rust lockfile drift" -Action {
+        $locks = @(git ls-files -- "*Cargo.lock")
+        if ($LASTEXITCODE -ne 0) { throw "git ls-files failed (exit $LASTEXITCODE)" }
+        if ($locks.Count -eq 0) { throw "no tracked Cargo.lock to check; the step would be vacuous" }
+        $drift = @(git status --porcelain --untracked-files=no -- $locks)
+        if ($LASTEXITCODE -ne 0) { throw "git status failed (exit $LASTEXITCODE)" }
+        if ($drift.Count -gt 0) {
+            $files = ($drift | ForEach-Object { $_.Trim() }) -join "; "
+            throw "$files changed; commit the new resolution (or restore it) if it was intentional"
+        }
     }
 }
 
